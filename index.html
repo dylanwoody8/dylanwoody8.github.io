@@ -1,99 +1,418 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Woody Forestry | Custom Maps & Services</title>
-    <link rel="stylesheet" href="style.css">
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&family=Roboto+Slab:wght@300;500&display=swap" rel="stylesheet">
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Woody Forestry | Maps</title>
+  <meta name="description" content="Woody Forestry maps: custom hunting, forestry, topo, and aerial map products. Build your own map, order prints, and download digital files." />
+  <meta name="theme-color" content="#0f3d2e" />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="./assets/styles.css" />
+
+  <!-- Leaflet + Draw (CDN) -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet-draw@1.0.4/dist/leaflet.draw.css">
+
+  <!-- Favicon placeholder (optional) -->
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='0.9em' font-size='90'>🌲</text></svg>">
 </head>
+
 <body>
+  <a class="skip" href="#main">Skip to content</a>
 
-    <header>
-        <nav class="container">
-            <div class="logo">WOODY <span>FORESTRY</span></div>
+  <header class="site-header">
+    <div class="container header-inner">
+      <a class="brand" href="#top" aria-label="Woody Forestry Home">
+        <span class="brand-mark" aria-hidden="true">🌲</span>
+        <span class="brand-text">
+          <span class="brand-name">Woody Forestry</span>
+          <span class="brand-tag">Maps</span>
+        </span>
+      </a>
+
+      <nav class="nav" aria-label="Primary">
+        <a href="#shop">Shop</a>
+        <a href="#build">Build a Map</a>
+        <a href="#pricing">Pricing</a>
+        <a href="#faq">FAQ</a>
+        <a class="btn btn-small" href="#contact">Contact</a>
+      </nav>
+
+      <button class="nav-toggle" id="navToggle" aria-label="Open menu" aria-expanded="false">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+
+    <div class="nav-mobile" id="navMobile" hidden>
+      <a href="#shop">Shop</a>
+      <a href="#build">Build a Map</a>
+      <a href="#pricing">Pricing</a>
+      <a href="#faq">FAQ</a>
+      <a href="#contact">Contact</a>
+    </div>
+  </header>
+
+  <main id="main">
+    <!-- HERO -->
+    <section class="hero" id="top">
+      <div class="container hero-grid">
+        <div>
+          <p class="pill">Custom + ready to buy</p>
+          <h1>High quality maps for hunting, forestry, and land.</h1>
+          <p class="lead">
+            Pick a map style, choose print or digital, and I’ll deliver clean drafts for approval before final delivery.
+            You can also draw your property area and export it to send me.
+          </p>
+
+          <div class="hero-actions">
+            <a class="btn" href="#shop">Explore maps</a>
+            <a class="btn btn-ghost" href="#build">Build your map</a>
+          </div>
+
+          <div class="trust">
+            <div class="trust-item">
+              <div class="trust-num">1</div>
+              <div>
+                <div class="trust-title">Proofs first</div>
+                <div class="trust-sub">You approve before final.</div>
+              </div>
+            </div>
+            <div class="trust-item">
+              <div class="trust-num">2</div>
+              <div>
+                <div class="trust-title">Print or digital</div>
+                <div class="trust-sub">Wall map or phone-ready.</div>
+              </div>
+            </div>
+            <div class="trust-item">
+              <div class="trust-num">3</div>
+              <div>
+                <div class="trust-title">Fast turnaround</div>
+                <div class="trust-sub">Most orders in days, not weeks.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="hero-card" aria-label="Map preview panel">
+          <div class="hero-card-top">
+            <div class="mini-badge">Featured</div>
+            <div class="mini-text">Elevation + imagery blends</div>
+          </div>
+          <div class="mock-map" aria-hidden="true">
+            <div class="mock-grid"></div>
+            <div class="mock-lines"></div>
+            <div class="mock-pin"></div>
+          </div>
+          <div class="hero-card-bottom">
+            <div class="fine">Popular</div>
+            <div class="chips">
+              <span class="chip">Topo</span>
+              <span class="chip">Aerial</span>
+              <span class="chip">Property</span>
+              <span class="chip">Hunting</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SHOP -->
+    <section class="section" id="shop">
+      <div class="container">
+        <div class="section-head">
+          <h2>Shop maps</h2>
+          <p class="muted">Filter by category, then click a product to view details and order.</p>
+        </div>
+
+        <div class="toolbar" role="region" aria-label="Shop filters">
+          <div class="segmented" id="categoryChips" aria-label="Category filter">
+            <!-- chips injected by JS -->
+          </div>
+
+          <div class="search">
+            <label class="sr-only" for="searchInput">Search products</label>
+            <input id="searchInput" type="search" placeholder="Search maps, counties, styles..." autocomplete="off" />
+          </div>
+
+          <div class="select">
+            <label class="sr-only" for="sortSelect">Sort</label>
+            <select id="sortSelect">
+              <option value="featured">Sort: Featured</option>
+              <option value="priceAsc">Price: Low to High</option>
+              <option value="priceDesc">Price: High to Low</option>
+              <option value="newest">Newest</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="grid products" id="productGrid" aria-live="polite">
+          <!-- product cards injected by JS -->
+        </div>
+      </div>
+    </section>
+
+    <!-- BUILD A MAP -->
+    <section class="section section-alt" id="build">
+      <div class="container">
+        <div class="section-head">
+          <h2>Build your map</h2>
+          <p class="muted">
+            Draw an outline, drop pins, add trails, then export GeoJSON to send me. This is for approximate layout only.
+          </p>
+        </div>
+
+        <div class="build-grid">
+          <div class="card">
+            <h3 class="card-title">How it works</h3>
+            <ol class="steps">
+              <li><strong>Zoom</strong> to your property or hunting area.</li>
+              <li><strong>Draw</strong> boundary, stands, food plots, trails, or points.</li>
+              <li><strong>Export</strong> GeoJSON and attach it in your message.</li>
+              <li><strong>Approve proofs</strong> before final print or digital delivery.</li>
+            </ol>
+
+            <div class="note">
+              Tip: If you already have a KML/KMZ, GeoJSON, or shapefile, just contact me and I’ll use that instead.
+            </div>
+
+            <div class="build-actions">
+              <button class="btn" id="exportGeojsonBtn" type="button">Export GeoJSON</button>
+              <button class="btn btn-ghost" id="clearMapBtn" type="button">Clear drawings</button>
+            </div>
+
+            <div class="small muted">
+              Export creates a local download, nothing is uploaded automatically (GitHub Pages has no backend).
+            </div>
+          </div>
+
+          <div class="card map-card">
+            <div class="map-toolbar">
+              <div class="map-status" id="mapStatus">Ready</div>
+              <div class="map-loc">
+                <label class="sr-only" for="geocodeInput">Search a place</label>
+                <input id="geocodeInput" placeholder="Search place (ex: Troy, NC)" />
+                <button class="btn btn-small" id="geocodeBtn" type="button">Go</button>
+              </div>
+            </div>
+            <div id="map" class="map" role="application" aria-label="Map drawing tool"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- PRICING -->
+    <section class="section" id="pricing">
+      <div class="container">
+        <div class="section-head">
+          <h2>Pricing</h2>
+          <p class="muted">Simple starting prices. Exact quotes depend on extent, layers, and deliverables.</p>
+        </div>
+
+        <div class="grid pricing">
+          <div class="price-card">
+            <h3>Digital (PDF + phone)</h3>
+            <div class="price">$49<span class="price-sub">starting</span></div>
             <ul>
-                <li><a href="#maps">Map Store</a></li>
-                <li><a href="#custom">Custom Orders</a></li>
-                <li><a href="#contact">Contact</a></li>
+              <li>High-res PDF</li>
+              <li>Phone-friendly image export</li>
+              <li>1 round of tweaks</li>
             </ul>
-        </nav>
-    </header>
+            <a class="btn btn-ghost" href="#contact">Request a quote</a>
+          </div>
 
-    <section class="hero">
-        <div class="hero-content">
-            <h1>High-Resolution Custom Mapping</h1>
-            <p>Specializing in hunting property, timber tracts, and aerial topography.</p>
-            <a href="#maps" class="btn">View Map Gallery</a>
+          <div class="price-card featured">
+            <div class="mini-badge">Best value</div>
+            <h3>Print ready</h3>
+            <div class="price">$89<span class="price-sub">starting</span></div>
+            <ul>
+              <li>Print-ready PDF</li>
+              <li>Multiple proofs</li>
+              <li>Layout optimized for wall maps</li>
+            </ul>
+            <a class="btn" href="#shop">Pick a map style</a>
+          </div>
+
+          <div class="price-card">
+            <h3>Custom bundle</h3>
+            <div class="price">$149<span class="price-sub">starting</span></div>
+            <ul>
+              <li>Two map styles</li>
+              <li>Inset overview map</li>
+              <li>Legend and labeling</li>
+            </ul>
+            <a class="btn btn-ghost" href="#contact">Tell me what you need</a>
+          </div>
         </div>
+      </div>
     </section>
 
-    <section id="maps" class="container section">
-        <h2 class="section-title">Ready-to-Order Maps</h2>
-        <div class="product-grid">
-            <div class="product-card">
-                <div class="product-image" style="background-image: url('https://images.unsplash.com/photo-1526778548025-fa2f459cd5c1?auto=format&fit=crop&q=80&w=400');"></div>
-                <h3>Standard Topo Map</h3>
-                <p>24" x 36" High-res elevation contours with property boundaries.</p>
-                <span class="price">$89.00</span>
-                <button class="btn secondary">Purchase Map</button>
-            </div>
-            <div class="product-card">
-                <div class="product-image" style="background-image: url('https://images.unsplash.com/photo-1524334228333-0f6db392f8a1?auto=format&fit=crop&q=80&w=400');"></div>
-                <h3>Aerial Property Map</h3>
-                <p>Updated satellite imagery with timber stand identifiers.</p>
-                <span class="price">$129.00</span>
-                <button class="btn secondary">Purchase Map</button>
-            </div>
-            <div class="product-card">
-                <div class="product-image" style="background-image: url('https://images.unsplash.com/photo-1569336415962-a4bd9f6dfc0f?auto=format&fit=crop&q=80&w=400');"></div>
-                <h3>Hunting Laminated Map</h3>
-                <p>Heavy-duty lamination for use with wet-erase markers in the field.</p>
-                <span class="price">$149.00</span>
-                <button class="btn secondary">Purchase Map</button>
-            </div>
+    <!-- FAQ -->
+    <section class="section section-alt" id="faq">
+      <div class="container">
+        <div class="section-head">
+          <h2>FAQ</h2>
+          <p class="muted">Quick answers before you order.</p>
         </div>
+
+        <div class="faq">
+          <details>
+            <summary>How do I actually take payment on GitHub Pages?</summary>
+            <div class="faq-body">
+              Easiest options are Stripe Payment Links, Gumroad, or Payhip. Add your checkout URL in the product list
+              and the “Buy” button will send people there.
+            </div>
+          </details>
+
+          <details>
+            <summary>Do you ship printed maps?</summary>
+            <div class="faq-body">
+              You can. If you plan to fulfill yourself, add shipping notes to the product description.
+              If you want print-on-demand, I can wire the site buttons to a print vendor checkout link.
+            </div>
+          </details>
+
+          <details>
+            <summary>What should I send you if I want a custom map?</summary>
+            <div class="faq-body">
+              A parcel PIN, coordinates, county and state, or a drawn outline from the map tool above. If you have KML, KMZ, or GeoJSON, even better.
+            </div>
+          </details>
+
+          <details>
+            <summary>Can you match my preferred basemap or style?</summary>
+            <div class="faq-body">
+              Yep. Tell me the vibe: clean forestry, hunting, topo, historic aerial, etc, and I’ll send proofs.
+            </div>
+          </details>
+        </div>
+      </div>
     </section>
 
-    <section id="custom" class="bg-light section">
-        <div class="container">
-            <h2 class="section-title">Build Your Custom Map</h2>
-            <p class="text-center">Tell us about your property. We specialize in custom layers, food plots, and GPS-compatible digital maps.</p>
-            
-            <form action="https://formspree.io/f/your-id" method="POST" class="custom-form">
-                <div class="form-group">
-                    <label>Full Name</label>
-                    <input type="text" name="name" required>
-                </div>
-                <div class="form-group">
-                    <label>Email Address</label>
-                    <input type="email" name="_replyto" required>
-                </div>
-                <div class="form-group">
-                    <label>Property Location (Lat/Long or Address)</label>
-                    <input type="text" name="location">
-                </div>
-                <div class="form-group">
-                    <label>Map Type Requested</label>
-                    <select name="map-type">
-                        <option value="topo">Topography / Elevation</option>
-                        <option value="aerial">High-Res Aerial Photography</option>
-                        <option value="timber">Timber Inventory Map</option>
-                        <option value="hunting">Hunting / Food Plots</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label>Additional Details</label>
-                    <textarea name="message" rows="5"></textarea>
-                </div>
-                <button type="submit" class="btn">Submit Request</button>
+    <!-- CONTACT -->
+    <section class="section" id="contact">
+      <div class="container">
+        <div class="contact-grid">
+          <div>
+            <h2>Contact</h2>
+            <p class="muted">
+              For now this site runs fully static. Use this form to generate an email, or swap it for Formspree later.
+            </p>
+
+            <div class="contact-cards">
+              <div class="contact-card">
+                <div class="contact-kicker">Email</div>
+                <div class="contact-value"><a href="mailto:you@woodyforestry.com">you@woodyforestry.com</a></div>
+                <div class="small muted">Replace with your real inbox.</div>
+              </div>
+              <div class="contact-card">
+                <div class="contact-kicker">Turnaround</div>
+                <div class="contact-value">Usually 2 to 5 business days</div>
+                <div class="small muted">Rush available for some orders.</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <h3 class="card-title">Message me</h3>
+            <form id="contactForm">
+              <label>
+                Name
+                <input name="name" required placeholder="Your name" />
+              </label>
+              <label>
+                Email
+                <input name="email" type="email" required placeholder="you@example.com" />
+              </label>
+              <label>
+                What do you need?
+                <textarea name="message" rows="6" required placeholder="Tell me the county/state, size, map style, print or digital, and any details."></textarea>
+              </label>
+
+              <div class="form-row">
+                <button class="btn" type="submit">Create email</button>
+                <button class="btn btn-ghost" type="button" id="copyTemplateBtn">Copy template</button>
+              </div>
+
+              <p class="small muted" id="contactHint">
+                If you exported GeoJSON above, attach it to the email before sending.
+              </p>
             </form>
+          </div>
         </div>
+      </div>
     </section>
+  </main>
 
-    <footer>
-        <p>&copy; 2024 Woody Forestry. Professional Mapping Solutions.</p>
-    </footer>
+  <!-- PRODUCT MODAL -->
+  <dialog class="modal" id="productModal" aria-label="Product details">
+    <form method="dialog" class="modal-inner">
+      <button class="modal-close" aria-label="Close">✕</button>
+      <div class="modal-body">
+        <div class="modal-media" id="modalMedia" aria-hidden="true"></div>
+        <div class="modal-content">
+          <div class="modal-top">
+            <div class="mini-badge" id="modalCategory">Map</div>
+            <h3 id="modalTitle">Product</h3>
+            <p class="muted" id="modalDesc"></p>
+          </div>
 
+          <div class="modal-meta">
+            <div class="meta-row">
+              <span class="meta-label">Starting price</span>
+              <span class="meta-value" id="modalPrice">$0</span>
+            </div>
+            <div class="meta-row">
+              <span class="meta-label">Deliverables</span>
+              <span class="meta-value" id="modalDeliverables">PDF, PNG</span>
+            </div>
+          </div>
+
+          <div class="modal-actions">
+            <a class="btn" id="modalBuyBtn" href="#" target="_blank" rel="noopener">Buy</a>
+            <a class="btn btn-ghost" id="modalCustomBtn" href="#contact">Custom request</a>
+          </div>
+
+          <p class="small muted">
+            Replace each product’s checkout link with a Stripe Payment Link, Gumroad, or Payhip URL.
+          </p>
+        </div>
+      </div>
+    </form>
+  </dialog>
+
+  <footer class="footer">
+    <div class="container footer-grid">
+      <div>
+        <div class="footer-brand">
+          <span aria-hidden="true">🌲</span>
+          <strong>Woody Forestry</strong>
+        </div>
+        <div class="small muted">Maps for hunting, forestry, and land management.</div>
+      </div>
+
+      <div class="footer-links">
+        <a href="#shop">Shop</a>
+        <a href="#build">Build a Map</a>
+        <a href="#pricing">Pricing</a>
+        <a href="#faq">FAQ</a>
+      </div>
+
+      <div class="small muted footer-note">
+        © <span id="year"></span> Woody Forestry. All rights reserved.
+      </div>
+    </div>
+  </footer>
+
+  <script src="./assets/products.js"></script>
+  <script src="./assets/app.js"></script>
+
+  <!-- Leaflet scripts -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+  <script src="https://unpkg.com/leaflet-draw@1.0.4/dist/leaflet.draw.js"></script>
 </body>
 </html>
