@@ -1,863 +1,99 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <meta name="description" content="Woody Forestry provides professional forest management, timber sales, land services, and silvicultural support for landowners and timber investors." />
-  <title>Woody Forestry | Professional Forest Management Services</title>
-
-  <style>
-    :root{
-      /* Palette A */
-      --pine:#0B3D2E;
-      --forest:#145A44;
-      --bark:#8B5E34;
-      --cream:#F6F3EA;
-      --charcoal:#1E1E1E;
-      --white:#ffffff;
-
-      --max: 1140px;
-      --radius: 18px;
-      --shadow: 0 14px 38px rgba(0,0,0,.10);
-      --line: 1px solid rgba(20,90,68,.12);
-    }
-
-    *{ box-sizing:border-box; }
-    html,body{ margin:0; padding:0; }
-    html{ scroll-behavior:smooth; }
-    body{
-      font-family: system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
-      color: var(--charcoal);
-      background: var(--cream);
-      line-height:1.55;
-    }
-    a{ color:inherit; text-decoration:none; }
-    img{ max-width:100%; height:auto; display:block; }
-    .wrap{ max-width: var(--max); margin: 0 auto; padding: 0 18px; }
-
-    /* Header */
-    header{
-      position: sticky;
-      top:0;
-      z-index: 50;
-      background: rgba(246,243,234,.92);
-      backdrop-filter: blur(10px);
-      border-bottom: var(--line);
-    }
-    .nav{
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap:12px;
-      padding: 14px 0;
-    }
-    .brand{
-      display:flex;
-      align-items:center;
-      gap:10px;
-      font-weight:900;
-      letter-spacing:.2px;
-    }
-    .logo{
-      width:38px;
-      height:38px;
-      border-radius: 14px;
-      background: linear-gradient(135deg, var(--pine), var(--forest));
-      display:grid;
-      place-items:center;
-      box-shadow: 0 10px 18px rgba(11,61,46,.22);
-      border: 1px solid rgba(0,0,0,.06);
-      flex: 0 0 auto;
-    }
-    .logo svg{ width:22px; height:22px; fill: var(--cream); }
-    .links{
-      display:flex;
-      align-items:center;
-      gap: 10px;
-      flex-wrap: wrap;
-      justify-content:flex-end;
-    }
-    .links a{
-      padding: 10px 10px;
-      border-radius: 14px;
-      font-weight: 750;
-      opacity: .92;
-    }
-    .links a:hover{ background: rgba(20,90,68,.08); opacity: 1; }
-    .cta{
-      background: var(--pine);
-      color: var(--cream);
-      border: 1px solid rgba(0,0,0,.10);
-      box-shadow: 0 12px 18px rgba(11,61,46,.18);
-    }
-    .cta:hover{ background:#084033; }
-
-    /* Mobile menu */
-    .menuBtn{
-      display:none;
-      border: var(--line);
-      background: rgba(255,255,255,.6);
-      padding: 10px 12px;
-      border-radius: 14px;
-      font-weight: 850;
-      cursor:pointer;
-    }
-    .mobilePanel{
-      display:none;
-      padding: 10px 0 14px;
-      border-top: var(--line);
-    }
-    .mobilePanel a{
-      display:block;
-      padding: 10px 12px;
-      border-radius: 14px;
-      font-weight: 800;
-    }
-    .mobilePanel a:hover{ background: rgba(20,90,68,.08); }
-
-    /* Hero */
-    .hero{
-      padding: 50px 0 18px;
-    }
-    .heroCard{
-      background:
-        radial-gradient(900px 260px at 20% 10%, rgba(20,90,68,.14), transparent 60%),
-        radial-gradient(900px 260px at 80% 0%, rgba(139,94,52,.12), transparent 62%),
-        linear-gradient(180deg, rgba(255,255,255,.92), rgba(255,255,255,.92));
-      border-radius: 26px;
-      box-shadow: var(--shadow);
-      border: var(--line);
-      overflow:hidden;
-      position:relative;
-    }
-    .heroInner{
-      display:grid;
-      grid-template-columns: 1.15fr .85fr;
-      gap: 16px;
-      padding: 26px;
-      align-items: stretch;
-    }
-    .kicker{
-      display:inline-flex;
-      align-items:center;
-      gap: 8px;
-      padding: 8px 12px;
-      border-radius: 999px;
-      background: rgba(20,90,68,.09);
-      border: 1px solid rgba(20,90,68,.14);
-      font-weight: 900;
-      letter-spacing:.3px;
-      color: var(--pine);
-      width: fit-content;
-    }
-    .dot{ width:8px; height:8px; border-radius: 999px; background: var(--bark); }
-    h1{
-      margin: 14px 0 10px;
-      font-size: clamp(30px, 4.3vw, 50px);
-      line-height: 1.05;
-      letter-spacing: -0.7px;
-      color: var(--pine);
-    }
-    .sub{
-      margin: 0 0 16px;
-      font-size: 17px;
-      max-width: 68ch;
-      opacity: .92;
-    }
-    .actions{
-      display:flex;
-      gap: 10px;
-      flex-wrap: wrap;
-      margin-top: 6px;
-    }
-    .btn{
-      display:inline-flex;
-      align-items:center;
-      justify-content:center;
-      gap: 10px;
-      padding: 12px 14px;
-      border-radius: 16px;
-      font-weight: 900;
-      border: 1px solid rgba(0,0,0,.10);
-      cursor:pointer;
-      user-select:none;
-    }
-    .btnPrimary{
-      background: var(--pine);
-      color: var(--cream);
-      box-shadow: 0 12px 18px rgba(11,61,46,.18);
-    }
-    .btnPrimary:hover{ background:#084033; }
-    .btnSecondary{
-      background: rgba(20,90,68,.08);
-      border: 1px solid rgba(20,90,68,.18);
-      color: var(--pine);
-    }
-    .btnSecondary:hover{ background: rgba(20,90,68,.12); }
-
-    .heroRight{
-      background: rgba(246,243,234,.62);
-      border: 1px solid rgba(20,90,68,.12);
-      border-radius: 20px;
-      padding: 16px;
-      display:flex;
-      flex-direction:column;
-      gap: 12px;
-    }
-    .statGrid{
-      display:grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 10px;
-    }
-    .mini{
-      background: rgba(255,255,255,.8);
-      border: 1px solid rgba(20,90,68,.10);
-      border-radius: 16px;
-      padding: 12px;
-    }
-    .mini .big{
-      font-weight: 950;
-      color: var(--pine);
-      font-size: 16px;
-      margin-bottom: 2px;
-    }
-    .mini .small{ font-size: 13px; opacity:.86; }
-
-    .badgeRow{
-      display:flex;
-      flex-wrap: wrap;
-      gap: 8px;
-      margin: 0;
-      padding: 0;
-      list-style:none;
-    }
-    .badge{
-      padding: 8px 10px;
-      border-radius: 999px;
-      background: rgba(20,90,68,.10);
-      border: 1px solid rgba(20,90,68,.16);
-      font-weight: 850;
-      font-size: 13px;
-      color: var(--pine);
-    }
-
-    /* Sections */
-    section{ padding: 34px 0; }
-    .sectionHead{
-      display:flex;
-      align-items:flex-end;
-      justify-content:space-between;
-      gap: 14px;
-      margin-bottom: 14px;
-    }
-    h2{
-      margin:0;
-      font-size: 26px;
-      letter-spacing: -0.25px;
-      color: var(--pine);
-    }
-    .muted{ margin: 6px 0 0; opacity:.88; max-width: 78ch; }
-    .card{
-      background: var(--white);
-      border-radius: var(--radius);
-      box-shadow: var(--shadow);
-      border: var(--line);
-    }
-
-    /* Services blocks inspired by Strong Forestry grouping */
-    .serviceGroups{
-      display:grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 14px;
-    }
-    .group{
-      padding: 18px;
-    }
-    .groupTop{
-      display:flex;
-      gap: 10px;
-      align-items:flex-start;
-      margin-bottom: 10px;
-    }
-    .icon{
-      width: 44px; height: 44px;
-      border-radius: 16px;
-      display:grid;
-      place-items:center;
-      background: linear-gradient(135deg, rgba(11,61,46,.12), rgba(20,90,68,.12));
-      border: 1px solid rgba(20,90,68,.18);
-      flex: 0 0 auto;
-    }
-    .icon svg{ width: 22px; height: 22px; fill: var(--forest); }
-    .group h3{ margin:0; color: var(--pine); font-size: 18px; }
-    .group p{ margin:4px 0 0; opacity:.9; }
-    .pillList{
-      margin: 12px 0 0;
-      padding: 0;
-      list-style:none;
-      display:flex;
-      flex-wrap: wrap;
-      gap: 8px;
-    }
-    .pill{
-      padding: 9px 10px;
-      border-radius: 999px;
-      background: rgba(246,243,234,.7);
-      border: 1px solid rgba(20,90,68,.12);
-      font-weight: 820;
-      font-size: 13px;
-    }
-
-    /* About / Process */
-    .twoCol{
-      display:grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 14px;
-      align-items: stretch;
-    }
-    .panel{ padding: 18px; }
-    .panel h3{ margin:0 0 8px; color: var(--pine); }
-    .checkList{
-      margin: 10px 0 0;
-      padding: 0;
-      list-style:none;
-      display:grid;
-      gap: 10px;
-    }
-    .checkList li{
-      display:flex;
-      gap: 10px;
-      align-items:flex-start;
-    }
-    .check{
-      width: 22px; height: 22px;
-      border-radius: 8px;
-      background: rgba(20,90,68,.10);
-      border: 1px solid rgba(20,90,68,.16);
-      display:grid;
-      place-items:center;
-      flex: 0 0 auto;
-      margin-top: 1px;
-    }
-    .check svg{ width: 14px; height: 14px; fill: var(--forest); }
-
-    /* Testimonials */
-    .testGrid{
-      display:grid;
-      grid-template-columns: 1fr 1fr 1fr;
-      gap: 14px;
-    }
-    .quote{
-      padding: 18px;
-      position:relative;
-    }
-    .quoteMark{
-      width: 38px; height: 38px;
-      border-radius: 16px;
-      background: rgba(139,94,52,.12);
-      border: 1px solid rgba(139,94,52,.18);
-      display:grid;
-      place-items:center;
-      color: var(--bark);
-      font-weight: 950;
-      margin-bottom: 10px;
-    }
-    .quote p{ margin: 0; opacity:.92; }
-    .quote .who{
-      margin-top: 10px;
-      font-weight: 950;
-      color: var(--pine);
-    }
-    .quote .meta{
-      font-size: 13px;
-      opacity: .82;
-      margin-top: 2px;
-    }
-
-    /* FAQ */
-    .faq{
-      display:grid;
-      gap: 10px;
-    }
-    details{
-      background: var(--white);
-      border-radius: var(--radius);
-      border: var(--line);
-      box-shadow: var(--shadow);
-      padding: 12px 14px;
-    }
-    summary{
-      cursor:pointer;
-      font-weight: 900;
-      color: var(--pine);
-      list-style:none;
-    }
-    summary::-webkit-details-marker{ display:none; }
-    details p{ margin: 10px 0 0; opacity:.9; }
-
-    /* Contact */
-    .contactBox{
-      padding: 20px;
-      border-radius: 26px;
-      background:
-        radial-gradient(900px 260px at 25% 0%, rgba(20,90,68,.14), transparent 60%),
-        radial-gradient(900px 260px at 75% 0%, rgba(139,94,52,.10), transparent 60%),
-        var(--white);
-      box-shadow: var(--shadow);
-      border: var(--line);
-      display:grid;
-      grid-template-columns: 1.1fr .9fr;
-      gap: 14px;
-      align-items:start;
-    }
-    form{ display:grid; gap: 10px; }
-    input, textarea{
-      width:100%;
-      padding: 12px 12px;
-      border-radius: 16px;
-      border: 1px solid rgba(0,0,0,.12);
-      background: rgba(246,243,234,.5);
-      font: inherit;
-      outline: none;
-    }
-    input:focus, textarea:focus{
-      border-color: rgba(20,90,68,.45);
-      box-shadow: 0 0 0 4px rgba(20,90,68,.10);
-      background: rgba(246,243,234,.7);
-    }
-    textarea{ min-height: 120px; resize: vertical; }
-
-    footer{
-      padding: 26px 0 44px;
-      border-top: var(--line);
-      margin-top: 10px;
-    }
-    .footerRow{
-      display:flex;
-      justify-content:space-between;
-      gap: 12px;
-      flex-wrap: wrap;
-      align-items:center;
-      opacity: .92;
-    }
-    .fine{ font-size: 13px; opacity:.85; }
-
-    /* Responsive */
-    @media (max-width: 920px){
-      .heroInner{ grid-template-columns: 1fr; }
-      .serviceGroups{ grid-template-columns: 1fr; }
-      .twoCol{ grid-template-columns: 1fr; }
-      .testGrid{ grid-template-columns: 1fr; }
-      .contactBox{ grid-template-columns: 1fr; }
-      .links{ display:none; }
-      .menuBtn{ display:inline-flex; }
-      .mobilePanel{ display:block; }
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Woody Forestry | Custom Maps & Services</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&family=Roboto+Slab:wght@300;500&display=swap" rel="stylesheet">
 </head>
-
 <body>
-  <header>
-    <div class="wrap">
-      <div class="nav">
-        <a class="brand" href="#top" aria-label="Woody Forestry Home">
-          <span class="logo" aria-hidden="true">
-            <svg viewBox="0 0 24 24">
-              <path d="M12 2l4 6h-3l3 4h-3l4 6H7l4-6H8l3-4H8l4-6z"></path>
-            </svg>
-          </span>
-          <span>Woody Forestry</span>
-        </a>
 
-        <nav class="links" aria-label="Primary navigation">
-          <a href="#services">Services</a>
-          <a href="#about">About</a>
-          <a href="#testimonials">Testimonials</a>
-          <a href="#faq">FAQs</a>
-          <a href="#contact" class="cta">Contact</a>
+    <header>
+        <nav class="container">
+            <div class="logo">WOODY <span>FORESTRY</span></div>
+            <ul>
+                <li><a href="#maps">Map Store</a></li>
+                <li><a href="#custom">Custom Orders</a></li>
+                <li><a href="#contact">Contact</a></li>
+            </ul>
         </nav>
+    </header>
 
-        <button class="menuBtn" type="button" onclick="toggleMenu()" aria-label="Open menu">
-          Menu
-        </button>
-      </div>
+    <section class="hero">
+        <div class="hero-content">
+            <h1>High-Resolution Custom Mapping</h1>
+            <p>Specializing in hunting property, timber tracts, and aerial topography.</p>
+            <a href="#maps" class="btn">View Map Gallery</a>
+        </div>
+    </section>
 
-      <div id="mobilePanel" class="mobilePanel" style="display:none;">
-        <a href="#services" onclick="toggleMenu()">Services</a>
-        <a href="#about" onclick="toggleMenu()">About</a>
-        <a href="#testimonials" onclick="toggleMenu()">Testimonials</a>
-        <a href="#faq" onclick="toggleMenu()">FAQs</a>
-        <a href="#contact" class="cta" style="display:inline-block;margin-top:6px;" onclick="toggleMenu()">Contact</a>
-      </div>
-    </div>
-  </header>
-
-  <main id="top">
-    <div class="wrap">
-      <section class="hero">
-        <div class="heroCard">
-          <div class="heroInner">
-            <div>
-              <div class="kicker"><span class="dot"></span> Your goals, our commitment</div>
-              <h1>Professional forest management services for landowners and timber investors.</h1>
-              <p class="sub">
-                Woody Forestry helps you unlock the full potential of your timberland. From management planning and inventory to timber sale support and regeneration, we deliver clear recommendations and dependable field execution.
-              </p>
-
-              <div class="actions">
-                <a class="btn btnPrimary" href="#contact">Request a consultation</a>
-                <a class="btn btnSecondary" href="#services">View services</a>
-              </div>
-
-              <ul class="badgeRow" style="margin-top:14px;">
-                <li class="badge">Timber Sales</li>
-                <li class="badge">Management Plans</li>
-                <li class="badge">Inventory</li>
-                <li class="badge">Reforestation</li>
-                <li class="badge">Boundary and Access</li>
-              </ul>
+    <section id="maps" class="container section">
+        <h2 class="section-title">Ready-to-Order Maps</h2>
+        <div class="product-grid">
+            <div class="product-card">
+                <div class="product-image" style="background-image: url('https://images.unsplash.com/photo-1526778548025-fa2f459cd5c1?auto=format&fit=crop&q=80&w=400');"></div>
+                <h3>Standard Topo Map</h3>
+                <p>24" x 36" High-res elevation contours with property boundaries.</p>
+                <span class="price">$89.00</span>
+                <button class="btn secondary">Purchase Map</button>
             </div>
+            <div class="product-card">
+                <div class="product-image" style="background-image: url('https://images.unsplash.com/photo-1524334228333-0f6db392f8a1?auto=format&fit=crop&q=80&w=400');"></div>
+                <h3>Aerial Property Map</h3>
+                <p>Updated satellite imagery with timber stand identifiers.</p>
+                <span class="price">$129.00</span>
+                <button class="btn secondary">Purchase Map</button>
+            </div>
+            <div class="product-card">
+                <div class="product-image" style="background-image: url('https://images.unsplash.com/photo-1569336415962-a4bd9f6dfc0f?auto=format&fit=crop&q=80&w=400');"></div>
+                <h3>Hunting Laminated Map</h3>
+                <p>Heavy-duty lamination for use with wet-erase markers in the field.</p>
+                <span class="price">$149.00</span>
+                <button class="btn secondary">Purchase Map</button>
+            </div>
+        </div>
+    </section>
 
-            <aside class="heroRight" aria-label="Highlights">
-              <div class="statGrid">
-                <div class="mini">
-                  <div class="big">Landowner first</div>
-                  <div class="small">Transparent fees, clear deliverables</div>
+    <section id="custom" class="bg-light section">
+        <div class="container">
+            <h2 class="section-title">Build Your Custom Map</h2>
+            <p class="text-center">Tell us about your property. We specialize in custom layers, food plots, and GPS-compatible digital maps.</p>
+            
+            <form action="https://formspree.io/f/your-id" method="POST" class="custom-form">
+                <div class="form-group">
+                    <label>Full Name</label>
+                    <input type="text" name="name" required>
                 </div>
-                <div class="mini">
-                  <div class="big">Market aware</div>
-                  <div class="small">Strong sale prep and timing</div>
+                <div class="form-group">
+                    <label>Email Address</label>
+                    <input type="email" name="_replyto" required>
                 </div>
-                <div class="mini">
-                  <div class="big">Field ready</div>
-                  <div class="small">Practical, boots on the ground support</div>
+                <div class="form-group">
+                    <label>Property Location (Lat/Long or Address)</label>
+                    <input type="text" name="location">
                 </div>
-                <div class="mini">
-                  <div class="big">Long term value</div>
-                  <div class="small">Health, growth, and risk reduction</div>
+                <div class="form-group">
+                    <label>Map Type Requested</label>
+                    <select name="map-type">
+                        <option value="topo">Topography / Elevation</option>
+                        <option value="aerial">High-Res Aerial Photography</option>
+                        <option value="timber">Timber Inventory Map</option>
+                        <option value="hunting">Hunting / Food Plots</option>
+                    </select>
                 </div>
-              </div>
-
-              <div class="card" style="padding:14px;border-radius:20px;background:rgba(255,255,255,.82);">
-                <div style="font-weight:950;color:var(--pine);margin-bottom:6px;">Typical first step</div>
-                <div style="opacity:.9;">
-                  A brief call plus a site visit to understand your goals, review stand conditions, and outline the best next actions.
+                <div class="form-group">
+                    <label>Additional Details</label>
+                    <textarea name="message" rows="5"></textarea>
                 </div>
-              </div>
-            </aside>
-          </div>
+                <button type="submit" class="btn">Submit Request</button>
+            </form>
         </div>
-      </section>
+    </section>
 
-      <section id="services">
-        <div class="sectionHead">
-          <div>
-            <h2>Services</h2>
-            <p class="muted">A full lineup of standard consulting services, organized the way landowners think about decisions.</p>
-          </div>
-        </div>
+    <footer>
+        <p>&copy; 2024 Woody Forestry. Professional Mapping Solutions.</p>
+    </footer>
 
-        <div class="serviceGroups">
-          <div class="card group">
-            <div class="groupTop">
-              <div class="icon" aria-hidden="true">
-                <svg viewBox="0 0 24 24"><path d="M4 20h16v2H4v-2zm1-3h14V6H5v11zm2-9h10v7H7V8z"/></svg>
-              </div>
-              <div>
-                <h3>Forest Management Services</h3>
-                <p>Planning, mapping, and inventory to guide your property for the next 5 to 20 years.</p>
-              </div>
-            </div>
-            <ul class="pillList">
-              <li class="pill">Forest Management Plans</li>
-              <li class="pill">Forest Mapping and GIS</li>
-              <li class="pill">Forest Resource Inventory</li>
-              <li class="pill">Cost share and Incentive Programs</li>
-            </ul>
-          </div>
-
-          <div class="card group">
-            <div class="groupTop">
-              <div class="icon" aria-hidden="true">
-                <svg viewBox="0 0 24 24"><path d="M12 2a7 7 0 017 7c0 5-7 13-7 13S5 14 5 9a7 7 0 017-7zm0 9a2 2 0 100-4 2 2 0 000 4z"/></svg>
-              </div>
-              <div>
-                <h3>Land Services</h3>
-                <p>Support for boundaries, access, and land stewardship goals.</p>
-              </div>
-            </div>
-            <ul class="pillList">
-              <li class="pill">Boundary Line Maintenance</li>
-              <li class="pill">Access and Road Planning</li>
-              <li class="pill">Hunting Lease Coordination</li>
-              <li class="pill">Conservation Support</li>
-            </ul>
-          </div>
-
-          <div class="card group">
-            <div class="groupTop">
-              <div class="icon" aria-hidden="true">
-                <svg viewBox="0 0 24 24"><path d="M12 2l4 6h-3l3 4h-3l4 6H7l4-6H8l3-4H8l4-6z"/></svg>
-              </div>
-              <div>
-                <h3>Silvicultural Services</h3>
-                <p>On the ground prescriptions and coordination to improve stand health and growth.</p>
-              </div>
-            </div>
-            <ul class="pillList">
-              <li class="pill">Forest Stand Improvement</li>
-              <li class="pill">Site Preparation</li>
-              <li class="pill">Reforestation and Establishment</li>
-              <li class="pill">Invasive Plant Control</li>
-            </ul>
-          </div>
-
-          <div class="card group">
-            <div class="groupTop">
-              <div class="icon" aria-hidden="true">
-                <svg viewBox="0 0 24 24"><path d="M21 8V7l-3 2-2-1-3 2-2-1-3 2-2-1-3 2v1l3-2 2 1 3-2 2 1 3-2 2 1 3-2zm0 8v-1l-3 2-2-1-3 2-2-1-3 2-2-1-3 2v1l3-2 2 1 3-2 2 1 3-2 2 1 3-2z"/></svg>
-              </div>
-              <div>
-                <h3>Timber Services</h3>
-                <p>Appraisals, sale preparation, marketing, and oversight to protect your returns.</p>
-              </div>
-            </div>
-            <ul class="pillList">
-              <li class="pill">Timber Appraisals</li>
-              <li class="pill">Timber Sales Assistance</li>
-              <li class="pill">Harvest Oversight and Closeout</li>
-              <li class="pill">Timber Basis and Tax Support</li>
-            </ul>
-          </div>
-        </div>
-      </section>
-
-      <section id="about">
-        <div class="sectionHead">
-          <div>
-            <h2>About</h2>
-            <p class="muted">Practical forestry that balances revenue, risk, and long term stewardship.</p>
-          </div>
-        </div>
-
-        <div class="twoCol">
-          <div class="card panel">
-            <h3>Our approach</h3>
-            <p style="margin:0;opacity:.92;">
-              Every tract is different. We start by understanding your objectives, then build a plan that is realistic for the property, the market, and the timeline. When it is time to act, we help coordinate the work and document results.
-            </p>
-            <ul class="checkList">
-              <li>
-                <span class="check" aria-hidden="true">
-                  <svg viewBox="0 0 24 24"><path d="M9 16.2l-3.5-3.5L4 14.2 9 19l12-12-1.5-1.5z"/></svg>
-                </span>
-                <div><strong>Clear deliverables</strong> including maps, stand summaries, and next steps.</div>
-              </li>
-              <li>
-                <span class="check" aria-hidden="true">
-                  <svg viewBox="0 0 24 24"><path d="M9 16.2l-3.5-3.5L4 14.2 9 19l12-12-1.5-1.5z"/></svg>
-                </span>
-                <div><strong>Sale focused execution</strong> with attention to market timing and prep.</div>
-              </li>
-              <li>
-                <span class="check" aria-hidden="true">
-                  <svg viewBox="0 0 24 24"><path d="M9 16.2l-3.5-3.5L4 14.2 9 19l12-12-1.5-1.5z"/></svg>
-                </span>
-                <div><strong>Respect for your land</strong> with practical BMP minded recommendations.</div>
-              </li>
-            </ul>
-          </div>
-
-          <div class="card panel">
-            <h3>How it works</h3>
-            <ol style="margin:0;padding-left:18px;opacity:.92;display:grid;gap:10px;">
-              <li><strong>Intro call:</strong> Goals, property basics, and timeline.</li>
-              <li><strong>Site visit:</strong> Stand conditions, access, and constraints.</li>
-              <li><strong>Plan or sale package:</strong> Clear scope, maps, and recommendations.</li>
-              <li><strong>Support through completion:</strong> Coordination, oversight, and documentation.</li>
-            </ol>
-
-            <div style="margin-top:14px;">
-              <div style="font-weight:950;color:var(--pine);margin-bottom:6px;">Service area</div>
-              <div style="opacity:.9;">North Carolina and surrounding regions. Add your exact counties later if you want.</div>
-              <ul class="pillList" style="margin-top:10px;">
-                <li class="pill">Private Landowners</li>
-                <li class="pill">Timber Investors</li>
-                <li class="pill">Family Trusts</li>
-                <li class="pill">Organizations</li>
-              </ul>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <section id="testimonials">
-        <div class="sectionHead">
-          <div>
-            <h2>Client Testimonials</h2>
-            <p class="muted">Replace these placeholders with real quotes as you collect them.</p>
-          </div>
-        </div>
-
-        <div class="testGrid">
-          <div class="card quote">
-            <div class="quoteMark">“</div>
-            <p>
-              Woody Forestry gave us a clear plan and realistic next steps. The timber sale process was organized, and we felt confident from start to finish.
-            </p>
-            <div class="who">Client Name</div>
-            <div class="meta">Private Landowner</div>
-          </div>
-
-          <div class="card quote">
-            <div class="quoteMark">“</div>
-            <p>
-              Great communication, thorough field work, and strong documentation. We appreciated the practical recommendations and follow through.
-            </p>
-            <div class="who">Client Name</div>
-            <div class="meta">Family Trust</div>
-          </div>
-
-          <div class="card quote">
-            <div class="quoteMark">“</div>
-            <p>
-              Our management plan was easy to understand and clearly prioritized. The maps and stand summaries were extremely helpful.
-            </p>
-            <div class="who">Client Name</div>
-            <div class="meta">Timber Investor</div>
-          </div>
-        </div>
-      </section>
-
-      <section id="faq">
-        <div class="sectionHead">
-          <div>
-            <h2>Working with a Forester FAQs</h2>
-            <p class="muted">Quick answers that help landowners understand the process.</p>
-          </div>
-        </div>
-
-        <div class="faq">
-          <details>
-            <summary>What is the first step?</summary>
-            <p>
-              Start with a brief call to discuss your goals, then schedule a site visit. From there, we outline a plan or a timber sale approach that fits your tract and timeline.
-            </p>
-          </details>
-
-          <details>
-            <summary>What are the benefits of hiring a consulting forester?</summary>
-            <p>
-              A good consultant helps you avoid expensive mistakes, improves sale outcomes through preparation and marketing, and creates a clear plan that protects long term value.
-            </p>
-          </details>
-
-          <details>
-            <summary>How do fees usually work?</summary>
-            <p>
-              Many projects can be hourly or fixed fee. Timber sale work is often a percentage of sale proceeds. We will keep pricing simple and clearly define deliverables up front.
-            </p>
-          </details>
-
-          <details>
-            <summary>Do you help with reforestation and site prep?</summary>
-            <p>
-              Yes. We can recommend prescriptions, coordinate contractors, and verify establishment so the next rotation gets off to a strong start.
-            </p>
-          </details>
-        </div>
-      </section>
-
-      <section id="contact">
-        <div class="sectionHead">
-          <div>
-            <h2>Contact</h2>
-            <p class="muted">Tell us acreage, county, and what you want to accomplish. We will follow up soon.</p>
-          </div>
-        </div>
-
-        <div class="contactBox">
-          <div>
-            <h3 style="margin:0;color:var(--pine);">Request a consultation</h3>
-            <p style="margin:8px 0 0;opacity:.92;">
-              Use the form, or email us directly. If you want a faster quote, include timber type, recent activity, and access notes.
-            </p>
-
-            <div style="margin-top:12px;">
-              <div style="font-weight:950;color:var(--pine);">Email</div>
-              <div style="opacity:.9;">hello@woodyforestry.com</div>
-
-              <div style="font-weight:950;color:var(--pine);margin-top:10px;">Phone</div>
-              <div style="opacity:.9;">(###) ###-####</div>
-
-              <div class="fine" style="margin-top:10px;">
-                Replace the placeholders above with your real email and phone number anytime.
-              </div>
-            </div>
-          </div>
-
-          <form onsubmit="return handleSubmit(event)" aria-label="Contact form">
-            <input required name="name" placeholder="Your name" />
-            <input required type="email" name="email" placeholder="Email address" />
-            <input name="phone" placeholder="Phone (optional)" />
-            <textarea required name="message" placeholder="Message (acreage, county, goals)"></textarea>
-            <button class="btn btnPrimary" type="submit">Send message</button>
-            <div id="formNote" class="fine"></div>
-          </form>
-        </div>
-      </section>
-    </div>
-  </main>
-
-  <footer>
-    <div class="wrap">
-      <div class="footerRow">
-        <div class="brand" style="gap:8px;">
-          <span class="logo" aria-hidden="true" style="width:34px;height:34px;border-radius:14px;">
-            <svg viewBox="0 0 24 24"><path d="M12 2l4 6h-3l3 4h-3l4 6H7l4-6H8l3-4H8l4-6z"></path></svg>
-          </span>
-          <span>Woody Forestry</span>
-        </div>
-        <div class="fine">© <span id="year"></span> Woody Forestry. All rights reserved.</div>
-      </div>
-      <div class="fine" style="margin-top:10px;">
-        <span style="font-weight:850;">Note:</span> Want the form to submit without opening email? Tell me what you prefer and I’ll wire it up using Netlify Forms or Formspree.
-      </div>
-    </div>
-  </footer>
-
-  <script>
-    function toggleMenu(){
-      const panel = document.getElementById("mobilePanel");
-      panel.style.display = (panel.style.display === "none" || panel.style.display === "") ? "block" : "none";
-    }
-
-    // Simple form handler: opens the user's email app with a prefilled message.
-    function handleSubmit(e){
-      e.preventDefault();
-      const form = e.target;
-      const name = (form.name.value || "").trim();
-      const email = (form.email.value || "").trim();
-      const phone = (form.phone.value || "").trim();
-      const msg = (form.message.value || "").trim();
-
-      const subject = encodeURIComponent("Woody Forestry - Website Inquiry");
-      const body = encodeURIComponent(
-        "Name: " + name + "\n" +
-        "Email: " + email + "\n" +
-        "Phone: " + phone + "\n\n" +
-        msg
-      );
-
-      const to = "hello@woodyforestry.com"; // change anytime
-      window.location.href = "mailto:" + to + "?subject=" + subject + "&body=" + body;
-
-      const note = document.getElementById("formNote");
-      note.textContent = "Opening your email app to send the message...";
-      return false;
-    }
-
-    document.getElementById("year").textContent = new Date().getFullYear();
-  </script>
 </body>
 </html>
