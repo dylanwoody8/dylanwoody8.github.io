@@ -223,38 +223,132 @@ h1{
   color:var(--muted);
 }
 
-.mock-map{
+.pine-growth{
   height:240px;
-  background:
-    radial-gradient(400px 200px at 20% 30%, rgba(47,224,165,.25), transparent 60%),
-    radial-gradient(400px 260px at 75% 55%, rgba(47,224,165,.14), transparent 60%),
-    linear-gradient(180deg, #0b1612, #0a1310);
   position:relative;
+  overflow:hidden;
+  background:
+    radial-gradient(160px 100px at 78% 20%, rgba(255,255,255,.18), transparent 65%),
+    linear-gradient(180deg, #11251e 0%, #0c1915 65%, #0a1411 100%);
 }
-.mock-grid{
-  position:absolute; inset:0;
-  background-image:
-    linear-gradient(to right, rgba(255,255,255,.06) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(255,255,255,.06) 1px, transparent 1px);
-  background-size: 28px 28px;
+.ground{
+  position:absolute;
+  left:0; right:0; bottom:0;
+  height:62px;
+  background:linear-gradient(180deg, #143728, #0e271c);
+  border-top:1px solid rgba(255,255,255,.08);
+}
+.sun{
+  position:absolute;
+  width:56px; height:56px;
+  top:28px; right:34px;
+  border-radius:50%;
+  background:radial-gradient(circle at 35% 35%, #f6ffe2, #9fffcf 62%, rgba(159,255,207,0) 70%);
+  opacity:.7;
+  animation: sunPulse 5s ease-in-out infinite;
+}
+.seed, .sprout, .pine-trunk, .pine-tier{
+  position:absolute;
+  left:50%;
+  transform:translateX(-50%);
+}
+.seed{
+  bottom:52px;
+  width:10px;
+  height:7px;
+  border-radius:50%;
+  background:#7c5b3f;
+  box-shadow:0 0 0 3px rgba(124,91,63,.2);
+  animation: seedFade 8s linear infinite;
+}
+.sprout{
+  bottom:52px;
+  width:44px;
+  height:66px;
+  transform:translateX(-50%) scale(.3);
+  opacity:0;
+  animation: sproutGrow 8s ease-out infinite;
+}
+.sprout-stem{
+  position:absolute;
+  left:50%; bottom:0;
+  width:5px; height:40px;
+  transform:translateX(-50%);
+  border-radius:6px;
+  background:linear-gradient(180deg, #9af0be, #52b882);
+}
+.sprout-leaf{
+  position:absolute;
+  bottom:20px;
+  width:18px; height:11px;
+  background:#7be3a8;
+  border-radius:100% 0 100% 0;
+}
+.sprout-leaf-left{ left:2px; transform:rotate(-28deg); }
+.sprout-leaf-right{ right:2px; transform:scaleX(-1) rotate(-28deg); }
+.pine-trunk{
+  bottom:52px;
+  width:14px;
+  height:130px;
+  border-radius:10px;
+  background:linear-gradient(180deg, #93684a, #65452f);
+  transform-origin:bottom center;
+  transform:translateX(-50%) scaleY(0);
+  animation: trunkRise 8s ease-out infinite;
+}
+.pine-tier{
+  width:0;
+  height:0;
+  border-left:50px solid transparent;
+  border-right:50px solid transparent;
+  border-bottom:72px solid #2eb378;
+  opacity:0;
+  transform-origin:50% 100%;
+}
+.pine-tier-1{ bottom:94px; animation: tierOne 8s ease-out infinite; }
+.pine-tier-2{ bottom:126px; border-left-width:42px; border-right-width:42px; border-bottom-width:62px; border-bottom-color:#249f68; animation: tierTwo 8s ease-out infinite; }
+.pine-tier-3{ bottom:154px; border-left-width:34px; border-right-width:34px; border-bottom-width:52px; border-bottom-color:#1e8858; animation: tierThree 8s ease-out infinite; }
+.pine-stars{
+  position:absolute;
+  inset:0;
+  background-image:radial-gradient(circle at 20% 24%, rgba(255,255,255,.28) 1px, transparent 2px), radial-gradient(circle at 66% 38%, rgba(255,255,255,.24) 1px, transparent 2px), radial-gradient(circle at 44% 18%, rgba(255,255,255,.16) 1px, transparent 2px);
   opacity:.35;
 }
-.mock-lines{
-  position:absolute; inset:0;
-  background:
-    radial-gradient(circle at 35% 55%, rgba(255,255,255,.16), transparent 45%),
-    radial-gradient(circle at 60% 40%, rgba(255,255,255,.12), transparent 45%);
-  opacity:.65;
+@keyframes seedFade {
+  0%, 20% {opacity:1; transform:translateX(-50%) scale(1);} 
+  35%, 100% {opacity:0; transform:translateX(-50%) scale(.65);} 
 }
-.mock-pin{
-  position:absolute;
-  left:60%;
-  top:52%;
-  width:18px;
-  height:18px;
-  border-radius:999px;
-  background: var(--brand);
-  box-shadow: 0 0 0 8px rgba(47,224,165,.12);
+@keyframes sproutGrow {
+  0%, 22% {opacity:0; transform:translateX(-50%) scale(.2);} 
+  35%, 44% {opacity:1; transform:translateX(-50%) scale(1);} 
+  55%, 100% {opacity:0; transform:translateX(-50%) scale(1.1);} 
+}
+@keyframes trunkRise {
+  0%, 38% {transform:translateX(-50%) scaleY(0);} 
+  58%, 100% {transform:translateX(-50%) scaleY(1);} 
+}
+@keyframes tierOne {
+  0%, 52% {opacity:0; transform:translateX(-50%) scale(.2);} 
+  66%, 100% {opacity:1; transform:translateX(-50%) scale(1);} 
+}
+@keyframes tierTwo {
+  0%, 60% {opacity:0; transform:translateX(-50%) scale(.2);} 
+  74%, 100% {opacity:1; transform:translateX(-50%) scale(1);} 
+}
+@keyframes tierThree {
+  0%, 68% {opacity:0; transform:translateX(-50%) scale(.2);} 
+  82%, 100% {opacity:1; transform:translateX(-50%) scale(1);} 
+}
+@keyframes sunPulse {
+  0%, 100% {transform:scale(1); opacity:.55;} 
+  50% {transform:scale(1.08); opacity:.8;} 
+}
+@media (prefers-reduced-motion: reduce) {
+  .seed, .sprout, .pine-trunk, .pine-tier, .sun { animation:none; }
+  .seed{opacity:0}
+  .sprout{opacity:0}
+  .pine-trunk{transform:translateX(-50%) scaleY(1)}
+  .pine-tier{opacity:1; transform:translateX(-50%) scale(1)}
 }
 
 .section{
