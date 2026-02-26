@@ -357,39 +357,125 @@
   .export-check.dimmed { opacity: 0.4; pointer-events: none; }
   .export-check input[type=checkbox] { accent-color: var(--lime); cursor: pointer; }
 
+  /* ── Mobile bottom bar ───────────────────────────────────────────────── */
+  .mobile-bar {
+    display: none;
+    flex-direction: column;
+    flex-shrink: 0;
+    background: var(--bark);
+    border-top: 2px solid var(--lime);
+    z-index: 1000;
+    padding-bottom: env(safe-area-inset-bottom, 0);
+  }
+  .mob-tools {
+    display: flex;
+    height: 68px;
+  }
+  .mob-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    flex: 1;
+    background: none;
+    border: none;
+    border-top: 2px solid transparent;
+    color: var(--sand);
+    font-family: 'Space Mono', monospace;
+    font-size: 0.5rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    cursor: pointer;
+    padding: 8px 2px;
+    -webkit-tap-highlight-color: transparent;
+    transition: color 0.1s, border-color 0.1s, background 0.1s;
+  }
+  .mob-btn svg { width: 24px; height: 24px; stroke: currentColor; flex-shrink: 0; }
+  .mob-btn.active       { color: var(--lime); border-top-color: var(--lime); }
+  .mob-btn.mob-locate   { color: #64b5f6; }
+  .mob-btn.mob-locate.active { color: #fff; background: #1565c0; border-top-color: #2196f3; }
+
+  /* ── Slide-up More drawer ─────────────────────────────────────────── */
+  .mob-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.55);
+    z-index: 1998;
+    display: none;
+  }
+  .mob-overlay.open { display: block; }
+
+  .mob-drawer {
+    position: fixed;
+    bottom: 0; left: 0; right: 0;
+    background: var(--bark2);
+    border-top: 2px solid var(--lime);
+    z-index: 1999;
+    padding: 18px 16px;
+    padding-bottom: calc(18px + env(safe-area-inset-bottom, 0));
+    transform: translateY(100%);
+    transition: transform 0.22s ease;
+  }
+  .mob-drawer.open { transform: translateY(0); }
+
+  .mob-drawer-title {
+    font-family: 'Syne', sans-serif;
+    font-weight: 800;
+    font-size: 0.72rem;
+    color: var(--lime);
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    margin-bottom: 14px;
+  }
+  .mob-drawer-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+  .mob-drawer-btn {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 14px;
+    background: var(--forest2);
+    border: 1px solid var(--leaf);
+    color: var(--cream);
+    font-family: 'Space Mono', monospace;
+    font-size: 0.65rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+    transition: background 0.1s;
+  }
+  .mob-drawer-btn svg   { width: 16px; height: 16px; flex-shrink: 0; stroke: var(--lime); }
+  .mob-drawer-btn:active { background: var(--moss); }
+  .mob-drawer-btn.full  { grid-column: span 2; }
+  .mob-drawer-btn.danger { border-color: #c0392b; color: #e74c3c; }
+  .mob-drawer-btn.danger svg { stroke: #e74c3c; }
+
   /* ── Mobile responsive ───────────────────────────────────────────────── */
   @media (max-width: 768px) {
-    header { padding: 0 10px; height: 50px; }
-
-    /* Hide subtitle, keep logo compact */
+    /* Minimal header — logo only, max map space */
+    header { padding: 0 16px; height: 46px; }
     .logo span { display: none; }
 
-    /* Toolbar scrolls horizontally; buttons go icon-only */
-    .toolbar {
-      overflow-x: auto;
-      -webkit-overflow-scrolling: touch;
-      flex-shrink: 1;
-      min-width: 0;
-      gap: 3px;
-      padding-right: 4px;
-    }
-    .toolbar::-webkit-scrollbar { display: none; }
-    .tool-btn { padding: 7px 9px; font-size: 0; gap: 0; flex-shrink: 0; }
-    .tool-btn svg { width: 17px; height: 17px; }
-    .sep { margin: 0 1px; }
+    /* Hide desktop toolbar and status bar */
+    .toolbar { display: none; }
+    .status-bar { display: none; }
 
-    /* Cruise panel stretches full width on small screens */
-    .cruise-panel { right: 8px; left: 8px; width: auto; top: 56px; }
+    /* Show mobile bottom bar */
+    .mobile-bar { display: flex; }
 
-    /* Status bar scrolls horizontally */
-    .status-bar { overflow-x: auto; gap: 12px; flex-wrap: nowrap; font-size: 0.6rem; }
-    .status-bar > div { flex-shrink: 0; white-space: nowrap; }
+    /* Cruise panel: full width below header, scrollable if tall */
+    .cruise-panel { right: 8px; left: 8px; width: auto; top: 52px; max-height: calc(100vh - 130px); overflow-y: auto; }
 
-    /* Export modal fills most of screen width */
+    /* Export modal: full width */
     .export-modal { width: calc(100vw - 32px); left: 16px; transform: translateY(-50%); }
 
-    /* Drop overlay starts below the shorter header */
-    .drop-overlay { top: 50px; }
+    /* Drop overlay: between header and mobile bar */
+    .drop-overlay { top: 46px; bottom: 68px; }
   }
 </style>
 </head>
@@ -480,6 +566,60 @@
   <div>Active tool: <span id="active-tool">None</span></div>
   <div>CRS: <span>WGS84 / EPSG:4326</span></div>
   <div id="coords-display"></div>
+</div>
+
+<!-- Mobile bottom toolbar -->
+<div class="mobile-bar">
+  <div class="mob-tools">
+    <button class="mob-btn mob-locate" id="mob-btn-locate" onclick="toggleLocate()">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/><circle cx="12" cy="12" r="7" stroke-opacity="0.4"/></svg>
+      Locate
+    </button>
+    <button class="mob-btn" id="mob-btn-polygon" onclick="startDraw('polygon')">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><polygon points="12,2 22,20 2,20"/></svg>
+      Polygon
+    </button>
+    <button class="mob-btn" id="mob-btn-polyline" onclick="startDraw('polyline')">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><polyline points="2,20 8,8 16,14 22,4"/></svg>
+      Line
+    </button>
+    <button class="mob-btn" id="mob-btn-marker" onclick="startDraw('marker')">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><circle cx="12" cy="10" r="3"/><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/></svg>
+      Point
+    </button>
+    <button class="mob-btn" onclick="openMobileMenu()">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><circle cx="5" cy="12" r="1.5" fill="currentColor"/><circle cx="12" cy="12" r="1.5" fill="currentColor"/><circle cx="19" cy="12" r="1.5" fill="currentColor"/></svg>
+      More
+    </button>
+  </div>
+</div>
+
+<!-- More drawer -->
+<div class="mob-overlay" id="mob-overlay" onclick="closeMobileMenu()"></div>
+<div class="mob-drawer" id="mob-drawer">
+  <div class="mob-drawer-title">More Tools</div>
+  <div class="mob-drawer-grid">
+    <button class="mob-drawer-btn" onclick="closeMobileMenu(); toggleCruisePanel()">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="1.5"><circle cx="5" cy="5" r="1.5" fill="currentColor" stroke="none"/><circle cx="12" cy="5" r="1.5" fill="currentColor" stroke="none"/><circle cx="19" cy="5" r="1.5" fill="currentColor" stroke="none"/><circle cx="5" cy="12" r="1.5" fill="currentColor" stroke="none"/><circle cx="12" cy="12" r="1.5" fill="currentColor" stroke="none"/><circle cx="19" cy="12" r="1.5" fill="currentColor" stroke="none"/><circle cx="5" cy="19" r="1.5" fill="currentColor" stroke="none"/><circle cx="12" cy="19" r="1.5" fill="currentColor" stroke="none"/><circle cx="19" cy="19" r="1.5" fill="currentColor" stroke="none"/></svg>
+      Cruise Grid
+    </button>
+    <button class="mob-drawer-btn" onclick="closeMobileMenu(); toggleEdit()">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+      Edit Shapes
+    </button>
+    <button class="mob-drawer-btn" onclick="closeMobileMenu(); document.getElementById('shp-upload-input').click()">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7,10 12,5 17,10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+      Upload .SHP
+    </button>
+    <button class="mob-drawer-btn" onclick="closeMobileMenu(); exportShapefile()">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7,10 12,15 17,10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+      Export .SHP
+    </button>
+    <button class="mob-drawer-btn full danger" onclick="closeMobileMenu(); clearAll()">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><polyline points="3,6 5,6 21,6"/><path d="M19,6l-1,14H6L5,6"/><path d="M10,11v6"/><path d="M14,11v6"/></svg>
+      Clear All Features
+    </button>
+  </div>
 </div>
 
 <div class="notification" id="notif"></div>
@@ -636,11 +776,17 @@ function updateAcres() {
 // ── Draw tool wrappers ─────────────────────────────────────────────────────
 let currentHandler = null;
 
+function clearToolActive() {
+  document.querySelectorAll('.tool-btn, .mob-btn').forEach(b => b.classList.remove('active'));
+}
+
 function startDraw(type) {
   if (currentHandler) { currentHandler.disable(); currentHandler = null; }
 
-  document.querySelectorAll('.tool-btn').forEach(b => b.classList.remove('active'));
-  document.getElementById('btn-' + (type === 'polyline' ? 'polyline' : type === 'marker' ? 'marker' : 'polygon')).classList.add('active');
+  clearToolActive();
+  document.getElementById('btn-' + type).classList.add('active');
+  const mob = document.getElementById('mob-btn-' + type);
+  if (mob) mob.classList.add('active');
   document.getElementById('active-tool').textContent = type.charAt(0).toUpperCase() + type.slice(1);
 
   const opts = {
@@ -654,7 +800,7 @@ function startDraw(type) {
 
   map.once(L.Draw.Event.CREATED, () => {
     currentHandler = null;
-    document.querySelectorAll('.tool-btn').forEach(b => b.classList.remove('active'));
+    clearToolActive();
     document.getElementById('active-tool').textContent = 'None';
   });
 }
@@ -1384,6 +1530,8 @@ function startLocate() {
   locateActive = true;
   locateFirst  = true;
   document.getElementById('btn-locate').classList.add('active');
+  const ml = document.getElementById('mob-btn-locate');
+  if (ml) ml.classList.add('active');
   document.getElementById('active-tool').textContent = 'Locating…';
   notify('Finding your location…');
   map.locate({ watch: true, setView: false, enableHighAccuracy: true });
@@ -1393,10 +1541,21 @@ function stopLocate() {
   locateActive = false;
   map.stopLocate();
   document.getElementById('btn-locate').classList.remove('active');
+  const ml = document.getElementById('mob-btn-locate');
+  if (ml) ml.classList.remove('active');
   document.getElementById('active-tool').textContent = 'None';
   if (locateLayer) { map.removeLayer(locateLayer); locateLayer = null; }
   locateMarker = null;
   locateRing   = null;
+}
+
+function openMobileMenu() {
+  document.getElementById('mob-drawer').classList.add('open');
+  document.getElementById('mob-overlay').classList.add('open');
+}
+function closeMobileMenu() {
+  document.getElementById('mob-drawer').classList.remove('open');
+  document.getElementById('mob-overlay').classList.remove('open');
 }
 
 map.on('locationfound', e => {
