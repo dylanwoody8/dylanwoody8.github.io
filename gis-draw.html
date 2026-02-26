@@ -1,0 +1,977 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ForestDraw — GIS Sketch Tool</title>
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"/>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.css"/>
+
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;600;800&display=swap');
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --forest: #1a3a2a;
+    --moss: #2d5a3d;
+    --leaf: #4a8c5c;
+    --lime: #8bc34a;
+    --bark: #3d2b1f;
+    --cream: #f5f0e8;
+    --sand: #e8dfc8;
+    --ink: #111;
+  }
+
+  body {
+    font-family: 'Space Mono', monospace;
+    background: var(--forest);
+    color: var(--cream);
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 20px;
+    height: 54px;
+    background: var(--bark);
+    border-bottom: 2px solid var(--lime);
+    flex-shrink: 0;
+    z-index: 1000;
+  }
+
+  .logo {
+    font-family: 'Syne', sans-serif;
+    font-weight: 800;
+    font-size: 1.2rem;
+    letter-spacing: -0.5px;
+    color: var(--lime);
+    text-decoration: none;
+  }
+
+  .logo span { color: var(--cream); font-size: 0.85rem; font-family: 'Space Mono', monospace; font-weight: 400; margin-left: 10px; opacity: 0.7; }
+
+  .toolbar {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+  }
+
+  .tool-btn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 14px;
+    background: var(--moss);
+    border: 1px solid var(--leaf);
+    color: var(--cream);
+    font-family: 'Space Mono', monospace;
+    font-size: 0.72rem;
+    cursor: pointer;
+    transition: all 0.15s;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+  }
+
+  .tool-btn:hover, .tool-btn.active {
+    background: var(--leaf);
+    border-color: var(--lime);
+    color: #fff;
+  }
+
+  .tool-btn svg { width: 14px; height: 14px; flex-shrink: 0; }
+
+  .sep { width: 1px; height: 28px; background: var(--leaf); margin: 0 4px; }
+
+  .export-btn {
+    background: var(--lime);
+    border-color: var(--lime);
+    color: var(--forest);
+    font-weight: 700;
+  }
+
+  .export-btn:hover {
+    background: #a5d65f;
+    border-color: #a5d65f;
+    color: var(--forest);
+  }
+
+  .clear-btn {
+    background: transparent;
+    border-color: #c0392b;
+    color: #e74c3c;
+  }
+  .clear-btn:hover {
+    background: #c0392b;
+    color: #fff;
+    border-color: #c0392b;
+  }
+
+  #map {
+    flex: 1;
+    width: 100%;
+  }
+
+  .status-bar {
+    height: 28px;
+    background: var(--bark);
+    border-top: 1px solid var(--moss);
+    display: flex;
+    align-items: center;
+    padding: 0 16px;
+    gap: 20px;
+    font-size: 0.65rem;
+    color: var(--sand);
+    flex-shrink: 0;
+  }
+
+  .status-bar span { color: var(--lime); }
+
+  /* Override leaflet draw toolbar — hide it, we use our own */
+  .leaflet-draw-toolbar { display: none !important; }
+  .leaflet-draw-actions { display: none !important; }
+
+  /* Custom draw actions that DO appear */
+  .leaflet-draw-actions.leaflet-draw-actions-top { display: flex !important; }
+
+  /* Cruise grid panel */
+  .cruise-panel {
+    position: absolute;
+    right: 60px;
+    top: 70px;
+    width: 240px;
+    background: var(--bark);
+    border: 1px solid var(--leaf);
+    border-top: 3px solid var(--lime);
+    z-index: 1000;
+    padding: 14px;
+    display: none;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .cruise-panel.open { display: flex; }
+  .cruise-panel h3 {
+    font-family: 'Syne', sans-serif;
+    font-size: 0.8rem;
+    font-weight: 800;
+    color: var(--lime);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 2px;
+  }
+  .field-label {
+    font-size: 0.62rem;
+    color: var(--sand);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 3px;
+  }
+  .cruise-input {
+    width: 100%;
+    background: var(--forest);
+    border: 1px solid var(--leaf);
+    color: var(--cream);
+    font-family: 'Space Mono', monospace;
+    font-size: 0.75rem;
+    padding: 6px 8px;
+  }
+  .cruise-input:focus { outline: 1px solid var(--lime); }
+  .cruise-row { display: flex; gap: 8px; }
+  .field-group { display: flex; flex-direction: column; flex: 1; }
+  .cruise-actions { display: flex; gap: 6px; margin-top: 4px; }
+  .cruise-actions button {
+    flex: 1;
+    padding: 7px 4px;
+    font-family: 'Space Mono', monospace;
+    font-size: 0.65rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    cursor: pointer;
+    border: 1px solid var(--leaf);
+    letter-spacing: 0.5px;
+  }
+  .btn-generate { background: var(--lime); color: var(--forest); border-color: var(--lime); }
+  .btn-generate:hover { background: #a5d65f; }
+  .btn-clear-grid { background: transparent; color: #e74c3c; border-color: #c0392b; }
+  .btn-clear-grid:hover { background: #c0392b; color: #fff; }
+  .cruise-info {
+    font-size: 0.62rem;
+    color: var(--sand);
+    border-top: 1px solid var(--moss);
+    padding-top: 8px;
+    margin-top: 2px;
+  }
+  .cruise-info span { color: var(--lime); }
+
+  .notification {
+    position: fixed;
+    bottom: 40px;
+    left: 50%;
+    transform: translateX(-50%) translateY(20px);
+    background: var(--lime);
+    color: var(--forest);
+    font-family: 'Space Mono', monospace;
+    font-size: 0.75rem;
+    font-weight: 700;
+    padding: 10px 20px;
+    opacity: 0;
+    transition: all 0.3s;
+    pointer-events: none;
+    z-index: 9999;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+  .notification.show {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <a class="logo" href="index.html">WoodyForestry<span>/ GIS Draw</span></a>
+  <div class="toolbar">
+    <button class="tool-btn" id="btn-polygon" onclick="startDraw('polygon')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12,2 22,20 2,20"/></svg>
+      Polygon
+    </button>
+    <button class="tool-btn" id="btn-polyline" onclick="startDraw('polyline')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="2,20 8,8 16,14 22,4"/></svg>
+      Line
+    </button>
+    <button class="tool-btn" id="btn-marker" onclick="startDraw('marker')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="10" r="3"/><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/></svg>
+      Point
+    </button>
+    <div class="sep"></div>
+    <button class="tool-btn" id="btn-edit" onclick="toggleEdit()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+      Edit
+    </button>
+    <button class="tool-btn clear-btn" onclick="clearAll()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3,6 5,6 21,6"/><path d="M19,6l-1,14H6L5,6"/><path d="M10,11v6"/><path d="M14,11v6"/></svg>
+      Clear
+    </button>
+    <div class="sep"></div>
+    <button class="tool-btn" id="btn-cruise" onclick="toggleCruisePanel()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="5" cy="5" r="1.5" fill="currentColor"/><circle cx="12" cy="5" r="1.5" fill="currentColor"/><circle cx="19" cy="5" r="1.5" fill="currentColor"/><circle cx="5" cy="12" r="1.5" fill="currentColor"/><circle cx="12" cy="12" r="1.5" fill="currentColor"/><circle cx="19" cy="12" r="1.5" fill="currentColor"/><circle cx="5" cy="19" r="1.5" fill="currentColor"/><circle cx="12" cy="19" r="1.5" fill="currentColor"/><circle cx="19" cy="19" r="1.5" fill="currentColor"/></svg>
+      Cruise Grid
+    </button>
+    <div class="sep"></div>
+    <button class="tool-btn export-btn" onclick="exportShapefile()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7,10 12,15 17,10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+      Export .SHP
+    </button>
+  </div>
+</header>
+
+<!-- Cruise Grid Panel -->
+<div class="cruise-panel" id="cruise-panel">
+  <h3>⊞ Cruise Grid</h3>
+  <div class="field-group">
+    <div class="field-label">Target Polygon</div>
+    <select class="cruise-input" id="cruise-poly-select">
+      <option value="">— Draw a polygon first —</option>
+    </select>
+  </div>
+  <div class="field-label" style="margin-bottom:4px;">Grid Spacing (chains)</div>
+  <div class="cruise-row">
+    <div class="field-group">
+      <div class="field-label">↔ Col (X)</div>
+      <input class="cruise-input" id="cruise-spacing-x" type="number" value="5" min="0.5" step="0.5"/>
+    </div>
+    <div class="field-group">
+      <div class="field-label">↕ Row (Y)</div>
+      <input class="cruise-input" id="cruise-spacing-y" type="number" value="5" min="0.5" step="0.5"/>
+    </div>
+  </div>
+  <div class="field-group">
+    <div class="field-label">Bearing (°)</div>
+    <input class="cruise-input" id="cruise-bearing" type="number" value="0" min="0" max="359" step="1"/>
+  </div>
+  <div class="cruise-actions">
+    <button class="btn-generate" onclick="generateCruiseGrid()">Generate</button>
+    <button class="btn-clear-grid" onclick="clearCruiseGrid()">Clear</button>
+  </div>
+  <div class="cruise-info" id="cruise-info">No grid generated yet.</div>
+</div>
+
+<div id="map"></div>
+
+<div class="status-bar">
+  <div>Features: <span id="feat-count">0</span></div>
+  <div id="acres-display" style="display:none">Stand Area: <span id="acres-val" style="color:var(--lime)">—</span> ac</div>
+  <div>Active tool: <span id="active-tool">None</span></div>
+  <div>CRS: <span>WGS84 / EPSG:4326</span></div>
+  <div id="coords-display"></div>
+</div>
+
+<div class="notification" id="notif"></div>
+
+<!-- Libraries -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.js"></script>
+
+<script>
+// ── Map setup ──────────────────────────────────────────────────────────────
+const map = L.map('map', { zoomControl: true }).setView([35.5, -79.5], 7);
+
+const osm = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+  attribution: '© OpenStreetMap contributors',
+  maxZoom: 19
+});
+
+const satellite = L.tileLayer('https://mt1.google.com/vt/lyrs=s&x={x}&y={y}&z={z}', {
+  attribution: '© Google',
+  maxZoom: 20
+});
+
+const topo = L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', {
+  attribution: '© OpenTopoMap',
+  maxZoom: 17
+});
+
+osm.addTo(map);
+
+// ── NC OneMap Parcels WMS ──────────────────────────────────────────────────
+const ncParcels = L.tileLayer.wms('https://cgia.nc.gov/arcgis/services/Cadastre/NC_Parcels/MapServer/WMSServer', {
+  layers: '0',
+  format: 'image/png',
+  transparent: true,
+  version: '1.3.0',
+  attribution: '© NC OneMap',
+  opacity: 0.6
+});
+
+L.control.layers({
+  'Streets (OSM)': osm,
+  'Satellite': satellite,
+  'Topo': topo
+}, {
+  'NC Parcels (OneMap)': ncParcels
+}, { position: 'topright' }).addTo(map);
+
+map.on('mousemove', e => {
+  document.getElementById('coords-display').textContent =
+    `Lat: ${e.latlng.lat.toFixed(5)}  Lng: ${e.latlng.lng.toFixed(5)}`;
+});
+
+// ── Draw layer ─────────────────────────────────────────────────────────────
+const drawnItems = new L.FeatureGroup();
+map.addLayer(drawnItems);
+
+const drawControl = new L.Control.Draw({
+  edit: { featureGroup: drawnItems },
+  draw: {
+    polygon: { shapeOptions: { color: '#8bc34a', fillOpacity: 0.2 } },
+    polyline: { shapeOptions: { color: '#8bc34a' } },
+    marker: true,
+    rectangle: false,
+    circle: false,
+    circlemarker: false
+  }
+});
+map.addControl(drawControl);
+
+map.on(L.Draw.Event.CREATED, e => {
+  drawnItems.addLayer(e.layer);
+  updateCount();
+  refreshPolySelect();
+  updateAcres();
+  if (e.layer instanceof L.Polygon) {
+    const acres = calcAcres(e.layer);
+    e.layer.bindPopup(`<b>${acres.toFixed(2)} acres</b>`).openPopup();
+  }
+  notify('Feature added');
+});
+
+map.on(L.Draw.Event.EDITED, () => { updateCount(); refreshPolySelect(); updateAcres(); });
+map.on(L.Draw.Event.DELETED, () => { updateCount(); refreshPolySelect(); updateAcres(); });
+
+function updateCount() {
+  document.getElementById('feat-count').textContent = drawnItems.getLayers().length;
+}
+
+// ── Acres calculation ──────────────────────────────────────────────────────
+function calcAcres(layer) {
+  const lls = layer.getLatLngs()[0];
+  // Shoelace formula on projected coords (meters), then convert to acres
+  const R = 6378137;
+  let area = 0;
+  const n = lls.length;
+  for (let i = 0; i < n; i++) {
+    const j = (i + 1) % n;
+    const xi = lls[i].lng * Math.PI / 180 * R * Math.cos(lls[i].lat * Math.PI / 180);
+    const yi = lls[i].lat * Math.PI / 180 * R;
+    const xj = lls[j].lng * Math.PI / 180 * R * Math.cos(lls[j].lat * Math.PI / 180);
+    const yj = lls[j].lat * Math.PI / 180 * R;
+    area += xi * yj - xj * yi;
+  }
+  const sqMeters = Math.abs(area / 2);
+  return sqMeters * 0.000247105; // m² to acres
+}
+
+function updateAcres() {
+  let totalAcres = 0;
+  let polyCount = 0;
+  drawnItems.eachLayer(layer => {
+    if (layer instanceof L.Polygon) {
+      totalAcres += calcAcres(layer);
+      polyCount++;
+    }
+  });
+  const display = document.getElementById('acres-display');
+  const val = document.getElementById('acres-val');
+  if (polyCount > 0) {
+    display.style.display = 'block';
+    val.textContent = totalAcres.toFixed(2) + (polyCount > 1 ? ` (${polyCount} stands)` : '');
+  } else {
+    display.style.display = 'none';
+  }
+}
+
+// ── Draw tool wrappers ─────────────────────────────────────────────────────
+let currentHandler = null;
+
+function startDraw(type) {
+  if (currentHandler) { currentHandler.disable(); currentHandler = null; }
+
+  document.querySelectorAll('.tool-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('btn-' + (type === 'polyline' ? 'polyline' : type === 'marker' ? 'marker' : 'polygon')).classList.add('active');
+  document.getElementById('active-tool').textContent = type.charAt(0).toUpperCase() + type.slice(1);
+
+  const opts = {
+    polygon: () => new L.Draw.Polygon(map, { shapeOptions: { color: '#8bc34a', fillOpacity: 0.2 } }),
+    polyline: () => new L.Draw.Polyline(map, { shapeOptions: { color: '#8bc34a' } }),
+    marker: () => new L.Draw.Marker(map)
+  };
+
+  currentHandler = opts[type]();
+  currentHandler.enable();
+
+  map.once(L.Draw.Event.CREATED, () => {
+    currentHandler = null;
+    document.querySelectorAll('.tool-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById('active-tool').textContent = 'None';
+  });
+}
+
+let editEnabled = false;
+function toggleEdit() {
+  editEnabled = !editEnabled;
+  document.getElementById('btn-edit').classList.toggle('active', editEnabled);
+  document.getElementById('active-tool').textContent = editEnabled ? 'Edit' : 'None';
+  if (editEnabled) {
+    drawControl._toolbars.edit._modes.edit.handler.enable();
+  } else {
+    drawControl._toolbars.edit._modes.edit.handler.disable();
+  }
+}
+
+function clearAll() {
+  if (!drawnItems.getLayers().length) return;
+  if (confirm('Clear all features?')) {
+    drawnItems.clearLayers();
+    updateCount();
+    notify('All features cleared');
+  }
+}
+
+// ── Shapefile export ───────────────────────────────────────────────────────
+// We'll write our own minimal shapefile writer so there are zero external deps
+
+function exportShapefile() {
+  const layers = drawnItems.getLayers();
+  if (!layers.length) { notify('No features to export!'); return; }
+
+  // Separate by geometry type
+  const points = [], lines = [], polygons = [];
+
+  layers.forEach(layer => {
+    if (layer instanceof L.Marker) {
+      points.push({ type: 'Point', coordinates: [layer.getLatLng().lng, layer.getLatLng().lat] });
+    } else if (layer instanceof L.Polyline && !(layer instanceof L.Polygon)) {
+      const lls = layer.getLatLngs();
+      lines.push({ type: 'LineString', coordinates: lls.map(ll => [ll.lng, ll.lat]) });
+    } else if (layer instanceof L.Polygon) {
+      const lls = layer.getLatLngs()[0];
+      const ring = lls.map(ll => [ll.lng, ll.lat]);
+      ring.push(ring[0]); // close ring
+      polygons.push({ type: 'Polygon', coordinates: [ring] });
+    }
+  });
+
+  const zip = new JSZip();
+
+  const prjContent = 'GEOGCS["GCS_WGS_1984",DATUM["D_WGS_1984",SPHEROID["WGS_1984",6378137.0,298.257223563]],PRIMEM["Greenwich",0.0],UNIT["Degree",0.0174532925199433]]';
+
+  if (points.length) {
+    const shp = buildPointShp(points);
+    const shx = buildPointShx(points);
+    const dbf = buildDbf(points.length);
+    zip.file('points.shp', shp);
+    zip.file('points.shx', shx);
+    zip.file('points.dbf', dbf);
+    zip.file('points.prj', prjContent);
+  }
+  if (lines.length) {
+    const shp = buildPolylineShp(lines);
+    const shx = buildPolylineShx(lines);
+    const dbf = buildDbf(lines.length);
+    zip.file('lines.shp', shp);
+    zip.file('lines.shx', shx);
+    zip.file('lines.dbf', dbf);
+    zip.file('lines.prj', prjContent);
+  }
+  if (polygons.length) {
+    const shp = buildPolygonShp(polygons);
+    const shx = buildPolygonShx(polygons);
+    const dbf = buildDbf(polygons.length);
+    zip.file('polygons.shp', shp);
+    zip.file('polygons.shx', shx);
+    zip.file('polygons.dbf', dbf);
+    zip.file('polygons.prj', prjContent);
+  }
+
+  // Add cruise points to export
+  if (cruisePoints.length) {
+    const cruisePtGeoms = cruisePoints.map(p => ({ type: 'Point', coordinates: [p.lng, p.lat], id: p.id }));
+    const shp = buildPointShp(cruisePtGeoms);
+    const shx = buildPointShx(cruisePtGeoms);
+    const dbf = buildCruiseDbf(cruisePoints);
+    zip.file('cruise_points.shp', shp);
+    zip.file('cruise_points.shx', shx);
+    zip.file('cruise_points.dbf', dbf);
+    zip.file('cruise_points.prj', prjContent);
+  }
+
+  zip.generateAsync({ type: 'blob' }).then(blob => {
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'forestdraw_export.zip';
+    a.click();
+    notify('Shapefile exported!');
+  });
+}
+
+// ── Shapefile binary writers ───────────────────────────────────────────────
+
+function writeInt32BE(view, offset, val) { view.setInt32(offset, val, false); }
+function writeInt32LE(view, offset, val) { view.setInt32(offset, val, true); }
+function writeDouble(view, offset, val)  { view.setFloat64(offset, val, true); }
+
+function calcBbox(coords) {
+  let minX=Infinity, minY=Infinity, maxX=-Infinity, maxY=-Infinity;
+  coords.forEach(([x,y]) => { if(x<minX)minX=x; if(y<minY)minY=y; if(x>maxX)maxX=x; if(y>maxY)maxY=y; });
+  return [minX, minY, maxX, maxY];
+}
+
+function buildFileHeader(fileLength, shapeType, bbox) {
+  const buf = new ArrayBuffer(100);
+  const view = new DataView(buf);
+  writeInt32BE(view, 0, 9994);
+  writeInt32BE(view, 24, fileLength); // in 16-bit words
+  writeInt32LE(view, 28, 1000); // version
+  writeInt32LE(view, 32, shapeType);
+  writeDouble(view, 36, bbox[0]);
+  writeDouble(view, 44, bbox[1]);
+  writeDouble(view, 52, bbox[2]);
+  writeDouble(view, 60, bbox[3]);
+  return buf;
+}
+
+// ── POINT shapefile ────────────────────────────────────────────────────────
+function buildPointShp(points) {
+  const recordSize = 8 + 4 + 16; // header + shape type + x,y
+  const fileLen = 100 + points.length * recordSize;
+  const allCoords = points.map(p => p.coordinates);
+  const bbox = calcBbox(allCoords);
+  const buf = new ArrayBuffer(fileLen);
+  const view = new DataView(buf);
+
+  const hdr = new DataView(buildFileHeader(fileLen / 2, 1, bbox));
+  for (let i = 0; i < 100; i++) view.setUint8(i, hdr.getUint8(i));
+
+  let offset = 100;
+  points.forEach((pt, i) => {
+    writeInt32BE(view, offset, i + 1);
+    writeInt32BE(view, offset + 4, (4 + 16) / 2);
+    writeInt32LE(view, offset + 8, 1);
+    writeDouble(view, offset + 12, pt.coordinates[0]);
+    writeDouble(view, offset + 20, pt.coordinates[1]);
+    offset += recordSize;
+  });
+  return buf;
+}
+
+function buildPointShx(points) {
+  const fileLen = 100 + points.length * 8;
+  const allCoords = points.map(p => p.coordinates);
+  const bbox = calcBbox(allCoords);
+  const buf = new ArrayBuffer(fileLen);
+  const view = new DataView(buf);
+  const hdr = new DataView(buildFileHeader(fileLen / 2, 1, bbox));
+  for (let i = 0; i < 100; i++) view.setUint8(i, hdr.getUint8(i));
+  let offset = 100;
+  const recordSize = 8 + 4 + 16;
+  points.forEach((_, i) => {
+    writeInt32BE(view, offset, (100 + i * recordSize) / 2);
+    writeInt32BE(view, offset + 4, (4 + 16) / 2);
+    offset += 8;
+  });
+  return buf;
+}
+
+// ── POLYLINE shapefile ─────────────────────────────────────────────────────
+function buildPolylineShp(lines) {
+  const parts = [];
+  lines.forEach(line => {
+    const pts = line.coordinates;
+    const contentLen = 4 + 32 + 4 + 4 + 4 * 1 + pts.length * 16;
+    parts.push({ pts, contentLen });
+  });
+  const fileLen = 100 + parts.reduce((s, p) => s + 8 + p.contentLen, 0);
+  const allPts = lines.flatMap(l => l.coordinates);
+  const bbox = calcBbox(allPts);
+
+  const buf = new ArrayBuffer(fileLen);
+  const view = new DataView(buf);
+  const hdr = new DataView(buildFileHeader(fileLen / 2, 3, bbox));
+  for (let i = 0; i < 100; i++) view.setUint8(i, hdr.getUint8(i));
+
+  let offset = 100;
+  parts.forEach((p, i) => {
+    const lb = calcBbox(p.pts);
+    writeInt32BE(view, offset, i + 1);
+    writeInt32BE(view, offset + 4, p.contentLen / 2);
+    offset += 8;
+    writeInt32LE(view, offset, 3);
+    writeDouble(view, offset + 4, lb[0]);
+    writeDouble(view, offset + 12, lb[1]);
+    writeDouble(view, offset + 20, lb[2]);
+    writeDouble(view, offset + 28, lb[3]);
+    writeInt32LE(view, offset + 36, 1);
+    writeInt32LE(view, offset + 40, p.pts.length);
+    writeInt32LE(view, offset + 44, 0);
+    offset += 48;
+    p.pts.forEach(([x, y]) => {
+      writeDouble(view, offset, x);
+      writeDouble(view, offset + 8, y);
+      offset += 16;
+    });
+  });
+  return buf;
+}
+
+function buildPolylineShx(lines) {
+  const fileLen = 100 + lines.length * 8;
+  const allPts = lines.flatMap(l => l.coordinates);
+  const bbox = calcBbox(allPts);
+  const buf = new ArrayBuffer(fileLen);
+  const view = new DataView(buf);
+  const hdr = new DataView(buildFileHeader(fileLen / 2, 3, bbox));
+  for (let i = 0; i < 100; i++) view.setUint8(i, hdr.getUint8(i));
+  let offset = 100;
+  let recordOffset = 100;
+  lines.forEach(line => {
+    const contentLen = 4 + 32 + 4 + 4 + 4 + line.coordinates.length * 16;
+    writeInt32BE(view, offset, recordOffset / 2);
+    writeInt32BE(view, offset + 4, contentLen / 2);
+    recordOffset += 8 + contentLen;
+    offset += 8;
+  });
+  return buf;
+}
+
+// ── POLYGON shapefile ──────────────────────────────────────────────────────
+function buildPolygonShp(polygons) {
+  const parts = polygons.map(poly => {
+    const pts = poly.coordinates[0];
+    const contentLen = 4 + 32 + 4 + 4 + 4 * 1 + pts.length * 16;
+    return { pts, contentLen };
+  });
+  const fileLen = 100 + parts.reduce((s, p) => s + 8 + p.contentLen, 0);
+  const allPts = polygons.flatMap(p => p.coordinates[0]);
+  const bbox = calcBbox(allPts);
+
+  const buf = new ArrayBuffer(fileLen);
+  const view = new DataView(buf);
+  const hdr = new DataView(buildFileHeader(fileLen / 2, 5, bbox));
+  for (let i = 0; i < 100; i++) view.setUint8(i, hdr.getUint8(i));
+
+  let offset = 100;
+  parts.forEach((p, i) => {
+    const lb = calcBbox(p.pts);
+    writeInt32BE(view, offset, i + 1);
+    writeInt32BE(view, offset + 4, p.contentLen / 2);
+    offset += 8;
+    writeInt32LE(view, offset, 5);
+    writeDouble(view, offset + 4, lb[0]);
+    writeDouble(view, offset + 12, lb[1]);
+    writeDouble(view, offset + 20, lb[2]);
+    writeDouble(view, offset + 28, lb[3]);
+    writeInt32LE(view, offset + 36, 1);
+    writeInt32LE(view, offset + 40, p.pts.length);
+    writeInt32LE(view, offset + 44, 0);
+    offset += 48;
+    p.pts.forEach(([x, y]) => {
+      writeDouble(view, offset, x);
+      writeDouble(view, offset + 8, y);
+      offset += 16;
+    });
+  });
+  return buf;
+}
+
+function buildPolygonShx(polygons) {
+  const fileLen = 100 + polygons.length * 8;
+  const allPts = polygons.flatMap(p => p.coordinates[0]);
+  const bbox = calcBbox(allPts);
+  const buf = new ArrayBuffer(fileLen);
+  const view = new DataView(buf);
+  const hdr = new DataView(buildFileHeader(fileLen / 2, 5, bbox));
+  for (let i = 0; i < 100; i++) view.setUint8(i, hdr.getUint8(i));
+  let offset = 100;
+  let recordOffset = 100;
+  polygons.forEach(poly => {
+    const contentLen = 4 + 32 + 4 + 4 + 4 + poly.coordinates[0].length * 16;
+    writeInt32BE(view, offset, recordOffset / 2);
+    writeInt32BE(view, offset + 4, contentLen / 2);
+    recordOffset += 8 + contentLen;
+    offset += 8;
+  });
+  return buf;
+}
+
+// ── DBF with PLOT_ID for cruise points ────────────────────────────────────
+function buildCruiseDbf(points) {
+  const headerSize = 32 + 32 + 1;
+  const recordSize = 1 + 10;
+  const totalSize = headerSize + points.length * recordSize;
+  const buf = new ArrayBuffer(totalSize);
+  const view = new DataView(buf);
+  const bytes = new Uint8Array(buf);
+  const enc = new TextEncoder();
+
+  bytes[0] = 3;
+  const now = new Date();
+  bytes[1] = now.getFullYear() - 1900;
+  bytes[2] = now.getMonth() + 1;
+  bytes[3] = now.getDate();
+  view.setInt32(4, points.length, true);
+  view.setInt16(8, headerSize, true);
+  view.setInt16(10, recordSize, true);
+
+  const fName = enc.encode('PLOT_ID   ');
+  for (let i = 0; i < 10; i++) bytes[32 + i] = fName[i];
+  bytes[32 + 11] = 78;
+  bytes[32 + 16] = 10;
+  bytes[32 + 17] = 0;
+  bytes[32 + 32] = 0x0D;
+
+  let offset = headerSize;
+  points.forEach(p => {
+    bytes[offset] = 0x20;
+    const s = String(p.id).padStart(10, ' ');
+    const sb = enc.encode(s);
+    for (let j = 0; j < 10; j++) bytes[offset + 1 + j] = sb[j];
+    offset += recordSize;
+  });
+  return buf;
+}
+
+// ── DBF (minimal, no attributes) ──────────────────────────────────────────
+function buildDbf(count) {
+  // 1 field: FID
+  const headerSize = 32 + 32 + 1; // header + 1 field descriptor + terminator
+  const recordSize = 1 + 10; // deletion flag + FID (10 chars)
+  const totalSize = headerSize + count * recordSize;
+  const buf = new ArrayBuffer(totalSize);
+  const view = new DataView(buf);
+  const bytes = new Uint8Array(buf);
+
+  bytes[0] = 3; // dBASE III
+  const now = new Date();
+  bytes[1] = now.getFullYear() - 1900;
+  bytes[2] = now.getMonth() + 1;
+  bytes[3] = now.getDate();
+  view.setInt32(4, count, true);
+  view.setInt16(8, headerSize, true);
+  view.setInt16(10, recordSize, true);
+
+  // Field descriptor at offset 32
+  const enc = new TextEncoder();
+  const fName = enc.encode('FID       '); // 10 chars
+  for (let i = 0; i < 10; i++) bytes[32 + i] = fName[i];
+  bytes[32 + 11] = 78; // 'N' numeric
+  bytes[32 + 16] = 10; // field length
+  bytes[32 + 17] = 0;  // decimal count
+  bytes[32 + 32] = 0x0D; // header terminator
+
+  let offset = headerSize;
+  for (let i = 0; i < count; i++) {
+    bytes[offset] = 0x20; // not deleted
+    const fidStr = String(i + 1).padStart(10, ' ');
+    const fidBytes = enc.encode(fidStr);
+    for (let j = 0; j < 10; j++) bytes[offset + 1 + j] = fidBytes[j];
+    offset += recordSize;
+  }
+  return buf;
+}
+
+// ── Cruise Grid ────────────────────────────────────────────────────────────
+
+const CHAIN_METERS = 20.1168; // 1 chain = 20.1168 meters
+
+let cruiseLayer = null;
+let cruisePoints = []; // [{lat, lng, id}]
+let polygonLayers = []; // track drawn polygons for select dropdown
+
+function toggleCruisePanel() {
+  const panel = document.getElementById('cruise-panel');
+  const btn = document.getElementById('btn-cruise');
+  panel.classList.toggle('open');
+  btn.classList.toggle('active');
+  refreshPolySelect();
+}
+
+function refreshPolySelect() {
+  const sel = document.getElementById('cruise-poly-select');
+  sel.innerHTML = '';
+  polygonLayers = [];
+  drawnItems.eachLayer(layer => {
+    if (layer instanceof L.Polygon) {
+      polygonLayers.push(layer);
+      const idx = polygonLayers.length;
+      const opt = document.createElement('option');
+      opt.value = idx - 1;
+      opt.textContent = `Stand Polygon ${idx}`;
+      sel.appendChild(opt);
+    }
+  });
+  if (!polygonLayers.length) {
+    const opt = document.createElement('option');
+    opt.value = '';
+    opt.textContent = '— Draw a polygon first —';
+    sel.appendChild(opt);
+  }
+}
+
+function generateCruiseGrid() {
+  const sel = document.getElementById('cruise-poly-select');
+  const spacingX = parseFloat(document.getElementById('cruise-spacing-x').value);
+  const spacingY = parseFloat(document.getElementById('cruise-spacing-y').value);
+  const bearingDeg = parseFloat(document.getElementById('cruise-bearing').value);
+
+  if (sel.value === '' || polygonLayers.length === 0) {
+    notify('Draw a polygon first!'); return;
+  }
+  if (isNaN(spacingX) || spacingX <= 0 || isNaN(spacingY) || spacingY <= 0) {
+    notify('Enter valid chain spacing'); return;
+  }
+
+  const poly = polygonLayers[parseInt(sel.value)];
+  const lls = poly.getLatLngs()[0];
+  const ring = lls.map(ll => [ll.lng, ll.lat]);
+
+  const centerLat = ring.reduce((s, c) => s + c[1], 0) / ring.length;
+  const spacingXm = spacingX * CHAIN_METERS;
+  const spacingYm = spacingY * CHAIN_METERS;
+  const dLng = spacingXm / (111320 * Math.cos(centerLat * Math.PI / 180));
+  const dLat = spacingYm / 111320;
+
+  const theta = bearingDeg * Math.PI / 180;
+
+  const lngs = ring.map(c => c[0]);
+  const lats = ring.map(c => c[1]);
+  const minLng = Math.min(...lngs), maxLng = Math.max(...lngs);
+  const minLat = Math.min(...lats), maxLat = Math.max(...lats);
+  const cLng = (minLng + maxLng) / 2;
+  const cLat = (minLat + maxLat) / 2;
+
+  const diagLat = (maxLat - minLat);
+  const diagLng = (maxLng - minLng);
+  const expand = Math.sqrt(diagLat * diagLat + diagLng * diagLng) * 0.7 + Math.max(dLat, dLng) * 2;
+
+  const stepsLat = Math.ceil((diagLat + expand * 2) / dLat) + 4;
+  const stepsLng = Math.ceil((diagLng + expand * 2) / dLng) + 4;
+
+  const pts = [];
+  for (let i = -stepsLat; i <= stepsLat; i++) {
+    for (let j = -stepsLng; j <= stepsLng; j++) {
+      const dlat0 = i * dLat;
+      const dlng0 = j * dLng;
+      const dlat = dlat0 * Math.cos(theta) - dlng0 * Math.sin(theta) * Math.cos(centerLat * Math.PI / 180);
+      const dlng = dlat0 * Math.sin(theta) / Math.cos(centerLat * Math.PI / 180) + dlng0 * Math.cos(theta);
+      pts.push([cLng + dlng, cLat + dlat]);
+    }
+  }
+
+  const inside = pts.filter(pt => pointInPolygon(pt, ring));
+  if (!inside.length) { notify('No points generated — check spacing/polygon'); return; }
+
+  if (cruiseLayer) map.removeLayer(cruiseLayer);
+  cruiseLayer = L.layerGroup();
+  cruisePoints = [];
+
+  inside.forEach((pt, i) => {
+    const marker = L.circleMarker([pt[1], pt[0]], {
+      radius: 5,
+      color: '#ff6b35',
+      fillColor: '#ff6b35',
+      fillOpacity: 0.9,
+      weight: 1.5
+    });
+    marker.bindTooltip(`Plot ${i + 1}`, { permanent: false, direction: 'top' });
+    cruiseLayer.addLayer(marker);
+    cruisePoints.push({ lng: pt[0], lat: pt[1], id: i + 1 });
+  });
+
+  cruiseLayer.addTo(map);
+
+  document.getElementById('cruise-info').innerHTML =
+    `<span>${inside.length}</span> cruise points<br>Spacing: <span>${spacingX}×${spacingY} ch</span> · Bearing: <span>${bearingDeg}°</span>`;
+
+  notify(`${inside.length} cruise points generated`);
+}
+
+function clearCruiseGrid() {
+  if (cruiseLayer) { map.removeLayer(cruiseLayer); cruiseLayer = null; }
+  cruisePoints = [];
+  document.getElementById('cruise-info').textContent = 'No grid generated yet.';
+  notify('Cruise grid cleared');
+}
+
+// Ray-casting point-in-polygon
+function pointInPolygon([px, py], ring) {
+  let inside = false;
+  for (let i = 0, j = ring.length - 1; i < ring.length; j = i++) {
+    const [xi, yi] = ring[i], [xj, yj] = ring[j];
+    if (((yi > py) !== (yj > py)) && (px < (xj - xi) * (py - yi) / (yj - yi) + xi)) {
+      inside = !inside;
+    }
+  }
+  return inside;
+}
+
+// ── Notification helper ────────────────────────────────────────────────────
+function notify(msg) {
+  const n = document.getElementById('notif');
+  n.textContent = msg;
+  n.classList.add('show');
+  setTimeout(() => n.classList.remove('show'), 2500);
+}
+</script>
+
+<!-- JSZip for bundling the .zip -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+
+</body>
+</html>

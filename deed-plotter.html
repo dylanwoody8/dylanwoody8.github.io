@@ -1,0 +1,770 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Deed Plotter — Woody Forestry</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;600;800&family=Playfair+Display:wght@700;900&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --forest: #0f2318;
+  --forest2: #1a3a2a;
+  --moss: #2d5a3d;
+  --leaf: #4a8c5c;
+  --lime: #8bc34a;
+  --bark: #2a1a0f;
+  --bark2: #3d2b1f;
+  --cream: #f5f0e8;
+  --sand: #e8dfc8;
+  --error: #e74c3c;
+  --warn: #d4a853;
+}
+
+body {
+  font-family: 'Space Mono', monospace;
+  background: var(--forest);
+  color: var(--cream);
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* ── HEADER ──────────────────────────────────────────────────────────────── */
+header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 24px;
+  height: 54px;
+  background: var(--bark2);
+  border-bottom: 2px solid var(--lime);
+  flex-shrink: 0;
+  z-index: 100;
+}
+
+.logo {
+  font-family: 'Playfair Display', serif;
+  font-weight: 900;
+  font-size: 1.1rem;
+  color: var(--lime);
+  text-decoration: none;
+}
+.logo span { color: var(--cream); font-size: 0.85rem; font-family: 'Space Mono', monospace; font-weight: 400; margin-left: 10px; opacity: 0.7; }
+
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.hdr-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  background: var(--moss);
+  border: 1px solid var(--leaf);
+  color: var(--cream);
+  font-family: 'Space Mono', monospace;
+  font-size: 0.68rem;
+  cursor: pointer;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  transition: all 0.15s;
+  text-decoration: none;
+}
+.hdr-btn:hover { background: var(--leaf); border-color: var(--lime); }
+.hdr-btn-plot { background: var(--lime); border-color: var(--lime); color: var(--forest); font-weight: 700; }
+.hdr-btn-plot:hover { background: #a5d65f; }
+.hdr-btn-clear { background: transparent; border-color: #c0392b; color: #e74c3c; }
+.hdr-btn-clear:hover { background: #c0392b; color: #fff; }
+
+/* ── LAYOUT ──────────────────────────────────────────────────────────────── */
+.app-body {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+}
+
+/* ── SIDEBAR ──────────────────────────────────────────────────────────────── */
+.sidebar {
+  width: 320px;
+  flex-shrink: 0;
+  background: var(--bark2);
+  border-right: 1px solid var(--moss);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.sidebar-section {
+  padding: 16px;
+  border-bottom: 1px solid var(--moss);
+}
+
+.sidebar-label {
+  font-size: 0.6rem;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  color: var(--lime);
+  margin-bottom: 8px;
+  font-weight: 700;
+}
+
+.sidebar-hint {
+  font-size: 0.58rem;
+  color: var(--sand);
+  line-height: 1.7;
+  margin-bottom: 10px;
+  opacity: 0.8;
+}
+
+.calls-input {
+  width: 100%;
+  background: var(--forest);
+  border: 1px solid var(--leaf);
+  color: var(--cream);
+  font-family: 'Space Mono', monospace;
+  font-size: 0.75rem;
+  padding: 10px;
+  resize: none;
+  height: 220px;
+  line-height: 1.8;
+}
+.calls-input:focus { outline: 1px solid var(--lime); }
+.calls-input::placeholder { color: rgba(245,240,232,0.3); }
+
+/* Results panel */
+.results-panel {
+  padding: 16px;
+  flex: 1;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.result-card {
+  background: var(--forest2);
+  border: 1px solid var(--moss);
+  padding: 14px;
+}
+
+.result-card.error { border-left: 3px solid var(--error); }
+.result-card.warning { border-left: 3px solid var(--warn); }
+.result-card.success { border-left: 3px solid var(--lime); }
+
+.result-title {
+  font-size: 0.58rem;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  color: var(--sand);
+  margin-bottom: 6px;
+}
+
+.result-value {
+  font-family: 'Syne', sans-serif;
+  font-size: 1.4rem;
+  font-weight: 800;
+  color: var(--lime);
+  line-height: 1;
+}
+.result-value.error-val { color: var(--error); }
+.result-value.warn-val { color: var(--warn); }
+
+.result-sub {
+  font-size: 0.6rem;
+  color: var(--sand);
+  margin-top: 4px;
+  opacity: 0.8;
+}
+
+.call-list {
+  flex: 1;
+  overflow-y: auto;
+}
+
+.call-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 0;
+  border-bottom: 1px solid rgba(45,90,61,0.4);
+  font-size: 0.62rem;
+}
+.call-num {
+  width: 20px;
+  text-align: right;
+  color: var(--leaf);
+  flex-shrink: 0;
+}
+.call-raw { color: var(--lime); flex: 1; }
+.call-dist { color: var(--sand); flex-shrink: 0; }
+.call-err { color: var(--error); font-size: 0.58rem; }
+
+/* ── CANVAS ───────────────────────────────────────────────────────────────── */
+.canvas-area {
+  flex: 1;
+  position: relative;
+  background: var(--forest);
+  overflow: hidden;
+}
+
+#deed-canvas {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.canvas-hint {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+  pointer-events: none;
+  opacity: 0.25;
+}
+
+.canvas-hint svg { width: 64px; height: 64px; margin-bottom: 12px; opacity: 0.5; }
+.canvas-hint p { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 2px; color: var(--sand); }
+
+/* ── STATUS BAR ──────────────────────────────────────────────────────────── */
+.status-bar {
+  height: 28px;
+  background: var(--bark);
+  border-top: 1px solid var(--moss);
+  display: flex;
+  align-items: center;
+  padding: 0 16px;
+  gap: 24px;
+  font-size: 0.62rem;
+  color: var(--sand);
+  flex-shrink: 0;
+}
+.status-bar span { color: var(--lime); }
+
+/* ── NOTIFICATION ─────────────────────────────────────────────────────────── */
+.notification {
+  position: fixed;
+  bottom: 40px;
+  left: 50%;
+  transform: translateX(-50%) translateY(20px);
+  background: var(--lime);
+  color: var(--forest);
+  font-family: 'Space Mono', monospace;
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 10px 20px;
+  opacity: 0;
+  transition: all 0.3s;
+  pointer-events: none;
+  z-index: 9999;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+.notification.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+/* Format guide modal */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.7);
+  z-index: 200;
+  display: none;
+  align-items: center;
+  justify-content: center;
+}
+.modal-overlay.open { display: flex; }
+.modal {
+  background: var(--bark2);
+  border: 1px solid var(--leaf);
+  border-top: 3px solid var(--lime);
+  padding: 32px;
+  max-width: 520px;
+  width: 90%;
+  max-height: 80vh;
+  overflow-y: auto;
+}
+.modal h3 {
+  font-family: 'Syne', sans-serif;
+  font-size: 0.9rem;
+  font-weight: 800;
+  color: var(--lime);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 20px;
+}
+.modal p, .modal li {
+  font-size: 0.72rem;
+  line-height: 1.9;
+  color: var(--sand);
+  margin-bottom: 8px;
+}
+.modal code {
+  background: var(--forest);
+  border: 1px solid var(--moss);
+  padding: 2px 6px;
+  color: var(--lime);
+  font-family: 'Space Mono', monospace;
+  font-size: 0.68rem;
+}
+.modal ul { padding-left: 16px; }
+.modal-close {
+  margin-top: 20px;
+  padding: 8px 20px;
+  background: var(--lime);
+  border: none;
+  color: var(--forest);
+  font-family: 'Space Mono', monospace;
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+</style>
+</head>
+<body>
+
+<header>
+  <a class="logo" href="index.html">WoodyForestry<span>/ Deed Plotter</span></a>
+  <div class="header-right">
+    <button class="hdr-btn" onclick="document.getElementById('format-modal').classList.add('open')">
+      ? Format Guide
+    </button>
+    <button class="hdr-btn hdr-btn-clear" onclick="clearAll()">Clear</button>
+    <button class="hdr-btn hdr-btn-plot" onclick="plotCalls()">▶ Plot Tract</button>
+  </div>
+</header>
+
+<div class="app-body">
+  <!-- Sidebar -->
+  <div class="sidebar">
+    <div class="sidebar-section">
+      <div class="sidebar-label">Deed Calls</div>
+      <div class="sidebar-hint">Enter one call per line. Example: <code style="color:var(--lime);font-size:0.65rem">N45.30W 10c</code></div>
+      <textarea class="calls-input" id="calls-input" placeholder="N29.41.45W 2481.345F&#10;N59E 300y&#10;S29.20E 300v&#10;S0E 1500F" spellcheck="false"></textarea>
+    </div>
+
+    <div class="results-panel" id="results-panel">
+      <div style="font-size:0.65rem;color:var(--sand);opacity:0.5;text-align:center;padding:20px 0;">Enter calls above and click Plot Tract</div>
+    </div>
+  </div>
+
+  <!-- Canvas -->
+  <div class="canvas-area">
+    <canvas id="deed-canvas"></canvas>
+    <div class="canvas-hint" id="canvas-hint">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polygon points="12,2 22,20 2,20"/></svg>
+      <p>Tract will appear here</p>
+    </div>
+  </div>
+</div>
+
+<div class="status-bar">
+  <div>Calls: <span id="call-count">0</span></div>
+  <div>Acres: <span id="acres-display">—</span></div>
+  <div>Closure: <span id="closure-display">—</span></div>
+  <div>Perimeter: <span id="perim-display">—</span> ft</div>
+</div>
+
+<div class="notification" id="notif"></div>
+
+<!-- Format guide modal -->
+<div class="modal-overlay" id="format-modal" onclick="if(event.target===this)this.classList.remove('open')">
+  <div class="modal">
+    <h3>Deed Call Format</h3>
+    <p>Each call goes on its own line: <code>BEARING DISTANCE</code></p>
+    <p><strong style="color:var(--lime)">Bearing formats:</strong></p>
+    <ul>
+      <li><code>N45E</code> — degrees only</li>
+      <li><code>N45.30E</code> — degrees and minutes</li>
+      <li><code>N45.30.15E</code> — degrees, minutes, seconds</li>
+      <li><code>N</code>, <code>S</code>, <code>E</code>, <code>W</code> — cardinal directions</li>
+      <li><code>NE</code>, <code>SW</code>, etc. — intercardinal</li>
+    </ul>
+    <p style="margin-top:12px"><strong style="color:var(--lime)">Distance units:</strong></p>
+    <ul>
+      <li><code>F</code> or no unit — feet</li>
+      <li><code>C</code> — chains (66 ft)</li>
+      <li><code>Y</code> — yards</li>
+      <li><code>R</code> or <code>P</code> — rods/poles (16.5 ft)</li>
+      <li><code>V</code> — varas (33⅓ inches)</li>
+      <li><code>L</code> — links (7.92 inches)</li>
+    </ul>
+    <p style="margin-top:12px"><strong style="color:var(--lime)">Examples:</strong></p>
+    <ul>
+      <li><code>N29.41.45W 2481.345F</code></li>
+      <li><code>S45E 10C</code></li>
+      <li><code>N30.15W 200y</code></li>
+    </ul>
+    <button class="modal-close" onclick="document.getElementById('format-modal').classList.remove('open')">Got It</button>
+  </div>
+</div>
+
+<script>
+// ── UNIT CONVERSIONS TO FEET ───────────────────────────────────────────────
+const UNITS = { f: 1, c: 66, y: 3, r: 16.5, p: 16.5, v: 33.333/12, l: 7.92/12 };
+
+// ── PARSE A SINGLE DEED CALL ───────────────────────────────────────────────
+function parseCall(raw) {
+  const s = raw.trim().toUpperCase();
+  if (!s) return null;
+
+  // Cardinal / intercardinal shortcuts
+  const cardinals = { 'N': 0, 'NE': 45, 'E': 90, 'SE': 135, 'S': 180, 'SW': 225, 'W': 270, 'NW': 315 };
+
+  // Try full metes & bounds: bearing + distance
+  // Bearing: N/S [deg[.min[.sec]]] E/W  or cardinal
+  // Distance: number + optional unit
+  const re = /^([NS]?)(\d+(?:\.\d+(?:\.\d+)?)?)?([EW]?)\s+(\d+(?:\.\d+)?)([FCYRPVL]?)$/;
+  const m = s.match(re);
+
+  if (m) {
+    const [, ns, degStr, ew, distStr, unit] = m;
+    const distFt = parseFloat(distStr) * (UNITS[unit.toLowerCase() || 'f'] || 1);
+
+    let azimuth;
+    if (!ns && !ew && !degStr) return { error: 'Invalid bearing' };
+
+    if (!ns && !ew) {
+      // might be cardinal
+      if (cardinals[s.split(' ')[0]] !== undefined) {
+        azimuth = cardinals[s.split(' ')[0]];
+      } else return { error: 'Invalid bearing' };
+    } else {
+      // Parse deg.min.sec
+      let deg = 0;
+      if (degStr) {
+        const parts = degStr.split('.');
+        deg = parseFloat(parts[0] || 0);
+        const mins = parseFloat(parts[1] || 0);
+        const secs = parseFloat(parts[2] || 0);
+        deg += mins / 60 + secs / 3600;
+      }
+
+      // Convert quadrant bearing to azimuth
+      if (ns === 'N' && ew === 'E') azimuth = deg;
+      else if (ns === 'N' && ew === 'W') azimuth = 360 - deg;
+      else if (ns === 'S' && ew === 'E') azimuth = 180 - deg;
+      else if (ns === 'S' && ew === 'W') azimuth = 180 + deg;
+      else if (ns === 'N' && !ew) azimuth = 0;
+      else if (ns === 'S' && !ew) azimuth = 180;
+      else if (!ns && ew === 'E') azimuth = 90;
+      else if (!ns && ew === 'W') azimuth = 270;
+      else azimuth = deg;
+    }
+
+    const radians = azimuth * Math.PI / 180;
+    const dx = distFt * Math.sin(radians);
+    const dy = distFt * Math.cos(radians);
+    return { raw: raw.trim(), azimuth, distFt, dx, dy };
+  }
+
+  // Try cardinal shorthand with distance
+  const cardRe = /^(N|NE|E|SE|S|SW|W|NW)\s+(\d+(?:\.\d+)?)([FCYRPVL]?)$/;
+  const cm = s.match(cardRe);
+  if (cm) {
+    const azimuth = cardinals[cm[1]];
+    const distFt = parseFloat(cm[2]) * (UNITS[cm[3].toLowerCase() || 'f'] || 1);
+    const radians = azimuth * Math.PI / 180;
+    return { raw: raw.trim(), azimuth, distFt, dx: distFt * Math.sin(radians), dy: distFt * Math.cos(radians) };
+  }
+
+  return { error: `Cannot parse: "${raw.trim()}"` };
+}
+
+// ── MAIN PLOT FUNCTION ─────────────────────────────────────────────────────
+function plotCalls() {
+  const text = document.getElementById('calls-input').value;
+  const lines = text.split('\n').map(l => l.trim()).filter(l => l);
+
+  if (!lines.length) { notify('Enter some deed calls first'); return; }
+
+  const parsed = lines.map(parseCall);
+  const errors = parsed.filter(p => p && p.error);
+  const valid = parsed.filter(p => p && !p.error);
+
+  // Build points
+  const points = [{ x: 0, y: 0 }];
+  valid.forEach(c => {
+    const last = points[points.length - 1];
+    points.push({ x: last.x + c.dx, y: last.y - c.dy }); // y flipped for canvas
+  });
+
+  // Closure
+  const closure = Math.sqrt(points[points.length-1].x**2 + points[points.length-1].y**2);
+  const perimFt = valid.reduce((s, c) => s + c.distFt, 0);
+  const closurePct = perimFt > 0 ? (closure / perimFt) * 100 : 0;
+
+  // Area via shoelace (in sq ft → acres)
+  let area = 0;
+  for (let i = 0; i < points.length - 1; i++) {
+    area += points[i].x * points[i+1].y - points[i+1].x * points[i].y;
+  }
+  const sqFt = Math.abs(area / 2);
+  const acres = sqFt / 43560;
+
+  // Update status bar
+  document.getElementById('call-count').textContent = valid.length;
+  document.getElementById('acres-display').textContent = acres.toFixed(3) + ' ac';
+  document.getElementById('closure-display').textContent = closure.toFixed(2) + ' ft (' + closurePct.toFixed(2) + '%)';
+  document.getElementById('perim-display').textContent = perimFt.toFixed(0);
+
+  // Results panel
+  renderResults(valid, errors, acres, closure, closurePct, perimFt);
+
+  // Draw canvas
+  drawCanvas(points, closure, closurePct);
+
+  document.getElementById('canvas-hint').style.display = 'none';
+  notify(`Plotted ${valid.length} calls — ${acres.toFixed(2)} acres`);
+}
+
+function renderResults(valid, errors, acres, closure, closurePct, perimFt) {
+  const panel = document.getElementById('results-panel');
+  const closureClass = closurePct > 10 ? 'error' : closurePct > 1 ? 'warning' : 'success';
+  const closureValClass = closurePct > 10 ? 'error-val' : closurePct > 1 ? 'warn-val' : '';
+
+  let html = `
+    <div class="result-card success">
+      <div class="result-title">Area</div>
+      <div class="result-value">${acres.toFixed(3)}</div>
+      <div class="result-sub">acres &nbsp;·&nbsp; ${(acres * 43560).toFixed(0)} sq ft</div>
+    </div>
+    <div class="result-card ${closureClass}">
+      <div class="result-title">Closure Error</div>
+      <div class="result-value ${closureValClass}">${closurePct.toFixed(3)}%</div>
+      <div class="result-sub">${closure.toFixed(2)} ft &nbsp;·&nbsp; ${closurePct < 1 ? '✓ Good' : closurePct < 5 ? '⚠ Check calls' : '✗ Poor closure'}</div>
+    </div>
+    <div class="result-card">
+      <div class="result-title">Perimeter</div>
+      <div class="result-value" style="font-size:1.1rem">${perimFt.toFixed(0)} ft</div>
+      <div class="result-sub">${(perimFt / 66).toFixed(2)} chains &nbsp;·&nbsp; ${(perimFt / 5280).toFixed(3)} mi</div>
+    </div>`;
+
+  if (errors.length) {
+    html += `<div class="result-card error"><div class="result-title">Parse Errors (${errors.length})</div>`;
+    errors.forEach(e => { html += `<div class="call-err" style="margin-top:4px">${e.error}</div>`; });
+    html += `</div>`;
+  }
+
+  html += `<div class="sidebar-label" style="padding-top:8px">Call Breakdown</div>`;
+  valid.forEach((c, i) => {
+    const bear = formatBearing(c.azimuth);
+    html += `<div class="call-row">
+      <div class="call-num">${i+1}</div>
+      <div class="call-raw">${bear}</div>
+      <div class="call-dist">${c.distFt.toFixed(1)} ft</div>
+    </div>`;
+  });
+
+  panel.innerHTML = html;
+}
+
+function formatBearing(az) {
+  az = ((az % 360) + 360) % 360;
+  let q, ang;
+  if (az <= 90) { q = ['N', 'E']; ang = az; }
+  else if (az <= 180) { q = ['S', 'E']; ang = 180 - az; }
+  else if (az <= 270) { q = ['S', 'W']; ang = az - 180; }
+  else { q = ['N', 'W']; ang = 360 - az; }
+  const d = Math.floor(ang);
+  const m = Math.floor((ang - d) * 60);
+  const s = Math.round(((ang - d) * 60 - m) * 60);
+  return `${q[0]}${d}°${m}'${s}"${q[1]}`;
+}
+
+// ── CANVAS DRAWING ─────────────────────────────────────────────────────────
+function drawCanvas(points, closure, closurePct) {
+  const canvas = document.getElementById('deed-canvas');
+  const ctx = canvas.getContext('2d');
+  canvas.width = canvas.offsetWidth;
+  canvas.height = canvas.offsetHeight;
+
+  const W = canvas.width, H = canvas.height;
+
+  // Find bounds
+  const xs = points.map(p => p.x);
+  const ys = points.map(p => p.y);
+  const minX = Math.min(...xs), maxX = Math.max(...xs);
+  const minY = Math.min(...ys), maxY = Math.max(...ys);
+  const rangeX = maxX - minX || 1, rangeY = maxY - minY || 1;
+
+  const pad = 60;
+  const scale = Math.min((W - pad*2) / rangeX, (H - pad*2) / rangeY);
+  const offX = pad + (W - pad*2 - rangeX * scale) / 2 - minX * scale;
+  const offY = pad + (H - pad*2 - rangeY * scale) / 2 - minY * scale;
+
+  const tx = x => x * scale + offX;
+  const ty = y => y * scale + offY;
+
+  // Clear
+  ctx.clearRect(0, 0, W, H);
+
+  // Grid
+  ctx.strokeStyle = 'rgba(45,90,61,0.2)';
+  ctx.lineWidth = 1;
+  const gridStep = Math.pow(10, Math.floor(Math.log10(rangeX / 4)));
+  const gx0 = Math.floor(minX / gridStep) * gridStep;
+  for (let gx = gx0; gx <= maxX + gridStep; gx += gridStep) {
+    ctx.beginPath(); ctx.moveTo(tx(gx), 0); ctx.lineTo(tx(gx), H); ctx.stroke();
+  }
+  const gy0 = Math.floor(minY / gridStep) * gridStep;
+  for (let gy = gy0; gy <= maxY + gridStep; gy += gridStep) {
+    ctx.beginPath(); ctx.moveTo(0, ty(gy)); ctx.lineTo(W, ty(gy)); ctx.stroke();
+  }
+
+  // Fill polygon (excluding closure line)
+  ctx.beginPath();
+  ctx.moveTo(tx(points[0].x), ty(points[0].y));
+  for (let i = 1; i < points.length - 1; i++) {
+    ctx.lineTo(tx(points[i].x), ty(points[i].y));
+  }
+  ctx.closePath();
+  ctx.fillStyle = 'rgba(139,195,74,0.08)';
+  ctx.fill();
+
+  // Draw deed calls
+  ctx.lineWidth = 2;
+  ctx.strokeStyle = '#8bc34a';
+  ctx.beginPath();
+  ctx.moveTo(tx(points[0].x), ty(points[0].y));
+  for (let i = 1; i < points.length - 1; i++) {
+    ctx.lineTo(tx(points[i].x), ty(points[i].y));
+  }
+  ctx.stroke();
+
+  // Closure line
+  const lastPt = points[points.length - 1];
+  if (closure > 0.01) {
+    ctx.lineWidth = 2;
+    ctx.strokeStyle = closurePct > 1 ? '#e74c3c' : '#8bc34a';
+    ctx.setLineDash([8, 4]);
+    ctx.beginPath();
+    ctx.moveTo(tx(lastPt.x), ty(lastPt.y));
+    ctx.lineTo(tx(points[0].x), ty(points[0].y));
+    ctx.stroke();
+    ctx.setLineDash([]);
+  } else {
+    // Close cleanly
+    ctx.lineWidth = 2;
+    ctx.strokeStyle = '#8bc34a';
+    ctx.beginPath();
+    ctx.moveTo(tx(lastPt.x), ty(lastPt.y));
+    ctx.lineTo(tx(points[0].x), ty(points[0].y));
+    ctx.stroke();
+  }
+
+  // Direction arrows on each call
+  for (let i = 0; i < points.length - 1; i++) {
+    const p1 = points[i], p2 = points[i+1];
+    const mx = (tx(p1.x) + tx(p2.x)) / 2;
+    const my = (ty(p1.y) + ty(p2.y)) / 2;
+    const angle = Math.atan2(ty(p2.y) - ty(p1.y), tx(p2.x) - tx(p1.x));
+    const isLast = (i === points.length - 2);
+    ctx.fillStyle = (isLast && closure > 0.01) ? '#e74c3c' : '#8bc34a';
+    ctx.beginPath();
+    ctx.save();
+    ctx.translate(mx, my);
+    ctx.rotate(angle);
+    ctx.moveTo(6, 0); ctx.lineTo(-5, 4); ctx.lineTo(-5, -4);
+    ctx.closePath(); ctx.fill();
+    ctx.restore();
+  }
+
+  // POB marker (small square)
+  ctx.fillStyle = '#8bc34a';
+  const pobSize = 8;
+  ctx.fillRect(tx(points[0].x) - pobSize/2, ty(points[0].y) - pobSize/2, pobSize, pobSize);
+
+  // POB label
+  ctx.fillStyle = 'rgba(139,195,74,0.9)';
+  ctx.font = '600 11px Space Mono, monospace';
+  ctx.fillText('POB', tx(points[0].x) + 8, ty(points[0].y) - 6);
+
+  // Call number labels
+  ctx.font = '10px Space Mono, monospace';
+  for (let i = 0; i < points.length - 1; i++) {
+    const p1 = points[i], p2 = points[i === points.length - 2 ? 0 : i+1];
+    const mx = (tx(p1.x) + tx(p2.x)) / 2;
+    const my = (ty(p1.y) + ty(p2.y)) / 2;
+    ctx.fillStyle = 'rgba(245,240,232,0.6)';
+    ctx.fillText(i+1, mx + 5, my - 5);
+  }
+
+  // Compass rose
+  drawCompass(ctx, W - 50, 50, 28);
+
+  // Scale bar
+  drawScaleBar(ctx, scale, pad, H - pad + 20);
+}
+
+function drawCompass(ctx, cx, cy, r) {
+  ctx.save();
+  ctx.strokeStyle = 'rgba(139,195,74,0.5)';
+  ctx.fillStyle = 'rgba(139,195,74,0.5)';
+  ctx.lineWidth = 1;
+  ctx.beginPath(); ctx.moveTo(cx, cy - r); ctx.lineTo(cx, cy + r); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(cx - r, cy); ctx.lineTo(cx + r, cy); ctx.stroke();
+  ctx.font = 'bold 11px Space Mono';
+  ctx.fillStyle = 'rgba(139,195,74,0.8)';
+  ctx.textAlign = 'center';
+  ctx.fillText('N', cx, cy - r - 5);
+  ctx.restore();
+}
+
+function drawScaleBar(ctx, scale, x, y) {
+  // Find a nice round number for scale bar
+  const niceDistFt = [50,100,200,500,1000,2000,5000].find(d => d * scale > 60) || 100;
+  const barW = niceDistFt * scale;
+  ctx.save();
+  ctx.strokeStyle = 'rgba(139,195,74,0.6)';
+  ctx.fillStyle = 'rgba(139,195,74,0.6)';
+  ctx.lineWidth = 2;
+  ctx.font = '9px Space Mono';
+  ctx.textAlign = 'center';
+  ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(x + barW, y); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(x, y-4); ctx.lineTo(x, y+4); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(x+barW, y-4); ctx.lineTo(x+barW, y+4); ctx.stroke();
+  ctx.fillText(`${niceDistFt} ft`, x + barW/2, y + 14);
+  ctx.restore();
+}
+
+function clearAll() {
+  document.getElementById('calls-input').value = '';
+  document.getElementById('results-panel').innerHTML = '<div style="font-size:0.65rem;color:var(--sand);opacity:0.5;text-align:center;padding:20px 0;">Enter calls above and click Plot Tract</div>';
+  document.getElementById('canvas-hint').style.display = 'block';
+  const canvas = document.getElementById('deed-canvas');
+  const ctx = canvas.getContext('2d');
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  document.getElementById('call-count').textContent = '0';
+  document.getElementById('acres-display').textContent = '—';
+  document.getElementById('closure-display').textContent = '—';
+  document.getElementById('perim-display').textContent = '—';
+  notify('Cleared');
+}
+
+function notify(msg) {
+  const n = document.getElementById('notif');
+  n.textContent = msg;
+  n.classList.add('show');
+  setTimeout(() => n.classList.remove('show'), 2500);
+}
+
+// Resize canvas on window resize
+window.addEventListener('resize', () => {
+  const canvas = document.getElementById('deed-canvas');
+  if (canvas.dataset.hasPlot) plotCalls();
+});
+
+// Allow Ctrl+Enter to plot
+document.getElementById('calls-input').addEventListener('keydown', e => {
+  if (e.key === 'Enter' && e.ctrlKey) plotCalls();
+});
+</script>
+</body>
+</html>
