@@ -642,7 +642,7 @@
   </div>
 </div>
 
-<input type="file" id="shp-upload-input" accept=".shp,.dbf,.shx,.zip" multiple style="display:none"
+<input type="file" id="shp-upload-input" accept=".shp,.dbf,.shx,.prj,.zip" multiple style="display:none"
   onchange="handleShpFiles(this.files); this.value='';">
 
 <div class="drop-overlay" id="drop-overlay">
@@ -1350,20 +1350,22 @@ function handleShpFiles(files) {
   const fileMap = {};
   Array.from(files).forEach(f => { fileMap[f.name.split('.').pop().toLowerCase()] = f; });
 
-  // Zip bundle (.zip containing .shp + .dbf)
+  // Zip bundle (.zip containing .shp + .dbf + optional .prj)
   if (fileMap.zip) {
     JSZip.loadAsync(fileMap.zip).then(zip => {
-      let shpEntry = null, dbfEntry = null, name = 'upload';
+      let shpEntry = null, dbfEntry = null, prjEntry = null, name = 'upload';
       zip.forEach((path, entry) => {
         const ext = path.split('.').pop().toLowerCase();
         if (ext === 'shp') { shpEntry = entry; name = path.split('/').pop().replace(/\.shp$/i, ''); }
         if (ext === 'dbf') dbfEntry = entry;
+        if (ext === 'prj') prjEntry = entry;
       });
       if (!shpEntry) { notify('No .shp found in zip'); return; }
       Promise.all([
         shpEntry.async('arraybuffer'),
-        dbfEntry ? dbfEntry.async('arraybuffer') : Promise.resolve(null)
-      ]).then(([s, d]) => loadShpLayer(s, d, name));
+        dbfEntry ? dbfEntry.async('arraybuffer') : Promise.resolve(null),
+        prjEntry ? prjEntry.async('string') : Promise.resolve(null)
+      ]).then(([s, d, p]) => loadShpLayer(s, d, name, p));
     }).catch(() => notify('Error reading zip'));
     return;
   }
@@ -1372,13 +1374,23 @@ function handleShpFiles(files) {
   if (!fileMap.shp) { notify('Select a .shp file (or .zip)'); return; }
   const name = fileMap.shp.name.replace(/\.shp$/i, '');
   const readBuf = f => new Promise(res => { const r = new FileReader(); r.onload = e => res(e.target.result); r.readAsArrayBuffer(f); });
+  const readTxt = f => new Promise(res => { const r = new FileReader(); r.onload = e => res(e.target.result); r.readAsText(f); });
   Promise.all([
     readBuf(fileMap.shp),
-    fileMap.dbf ? readBuf(fileMap.dbf) : Promise.resolve(null)
-  ]).then(([s, d]) => loadShpLayer(s, d, name));
+    fileMap.dbf ? readBuf(fileMap.dbf) : Promise.resolve(null),
+    fileMap.prj ? readTxt(fileMap.prj) : Promise.resolve(null)
+  ]).then(([s, d, p]) => loadShpLayer(s, d, name, p));
 }
 
-function loadShpLayer(shpBuf, dbfBuf, name) {
+function reprojectCoords(coords, fromProj) {
+  if (typeof coords[0] === 'number') {
+    const [x, y] = proj4(fromProj, 'WGS84', [coords[0], coords[1]]);
+    return [x, y];
+  }
+  return coords.map(c => reprojectCoords(c, fromProj));
+}
+
+function loadShpLayer(shpBuf, dbfBuf, name, prjWkt) {
   let features;
   try { features = readShpFeatures(shpBuf); }
   catch(e) { notify('Invalid shapefile'); return; }
@@ -1389,6 +1401,16 @@ function loadShpLayer(shpBuf, dbfBuf, name) {
       const attrs = readDbfRecords(dbfBuf);
       features.forEach((f, i) => { if (attrs[i]) f.properties = attrs[i]; });
     } catch(e) {}
+  }
+
+  // Reproject from source CRS to WGS84 if .prj was provided
+  if (prjWkt && typeof proj4 !== 'undefined') {
+    try {
+      features = features.map(f => f.geometry
+        ? { ...f, geometry: { ...f.geometry, coordinates: reprojectCoords(f.geometry.coordinates, prjWkt) } }
+        : f
+      );
+    } catch(e) { console.warn('[SHP] reprojection failed:', e); notify('Warning: could not reproject coordinates'); }
   }
 
   const layer = L.geoJSON({ type: 'FeatureCollection', features }, {
@@ -1444,13 +1466,13 @@ function readShpFeatures(buf) {
     if (off + contentLen > fileLen) break;
     const t = v.getInt32(off, true);
 
-    if (t === 1) { // Point
+    if (t === 1 || t === 11 || t === 21) { // Point / PointZ / PointM
       features.push({
         type: 'Feature',
         geometry: { type: 'Point', coordinates: [v.getFloat64(off+4,true), v.getFloat64(off+12,true)] },
         properties: {}
       });
-    } else if (t === 3 || t === 5) { // Polyline or Polygon
+    } else if (t === 3 || t === 5 || t === 13 || t === 15 || t === 23 || t === 25) { // Polyline/Polygon + Z/M variants
       const nParts = v.getInt32(off+36, true);
       const nPts   = v.getInt32(off+40, true);
       const parts  = Array.from({ length: nParts }, (_, i) => v.getInt32(off+44+i*4, true));
@@ -1615,6 +1637,8 @@ function notify(msg) {
 
 <!-- JSZip for bundling the .zip -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<!-- proj4js for reprojecting shapefiles in non-WGS84 CRS -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/proj4js/2.9.0/proj4.js"></script>
 
 </body>
 </html>
