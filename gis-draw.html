@@ -677,7 +677,7 @@ const topo = L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', {
 osm.addTo(map);
 
 // ── NC OneMap Parcels WMS ──────────────────────────────────────────────────
-const ncParcels = L.tileLayer.wms('https://cgia.nc.gov/arcgis/services/Cadastre/NC_Parcels/MapServer/WMSServer', {
+const ncParcels = L.tileLayer.wms('https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/WMSServer', {
   layers: '0',
   format: 'image/png',
   transparent: true,
