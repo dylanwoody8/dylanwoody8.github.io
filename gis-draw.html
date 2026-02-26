@@ -231,6 +231,49 @@
     opacity: 1;
     transform: translateX(-50%) translateY(0);
   }
+
+  .upload-btn {
+    background: transparent;
+    border-color: var(--leaf);
+    color: var(--sand);
+  }
+  .upload-btn:hover {
+    background: var(--leaf);
+    border-color: var(--lime);
+    color: #fff;
+  }
+
+  .drop-overlay {
+    position: absolute;
+    top: 54px;
+    left: 0;
+    right: 0;
+    bottom: 28px;
+    background: rgba(15, 35, 24, 0.88);
+    border: 4px dashed var(--lime);
+    z-index: 2000;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    gap: 14px;
+    pointer-events: none;
+  }
+  .drop-overlay.active { display: flex; }
+  .drop-overlay svg { width: 52px; height: 52px; stroke: var(--lime); opacity: 0.9; }
+  .drop-overlay p {
+    font-family: 'Syne', sans-serif;
+    font-weight: 800;
+    font-size: 1.5rem;
+    color: var(--lime);
+    letter-spacing: -0.5px;
+  }
+  .drop-overlay small {
+    font-size: 0.7rem;
+    color: var(--sand);
+    opacity: 0.7;
+    letter-spacing: 0.5px;
+  }
 </style>
 </head>
 <body>
@@ -265,6 +308,10 @@
       Cruise Grid
     </button>
     <div class="sep"></div>
+    <button class="tool-btn upload-btn" onclick="document.getElementById('shp-upload-input').click()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7,10 12,5 17,10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+      Upload .SHP
+    </button>
     <button class="tool-btn export-btn" onclick="exportShapefile()">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7,10 12,15 17,10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
       Export .SHP
@@ -315,6 +362,15 @@
 
 <div class="notification" id="notif"></div>
 
+<input type="file" id="shp-upload-input" accept=".shp,.dbf,.shx,.zip" multiple style="display:none"
+  onchange="handleShpFiles(this.files); this.value='';">
+
+<div class="drop-overlay" id="drop-overlay">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7,10 12,5 17,10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+  <p>Drop Shapefile Here</p>
+  <small>.shp + .dbf (+ .shx)&nbsp;&nbsp;or&nbsp;&nbsp;.zip</small>
+</div>
+
 <!-- Libraries -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.js"></script>
@@ -350,7 +406,7 @@ const ncParcels = L.tileLayer.wms('https://cgia.nc.gov/arcgis/services/Cadastre/
   opacity: 0.6
 });
 
-L.control.layers({
+const layerControl = L.control.layers({
   'Streets (OSM)': osm,
   'Satellite': satellite,
   'Topo': topo
@@ -959,6 +1015,170 @@ function pointInPolygon([px, py], ring) {
     }
   }
   return inside;
+}
+
+// ── Shapefile upload ───────────────────────────────────────────────────────
+
+// Drag & drop wiring
+document.addEventListener('dragover', e => {
+  e.preventDefault();
+  document.getElementById('drop-overlay').classList.add('active');
+});
+document.addEventListener('dragleave', e => {
+  if (!e.relatedTarget) document.getElementById('drop-overlay').classList.remove('active');
+});
+document.addEventListener('drop', e => {
+  e.preventDefault();
+  document.getElementById('drop-overlay').classList.remove('active');
+  handleShpFiles(e.dataTransfer.files);
+});
+
+function handleShpFiles(files) {
+  const fileMap = {};
+  Array.from(files).forEach(f => { fileMap[f.name.split('.').pop().toLowerCase()] = f; });
+
+  // Zip bundle (.zip containing .shp + .dbf)
+  if (fileMap.zip) {
+    JSZip.loadAsync(fileMap.zip).then(zip => {
+      let shpEntry = null, dbfEntry = null, name = 'upload';
+      zip.forEach((path, entry) => {
+        const ext = path.split('.').pop().toLowerCase();
+        if (ext === 'shp') { shpEntry = entry; name = path.split('/').pop().replace(/\.shp$/i, ''); }
+        if (ext === 'dbf') dbfEntry = entry;
+      });
+      if (!shpEntry) { notify('No .shp found in zip'); return; }
+      Promise.all([
+        shpEntry.async('arraybuffer'),
+        dbfEntry ? dbfEntry.async('arraybuffer') : Promise.resolve(null)
+      ]).then(([s, d]) => loadShpLayer(s, d, name));
+    }).catch(() => notify('Error reading zip'));
+    return;
+  }
+
+  // Individual files
+  if (!fileMap.shp) { notify('Select a .shp file (or .zip)'); return; }
+  const name = fileMap.shp.name.replace(/\.shp$/i, '');
+  const readBuf = f => new Promise(res => { const r = new FileReader(); r.onload = e => res(e.target.result); r.readAsArrayBuffer(f); });
+  Promise.all([
+    readBuf(fileMap.shp),
+    fileMap.dbf ? readBuf(fileMap.dbf) : Promise.resolve(null)
+  ]).then(([s, d]) => loadShpLayer(s, d, name));
+}
+
+function loadShpLayer(shpBuf, dbfBuf, name) {
+  let features;
+  try { features = readShpFeatures(shpBuf); }
+  catch(e) { notify('Invalid shapefile'); return; }
+  if (!features.length) { notify('Shapefile has no features'); return; }
+
+  if (dbfBuf) {
+    try {
+      const attrs = readDbfRecords(dbfBuf);
+      features.forEach((f, i) => { if (attrs[i]) f.properties = attrs[i]; });
+    } catch(e) {}
+  }
+
+  const layer = L.geoJSON({ type: 'FeatureCollection', features }, {
+    style: () => ({ color: '#e5c229', weight: 2, fillOpacity: 0.15, fillColor: '#e5c229' }),
+    pointToLayer: (feat, ll) => L.circleMarker(ll, {
+      radius: 5, color: '#e5c229', fillColor: '#e5c229', fillOpacity: 0.9, weight: 1.5
+    }),
+    onEachFeature: (feat, lyr) => {
+      const p = feat.properties;
+      if (p && Object.keys(p).length) {
+        lyr.bindPopup(Object.entries(p).slice(0, 10).map(([k, v]) => `<b>${k}:</b> ${v}`).join('<br>'));
+      }
+    }
+  }).addTo(map);
+
+  try { map.fitBounds(layer.getBounds().pad(0.1)); } catch(e) {}
+  layerControl.addOverlay(layer, `⬆ ${name}`);
+  notify(`Loaded ${name} — ${features.length} features`);
+}
+
+// ── Minimal .shp reader (Point / Polyline / Polygon) ──────────────────────
+function readShpFeatures(buf) {
+  const v = new DataView(buf);
+  if (v.getInt32(0, false) !== 9994) throw new Error('Not a shapefile');
+  const fileLen = v.getInt32(24, false) * 2;
+  const features = [];
+  let off = 100;
+
+  while (off + 8 <= fileLen) {
+    const contentLen = v.getInt32(off + 4, false) * 2;
+    off += 8;
+    if (off + contentLen > fileLen) break;
+    const t = v.getInt32(off, true);
+
+    if (t === 1) { // Point
+      features.push({
+        type: 'Feature',
+        geometry: { type: 'Point', coordinates: [v.getFloat64(off+4,true), v.getFloat64(off+12,true)] },
+        properties: {}
+      });
+    } else if (t === 3 || t === 5) { // Polyline or Polygon
+      const nParts = v.getInt32(off+36, true);
+      const nPts   = v.getInt32(off+40, true);
+      const parts  = Array.from({ length: nParts }, (_, i) => v.getInt32(off+44+i*4, true));
+      const ptBase = off + 44 + nParts * 4;
+      const pts    = Array.from({ length: nPts }, (_, i) => [
+        v.getFloat64(ptBase+i*16, true),
+        v.getFloat64(ptBase+i*16+8, true)
+      ]);
+      const rings  = parts.map((s, i) => pts.slice(s, i+1 < nParts ? parts[i+1] : nPts));
+
+      if (t === 3) {
+        features.push({
+          type: 'Feature',
+          geometry: rings.length === 1
+            ? { type: 'LineString', coordinates: rings[0] }
+            : { type: 'MultiLineString', coordinates: rings },
+          properties: {}
+        });
+      } else {
+        // Classify rings: clockwise winding = outer, counter-clockwise = hole
+        const signed = rings.map(r => {
+          let a = 0;
+          for (let i = 0, j = r.length-1; i < r.length; j=i++) a += (r[j][0]+r[i][0])*(r[j][1]-r[i][1]);
+          return { ring: r, outer: a > 0 };
+        });
+        const outers = signed.filter(c => c.outer).map(c => c.ring);
+        const holes  = signed.filter(c => !c.outer).map(c => c.ring);
+        if (!outers.length) outers.push(rings[0]); // fallback
+
+        if (outers.length === 1) {
+          features.push({ type: 'Feature', geometry: { type: 'Polygon', coordinates: [outers[0], ...holes] }, properties: {} });
+        } else {
+          features.push({ type: 'Feature', geometry: { type: 'MultiPolygon', coordinates: outers.map(o => [o]) }, properties: {} });
+        }
+      }
+    }
+    off += contentLen;
+  }
+  return features;
+}
+
+// ── Minimal .dbf reader ────────────────────────────────────────────────────
+function readDbfRecords(buf) {
+  const v = new DataView(buf);
+  const b = new Uint8Array(buf);
+  const dec = new TextDecoder('latin1');
+  const nRec  = v.getInt32(4, true);
+  const hSize = v.getInt16(8, true);
+  const rSize = v.getInt16(10, true);
+  const fields = [];
+  for (let off = 32; off < hSize - 1 && b[off] !== 0x0D; off += 32) {
+    fields.push({ nm: dec.decode(b.slice(off, off+11)).replace(/\0/g, '').trim(), len: b[off+16] });
+  }
+  const records = [];
+  for (let i = 0, off = hSize; i < nRec; i++, off += rSize) {
+    if (b[off] === 0x2A) continue; // deleted record
+    const rec = {};
+    let fo = off + 1;
+    fields.forEach(f => { rec[f.nm] = dec.decode(b.slice(fo, fo+f.len)).trim(); fo += f.len; });
+    records.push(rec);
+  }
+  return records;
 }
 
 // ── Notification helper ────────────────────────────────────────────────────
