@@ -274,6 +274,59 @@
     opacity: 0.7;
     letter-spacing: 0.5px;
   }
+
+  .poly-checklist {
+    max-height: 88px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    border: 1px solid var(--leaf);
+    padding: 5px 7px;
+    background: var(--forest);
+  }
+  .poly-check {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.68rem;
+    color: var(--cream);
+    cursor: pointer;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    flex-shrink: 0;
+  }
+  .poly-check input[type=checkbox] { accent-color: var(--lime); flex-shrink: 0; cursor: pointer; }
+  .poly-check.empty { opacity: 0.5; cursor: default; font-style: italic; }
+
+  .export-modal {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 248px;
+    background: var(--bark);
+    border: 1px solid var(--leaf);
+    border-top: 3px solid var(--lime);
+    z-index: 3000;
+    padding: 14px;
+    display: none;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .export-modal.open { display: flex; }
+  .export-modal h3 { font-family: 'Syne', sans-serif; font-size: 0.8rem; font-weight: 800; color: var(--lime); text-transform: uppercase; letter-spacing: 1px; }
+  .export-check {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.72rem;
+    color: var(--cream);
+    cursor: pointer;
+  }
+  .export-check.dimmed { opacity: 0.4; pointer-events: none; }
+  .export-check input[type=checkbox] { accent-color: var(--lime); cursor: pointer; }
 </style>
 </head>
 <body>
@@ -323,10 +376,10 @@
 <div class="cruise-panel" id="cruise-panel">
   <h3>⊞ Cruise Grid</h3>
   <div class="field-group">
-    <div class="field-label">Target Polygon</div>
-    <select class="cruise-input" id="cruise-poly-select">
-      <option value="">— Draw a polygon first —</option>
-    </select>
+    <div class="field-label">Target Polygons</div>
+    <div class="poly-checklist" id="cruise-poly-list">
+      <span class="poly-check empty">— Draw or upload a polygon first —</span>
+    </div>
   </div>
   <div class="field-label" style="margin-bottom:4px;">Grid Spacing (chains)</div>
   <div class="cruise-row">
@@ -361,6 +414,24 @@
 </div>
 
 <div class="notification" id="notif"></div>
+
+<!-- Export selection modal -->
+<div class="export-modal" id="export-modal">
+  <h3>↓ Export Shapefile</h3>
+  <div class="field-label">Select layers to export:</div>
+  <label class="export-check" id="exp-drawn-label">
+    <input type="checkbox" id="exp-drawn" checked>
+    Drawn Features (<span id="exp-drawn-count">0</span>)
+  </label>
+  <label class="export-check" id="exp-cruise-label">
+    <input type="checkbox" id="exp-cruise" checked>
+    Cruise Points (<span id="exp-cruise-count">0</span>)
+  </label>
+  <div class="cruise-actions" style="margin-top:4px;">
+    <button class="btn-clear-grid" onclick="closeExportModal()">Cancel</button>
+    <button class="btn-generate" onclick="doExport()">Export</button>
+  </div>
+</div>
 
 <input type="file" id="shp-upload-input" accept=".shp,.dbf,.shx,.zip" multiple style="display:none"
   onchange="handleShpFiles(this.files); this.value='';">
@@ -544,67 +615,76 @@ function clearAll() {
 // We'll write our own minimal shapefile writer so there are zero external deps
 
 function exportShapefile() {
-  const layers = drawnItems.getLayers();
-  if (!layers.length) { notify('No features to export!'); return; }
+  const drawnCount = drawnItems.getLayers().length;
+  const cruiseCount = cruisePoints.length;
+  if (!drawnCount && !cruiseCount) { notify('Nothing to export'); return; }
 
-  // Separate by geometry type
-  const points = [], lines = [], polygons = [];
+  document.getElementById('exp-drawn-count').textContent = drawnCount;
+  document.getElementById('exp-cruise-count').textContent = cruiseCount;
 
-  layers.forEach(layer => {
-    if (layer instanceof L.Marker) {
-      points.push({ type: 'Point', coordinates: [layer.getLatLng().lng, layer.getLatLng().lat] });
-    } else if (layer instanceof L.Polyline && !(layer instanceof L.Polygon)) {
-      const lls = layer.getLatLngs();
-      lines.push({ type: 'LineString', coordinates: lls.map(ll => [ll.lng, ll.lat]) });
-    } else if (layer instanceof L.Polygon) {
-      const lls = layer.getLatLngs()[0];
-      const ring = lls.map(ll => [ll.lng, ll.lat]);
-      ring.push(ring[0]); // close ring
-      polygons.push({ type: 'Polygon', coordinates: [ring] });
-    }
-  });
+  const drawnLabel = document.getElementById('exp-drawn-label');
+  const cruiseLabel = document.getElementById('exp-cruise-label');
+  drawnLabel.classList.toggle('dimmed', !drawnCount);
+  cruiseLabel.classList.toggle('dimmed', !cruiseCount);
+  document.getElementById('exp-drawn').checked = drawnCount > 0;
+  document.getElementById('exp-cruise').checked = cruiseCount > 0;
+
+  document.getElementById('export-modal').classList.add('open');
+}
+
+function closeExportModal() {
+  document.getElementById('export-modal').classList.remove('open');
+}
+
+function doExport() {
+  closeExportModal();
+  const inclDrawn  = document.getElementById('exp-drawn').checked;
+  const inclCruise = document.getElementById('exp-cruise').checked;
+  if (!inclDrawn && !inclCruise) { notify('Nothing selected to export'); return; }
 
   const zip = new JSZip();
-
   const prjContent = 'GEOGCS["GCS_WGS_1984",DATUM["D_WGS_1984",SPHEROID["WGS_1984",6378137.0,298.257223563]],PRIMEM["Greenwich",0.0],UNIT["Degree",0.0174532925199433]]';
 
-  if (points.length) {
-    const shp = buildPointShp(points);
-    const shx = buildPointShx(points);
-    const dbf = buildDbf(points.length);
-    zip.file('points.shp', shp);
-    zip.file('points.shx', shx);
-    zip.file('points.dbf', dbf);
-    zip.file('points.prj', prjContent);
-  }
-  if (lines.length) {
-    const shp = buildPolylineShp(lines);
-    const shx = buildPolylineShx(lines);
-    const dbf = buildDbf(lines.length);
-    zip.file('lines.shp', shp);
-    zip.file('lines.shx', shx);
-    zip.file('lines.dbf', dbf);
-    zip.file('lines.prj', prjContent);
-  }
-  if (polygons.length) {
-    const shp = buildPolygonShp(polygons);
-    const shx = buildPolygonShx(polygons);
-    const dbf = buildDbf(polygons.length);
-    zip.file('polygons.shp', shp);
-    zip.file('polygons.shx', shx);
-    zip.file('polygons.dbf', dbf);
-    zip.file('polygons.prj', prjContent);
+  if (inclDrawn) {
+    const points = [], lines = [], polygons = [];
+    drawnItems.getLayers().forEach(layer => {
+      if (layer instanceof L.Marker) {
+        points.push({ type: 'Point', coordinates: [layer.getLatLng().lng, layer.getLatLng().lat] });
+      } else if (layer instanceof L.Polyline && !(layer instanceof L.Polygon)) {
+        const lls = layer.getLatLngs();
+        lines.push({ type: 'LineString', coordinates: lls.map(ll => [ll.lng, ll.lat]) });
+      } else if (layer instanceof L.Polygon) {
+        const lls = layer.getLatLngs()[0];
+        const ring = lls.map(ll => [ll.lng, ll.lat]);
+        ring.push(ring[0]);
+        polygons.push({ type: 'Polygon', coordinates: [ring] });
+      }
+    });
+    if (points.length) {
+      zip.file('points.shp', buildPointShp(points));
+      zip.file('points.shx', buildPointShx(points));
+      zip.file('points.dbf', buildDbf(points.length));
+      zip.file('points.prj', prjContent);
+    }
+    if (lines.length) {
+      zip.file('lines.shp', buildPolylineShp(lines));
+      zip.file('lines.shx', buildPolylineShx(lines));
+      zip.file('lines.dbf', buildDbf(lines.length));
+      zip.file('lines.prj', prjContent);
+    }
+    if (polygons.length) {
+      zip.file('polygons.shp', buildPolygonShp(polygons));
+      zip.file('polygons.shx', buildPolygonShx(polygons));
+      zip.file('polygons.dbf', buildDbf(polygons.length));
+      zip.file('polygons.prj', prjContent);
+    }
   }
 
-  // Add cruise points to export
-  if (cruisePoints.length) {
+  if (inclCruise && cruisePoints.length) {
     const cruisePtGeoms = cruisePoints.map(p => ({ type: 'Point', coordinates: [p.lng, p.lat], id: p.id }));
-    const shp = buildPointShp(cruisePtGeoms);
-    const shx = buildPointShx(cruisePtGeoms);
-    const dbf = buildCruiseDbf(cruisePoints);
-    zip.file('cruise_points.shp', shp);
-    zip.file('cruise_points.shx', shx);
-    zip.file('cruise_points.dbf', dbf);
+    zip.file('cruise_points.shp', buildPointShp(cruisePtGeoms));
+    zip.file('cruise_points.shx', buildPointShx(cruisePtGeoms));
+    zip.file('cruise_points.dbf', buildCruiseDbf(cruisePoints));
     zip.file('cruise_points.prj', prjContent);
   }
 
@@ -900,58 +980,62 @@ function toggleCruisePanel() {
 }
 
 function refreshPolySelect() {
-  const sel = document.getElementById('cruise-poly-select');
-  sel.innerHTML = '';
+  const list = document.getElementById('cruise-poly-list');
+  list.innerHTML = '';
   polygonLayers = [];
+
+  const addItem = (layer, label) => {
+    const idx = polygonLayers.length;
+    polygonLayers.push(layer);
+    const lbl = document.createElement('label');
+    lbl.className = 'poly-check';
+    lbl.title = label;
+    lbl.innerHTML = `<input type="checkbox" value="${idx}" checked> ${label}`;
+    list.appendChild(lbl);
+  };
 
   // Drawn polygons
   let drawnCount = 0;
   drawnItems.eachLayer(layer => {
     if (layer instanceof L.Polygon) {
       drawnCount++;
-      polygonLayers.push(layer);
-      const opt = document.createElement('option');
-      opt.value = polygonLayers.length - 1;
-      opt.textContent = `Stand Polygon ${drawnCount}`;
-      sel.appendChild(opt);
+      addItem(layer, `Stand Polygon ${drawnCount}`);
     }
   });
 
   // Uploaded shapefile polygons
-  uploadedPolygons.forEach(entry => {
-    polygonLayers.push(entry.layer);
-    const opt = document.createElement('option');
-    opt.value = polygonLayers.length - 1;
-    opt.textContent = entry.name;
-    sel.appendChild(opt);
-  });
+  uploadedPolygons.forEach(entry => addItem(entry.layer, entry.name));
 
   if (!polygonLayers.length) {
-    const opt = document.createElement('option');
-    opt.value = '';
-    opt.textContent = '— Draw or upload a polygon first —';
-    sel.appendChild(opt);
+    const span = document.createElement('span');
+    span.className = 'poly-check empty';
+    span.textContent = '— Draw or upload a polygon first —';
+    list.appendChild(span);
   }
 }
 
 function generateCruiseGrid() {
-  const sel = document.getElementById('cruise-poly-select');
   const spacingX = parseFloat(document.getElementById('cruise-spacing-x').value);
   const spacingY = parseFloat(document.getElementById('cruise-spacing-y').value);
   const bearingDeg = parseFloat(document.getElementById('cruise-bearing').value);
 
-  if (sel.value === '' || polygonLayers.length === 0) {
-    notify('Draw a polygon first!'); return;
+  const checked = Array.from(document.querySelectorAll('#cruise-poly-list input[type=checkbox]:checked'));
+  const selectedIndices = checked.map(c => parseInt(c.value)).filter(i => !isNaN(i));
+
+  if (!selectedIndices.length) {
+    notify('Select at least one polygon'); return;
   }
   if (isNaN(spacingX) || spacingX <= 0 || isNaN(spacingY) || spacingY <= 0) {
     notify('Enter valid chain spacing'); return;
   }
 
-  const poly = polygonLayers[parseInt(sel.value)];
-  const lls = poly.getLatLngs()[0];
-  const ring = lls.map(ll => [ll.lng, ll.lat]);
+  const rings = selectedIndices.map(i => {
+    const lls = polygonLayers[i].getLatLngs()[0];
+    return lls.map(ll => [ll.lng, ll.lat]);
+  });
 
-  const centerLat = ring.reduce((s, c) => s + c[1], 0) / ring.length;
+  const allCoords = rings.flat();
+  const centerLat = allCoords.reduce((s, c) => s + c[1], 0) / allCoords.length;
   const spacingXm = spacingX * CHAIN_METERS;
   const spacingYm = spacingY * CHAIN_METERS;
   const dLng = spacingXm / (111320 * Math.cos(centerLat * Math.PI / 180));
@@ -959,10 +1043,10 @@ function generateCruiseGrid() {
 
   const theta = bearingDeg * Math.PI / 180;
 
-  const lngs = ring.map(c => c[0]);
-  const lats = ring.map(c => c[1]);
-  const minLng = Math.min(...lngs), maxLng = Math.max(...lngs);
-  const minLat = Math.min(...lats), maxLat = Math.max(...lats);
+  const allLngs = allCoords.map(c => c[0]);
+  const allLats = allCoords.map(c => c[1]);
+  const minLng = Math.min(...allLngs), maxLng = Math.max(...allLngs);
+  const minLat = Math.min(...allLats), maxLat = Math.max(...allLats);
   const cLng = (minLng + maxLng) / 2;
   const cLat = (minLat + maxLat) / 2;
 
@@ -984,7 +1068,7 @@ function generateCruiseGrid() {
     }
   }
 
-  const inside = pts.filter(pt => pointInPolygon(pt, ring));
+  const inside = pts.filter(pt => rings.some(ring => pointInPolygon(pt, ring)));
   if (!inside.length) { notify('No points generated — check spacing/polygon'); return; }
 
   if (cruiseLayer) map.removeLayer(cruiseLayer);
@@ -1007,7 +1091,7 @@ function generateCruiseGrid() {
   cruiseLayer.addTo(map);
 
   document.getElementById('cruise-info').innerHTML =
-    `<span>${inside.length}</span> cruise points<br>Spacing: <span>${spacingX}×${spacingY} ch</span> · Bearing: <span>${bearingDeg}°</span>`;
+    `<span>${inside.length}</span> cruise points · <span>${selectedIndices.length}</span> polygon${selectedIndices.length > 1 ? 's' : ''}<br>Spacing: <span>${spacingX}×${spacingY} ch</span> · Bearing: <span>${bearingDeg}°</span>`;
 
   notify(`${inside.length} cruise points generated`);
 }
