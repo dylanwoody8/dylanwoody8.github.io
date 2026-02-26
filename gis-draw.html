@@ -300,6 +300,35 @@
   .poly-check input[type=checkbox] { accent-color: var(--lime); flex-shrink: 0; cursor: pointer; }
   .poly-check.empty { opacity: 0.5; cursor: default; font-style: italic; }
 
+  /* ── Location button & dot ───────────────────────────────────────────── */
+  .locate-btn { background: transparent; border-color: #1976d2; color: #64b5f6; }
+  .locate-btn:hover  { background: #1565c0; border-color: #2196f3; color: #fff; }
+  .locate-btn.active { background: #1565c0; border-color: #2196f3; color: #fff; }
+
+  .loc-dot {
+    width: 14px; height: 14px;
+    background: #2196f3;
+    border: 2.5px solid #fff;
+    border-radius: 50%;
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 2;
+    box-shadow: 0 1px 5px rgba(0,0,0,0.5);
+  }
+  .loc-pulse {
+    width: 22px; height: 22px;
+    background: rgba(33,150,243,0.4);
+    border-radius: 50%;
+    position: absolute;
+    top: 0; left: 0;
+    animation: loc-pulse 1.8s ease-out infinite;
+  }
+  @keyframes loc-pulse {
+    0%   { transform: scale(0.7); opacity: 1; }
+    100% { transform: scale(2.4); opacity: 0; }
+  }
+
   .export-modal {
     position: fixed;
     top: 50%;
@@ -389,6 +418,11 @@
     <button class="tool-btn clear-btn" onclick="clearAll()">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3,6 5,6 21,6"/><path d="M19,6l-1,14H6L5,6"/><path d="M10,11v6"/><path d="M14,11v6"/></svg>
       Clear
+    </button>
+    <div class="sep"></div>
+    <button class="tool-btn locate-btn" id="btn-locate" onclick="toggleLocate()" title="Show my location">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/><circle cx="12" cy="12" r="7" stroke-opacity="0.35"/></svg>
+      Locate Me
     </button>
     <div class="sep"></div>
     <button class="tool-btn" id="btn-cruise" onclick="toggleCruisePanel()">
@@ -1334,6 +1368,82 @@ function readDbfRecords(buf) {
   }
   return records;
 }
+
+// ── Location tracking ──────────────────────────────────────────────────────
+let locateLayer  = null;
+let locateMarker = null;
+let locateRing   = null;
+let locateActive = false;
+let locateFirst  = true;
+
+function toggleLocate() {
+  locateActive ? stopLocate() : startLocate();
+}
+
+function startLocate() {
+  locateActive = true;
+  locateFirst  = true;
+  document.getElementById('btn-locate').classList.add('active');
+  document.getElementById('active-tool').textContent = 'Locating…';
+  notify('Finding your location…');
+  map.locate({ watch: true, setView: false, enableHighAccuracy: true });
+}
+
+function stopLocate() {
+  locateActive = false;
+  map.stopLocate();
+  document.getElementById('btn-locate').classList.remove('active');
+  document.getElementById('active-tool').textContent = 'None';
+  if (locateLayer) { map.removeLayer(locateLayer); locateLayer = null; }
+  locateMarker = null;
+  locateRing   = null;
+}
+
+map.on('locationfound', e => {
+  if (!locateActive) return;
+  const { latlng, accuracy } = e;
+
+  if (!locateLayer) {
+    locateLayer = L.layerGroup().addTo(map);
+
+    locateRing = L.circle(latlng, {
+      radius: accuracy,
+      color: '#2196f3', fillColor: '#2196f3',
+      fillOpacity: 0.1, weight: 1.5,
+      interactive: false
+    });
+
+    locateMarker = L.marker(latlng, {
+      icon: L.divIcon({
+        className: '',
+        html: '<div class="loc-pulse"></div><div class="loc-dot"></div>',
+        iconSize: [22, 22],
+        iconAnchor: [11, 11]
+      }),
+      interactive: false,
+      zIndexOffset: 1000
+    });
+
+    locateLayer.addLayer(locateRing);
+    locateLayer.addLayer(locateMarker);
+  } else {
+    locateMarker.setLatLng(latlng);
+    locateRing.setLatLng(latlng).setRadius(accuracy);
+  }
+
+  if (locateFirst) {
+    map.setView(latlng, Math.max(map.getZoom(), 17));
+    locateFirst = false;
+    notify(`Location found · ±${Math.round(accuracy)} m`);
+    document.getElementById('active-tool').textContent = 'Locating';
+  }
+});
+
+map.on('locationerror', e => {
+  if (!locateActive) return;
+  stopLocate();
+  notify(e.code === 1 ? 'Location permission denied' : 'Location unavailable');
+});
 
 // ── Notification helper ────────────────────────────────────────────────────
 function notify(msg) {
