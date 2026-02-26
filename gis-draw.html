@@ -327,6 +327,41 @@
   }
   .export-check.dimmed { opacity: 0.4; pointer-events: none; }
   .export-check input[type=checkbox] { accent-color: var(--lime); cursor: pointer; }
+
+  /* ── Mobile responsive ───────────────────────────────────────────────── */
+  @media (max-width: 768px) {
+    header { padding: 0 10px; height: 50px; }
+
+    /* Hide subtitle, keep logo compact */
+    .logo span { display: none; }
+
+    /* Toolbar scrolls horizontally; buttons go icon-only */
+    .toolbar {
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      flex-shrink: 1;
+      min-width: 0;
+      gap: 3px;
+      padding-right: 4px;
+    }
+    .toolbar::-webkit-scrollbar { display: none; }
+    .tool-btn { padding: 7px 9px; font-size: 0; gap: 0; flex-shrink: 0; }
+    .tool-btn svg { width: 17px; height: 17px; }
+    .sep { margin: 0 1px; }
+
+    /* Cruise panel stretches full width on small screens */
+    .cruise-panel { right: 8px; left: 8px; width: auto; top: 56px; }
+
+    /* Status bar scrolls horizontally */
+    .status-bar { overflow-x: auto; gap: 12px; flex-wrap: nowrap; font-size: 0.6rem; }
+    .status-bar > div { flex-shrink: 0; white-space: nowrap; }
+
+    /* Export modal fills most of screen width */
+    .export-modal { width: calc(100vw - 32px); left: 16px; transform: translateY(-50%); }
+
+    /* Drop overlay starts below the shorter header */
+    .drop-overlay { top: 50px; }
+  }
 </style>
 </head>
 <body>

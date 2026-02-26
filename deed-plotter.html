@@ -325,6 +325,45 @@ header {
   text-transform: uppercase;
   cursor: pointer;
 }
+
+/* ── Mobile responsive ─────────────────────────────────────────────────── */
+@media (max-width: 768px) {
+  /* Allow body to scroll instead of clipping */
+  body { height: auto; min-height: 100dvh; overflow-y: auto; }
+
+  /* Stack layout: sidebar on top, canvas below */
+  .app-body { flex-direction: column; overflow: visible; height: auto; }
+
+  .sidebar {
+    width: 100%;
+    height: auto;
+    flex-shrink: 0;
+    border-right: none;
+    border-bottom: 1px solid var(--moss);
+  }
+
+  /* Shorter textarea — just enough to enter calls */
+  .calls-input { height: 110px; }
+
+  /* Cap results panel so canvas stays visible */
+  .results-panel { max-height: 180px; }
+
+  /* Canvas gets a fixed height instead of flex: 1 */
+  .canvas-area { flex: none; height: 360px; }
+
+  /* Status bar wraps onto two lines */
+  .status-bar { height: auto; flex-wrap: wrap; padding: 6px 12px; gap: 4px 16px; }
+}
+
+@media (max-width: 540px) {
+  header { padding: 0 12px; }
+  .logo span { display: none; }
+  .header-right { gap: 6px; }
+  .hdr-btn { padding: 5px 8px; font-size: 0.62rem; }
+  /* Collapse long button labels to icon + short word */
+  .btn-label { display: none; }
+  .canvas-area { height: 300px; }
+}
 </style>
 </head>
 <body>
@@ -333,10 +372,10 @@ header {
   <a class="logo" href="index.html">WoodyForestry<span>/ Deed Plotter</span></a>
   <div class="header-right">
     <button class="hdr-btn" onclick="document.getElementById('format-modal').classList.add('open')">
-      ? Format Guide
+      ? <span class="btn-label">Format Guide</span>
     </button>
     <button class="hdr-btn hdr-btn-clear" onclick="clearAll()">Clear</button>
-    <button class="hdr-btn hdr-btn-plot" onclick="plotCalls()">▶ Plot Tract</button>
+    <button class="hdr-btn hdr-btn-plot" onclick="plotCalls()">▶ <span class="btn-label">Plot Tract</span></button>
   </div>
 </header>
 
