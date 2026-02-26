@@ -889,6 +889,7 @@ const CHAIN_METERS = 20.1168; // 1 chain = 20.1168 meters
 let cruiseLayer = null;
 let cruisePoints = []; // [{lat, lng, id}]
 let polygonLayers = []; // track drawn polygons for select dropdown
+let uploadedPolygons = []; // [{layer: L.Polygon, name: string}] from uploaded shapefiles
 
 function toggleCruisePanel() {
   const panel = document.getElementById('cruise-panel');
@@ -902,20 +903,33 @@ function refreshPolySelect() {
   const sel = document.getElementById('cruise-poly-select');
   sel.innerHTML = '';
   polygonLayers = [];
+
+  // Drawn polygons
+  let drawnCount = 0;
   drawnItems.eachLayer(layer => {
     if (layer instanceof L.Polygon) {
+      drawnCount++;
       polygonLayers.push(layer);
-      const idx = polygonLayers.length;
       const opt = document.createElement('option');
-      opt.value = idx - 1;
-      opt.textContent = `Stand Polygon ${idx}`;
+      opt.value = polygonLayers.length - 1;
+      opt.textContent = `Stand Polygon ${drawnCount}`;
       sel.appendChild(opt);
     }
   });
+
+  // Uploaded shapefile polygons
+  uploadedPolygons.forEach(entry => {
+    polygonLayers.push(entry.layer);
+    const opt = document.createElement('option');
+    opt.value = polygonLayers.length - 1;
+    opt.textContent = entry.name;
+    sel.appendChild(opt);
+  });
+
   if (!polygonLayers.length) {
     const opt = document.createElement('option');
     opt.value = '';
-    opt.textContent = '— Draw a polygon first —';
+    opt.textContent = '— Draw or upload a polygon first —';
     sel.appendChild(opt);
   }
 }
@@ -1093,7 +1107,28 @@ function loadShpLayer(shpBuf, dbfBuf, name) {
 
   try { map.fitBounds(layer.getBounds().pad(0.1)); } catch(e) {}
   layerControl.addOverlay(layer, `⬆ ${name}`);
-  notify(`Loaded ${name} — ${features.length} features`);
+
+  // Register any polygon/multipolygon features for use as cruise grid targets
+  let polyCount = 0;
+  features.forEach((feat, idx) => {
+    const g = feat.geometry;
+    const firstProp = Object.values(feat.properties || {}).find(v => v && String(v).trim());
+    const baseLabel = firstProp ? `${name}: ${firstProp}` : `${name} #${idx + 1}`;
+    if (g.type === 'Polygon') {
+      const latlngs = g.coordinates[0].map(([lng, lat]) => L.latLng(lat, lng));
+      uploadedPolygons.push({ layer: L.polygon(latlngs), name: baseLabel });
+      polyCount++;
+    } else if (g.type === 'MultiPolygon') {
+      g.coordinates.forEach((polyCoords, j) => {
+        const latlngs = polyCoords[0].map(([lng, lat]) => L.latLng(lat, lng));
+        uploadedPolygons.push({ layer: L.polygon(latlngs), name: `${baseLabel} pt.${j + 1}` });
+        polyCount++;
+      });
+    }
+  });
+
+  if (polyCount) refreshPolySelect();
+  notify(`Loaded ${name} — ${features.length} features${polyCount ? ` (${polyCount} polygon${polyCount > 1 ? 's' : ''} available for cruise grid)` : ''}`);
 }
 
 // ── Minimal .shp reader (Point / Polyline / Polygon) ──────────────────────
