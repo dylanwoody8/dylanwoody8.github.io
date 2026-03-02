@@ -1,0 +1,845 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>TimberCruise</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"/>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.css"/>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{--forest:#1a2e1a;--pine:#2d5a27;--card:#1e3320;--border:#2d5a27;--text:#e8f0e8;--muted:#7a9e7a;--accent:#5cb85c;--amber:#d4850a;--red:#c0392b;--white:#fff}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'IBM Plex Sans',sans-serif;background:var(--forest);color:var(--text);height:100dvh;display:flex;flex-direction:column;overflow:hidden}
+header{background:var(--forest);border-bottom:2px solid var(--pine);padding:0 16px;height:52px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;z-index:1000}
+.logo{font-family:'Bebas Neue',sans-serif;font-size:26px;letter-spacing:3px;color:var(--accent)}.logo span{color:var(--amber)}
+.cruise-label{font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--muted);text-align:right;line-height:1.3}
+nav{display:flex;background:var(--forest);border-top:2px solid var(--pine);flex-shrink:0}
+nav button{flex:1;padding:10px 4px;border:none;background:transparent;color:var(--muted);font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:1px;text-transform:uppercase;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:4px;transition:color .2s}
+nav button.active{color:var(--accent)}nav button svg{width:20px;height:20px}
+.screen{display:none;flex:1;flex-direction:column;overflow:hidden}.screen.active{display:flex}
+.setup-scroll{flex:1;overflow-y:auto;padding:20px 16px}
+.section-title{font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:2px;color:var(--amber);margin-bottom:14px;padding-bottom:6px;border-bottom:1px solid var(--border)}
+.field-group{margin-bottom:16px}
+label{display:block;font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);margin-bottom:6px}
+input,select{width:100%;background:var(--card);border:1px solid var(--border);color:var(--text);padding:10px 12px;font-family:'IBM Plex Sans',sans-serif;font-size:15px;border-radius:4px;outline:none;-webkit-appearance:none}
+input:focus,select:focus{border-color:var(--accent)}
+.row-2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.btn{width:100%;padding:14px;border:none;border-radius:4px;font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:2px;cursor:pointer;transition:opacity .2s}
+.btn:active{opacity:.8}.btn-primary{background:var(--pine);color:var(--white)}.btn-amber{background:var(--amber);color:var(--white)}.btn-danger{background:var(--red);color:var(--white)}
+.btn-sm{width:auto;padding:8px 16px;font-size:14px;letter-spacing:1px}
+/* Grid picker */
+.grid-picker{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:10px}
+.grid-opt{background:var(--card);border:2px solid var(--border);border-radius:6px;padding:10px 4px;text-align:center;cursor:pointer;transition:border-color .15s}
+.grid-opt.selected{border-color:var(--accent)}
+.grid-opt .gname{font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:1px;color:var(--accent)}
+.grid-opt .gsub{font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--muted);margin-top:2px}
+/* map */
+#map{flex:1}
+.map-toolbar{background:var(--forest);border-bottom:1px solid var(--border);padding:8px 10px;display:flex;gap:6px;align-items:center;flex-shrink:0;flex-wrap:wrap}
+.map-toolbar button{background:var(--card);border:1px solid var(--border);color:var(--text);padding:7px 10px;font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:1px;text-transform:uppercase;border-radius:3px;cursor:pointer;white-space:nowrap}
+.map-toolbar button.active-tool{border-color:var(--accent);color:var(--accent)}
+.map-status-bar{background:var(--forest);border-bottom:1px solid var(--border);padding:5px 12px;font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--muted);flex-shrink:0}
+/* plots */
+.plots-header{padding:12px 16px;background:var(--card);border-bottom:1px solid var(--border);flex-shrink:0}
+.plots-summary{display:flex;gap:20px;font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--muted);margin-top:6px}
+.plots-summary span{color:var(--accent);font-size:14px;font-weight:500}
+.plots-list{flex:1;overflow-y:auto}
+.plot-item{display:flex;align-items:center;padding:14px 16px;border-bottom:1px solid var(--border);cursor:pointer;gap:12px}
+.plot-item:active{background:var(--card)}
+.plot-num{font-family:'Bebas Neue',sans-serif;font-size:22px;color:var(--amber);width:36px;flex-shrink:0;text-align:center}
+.plot-info{flex:1}
+.plot-coords{font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--muted);margin-top:2px}
+.plot-status{font-family:'IBM Plex Mono',monospace;font-size:10px;padding:3px 8px;border-radius:2px;letter-spacing:1px}
+.plot-status.done{background:var(--pine);color:var(--accent)}.plot-status.pending{background:rgba(212,133,10,.2);color:var(--amber)}
+.plot-trees{font-size:13px;color:var(--text);margin-top:2px}
+/* modal */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:2000;align-items:flex-end}
+.modal-overlay.open{display:flex}
+.modal{background:var(--forest);border-top:2px solid var(--accent);width:100%;max-height:94dvh;display:flex;flex-direction:column;border-radius:12px 12px 0 0;overflow:hidden}
+.modal-header{padding:14px 16px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border);flex-shrink:0}
+.modal-title{font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:2px;color:var(--accent)}
+.modal-close{background:none;border:none;color:var(--muted);font-size:24px;cursor:pointer;padding:4px}
+.modal-body{flex:1;overflow-y:auto;padding:14px}
+/* live stats */
+.plot-live-stats{background:var(--card);border:1px solid var(--border);border-radius:4px;padding:10px;margin-bottom:14px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+.stat-box{text-align:center}
+.stat-val{font-family:'Bebas Neue',sans-serif;font-size:26px;color:var(--accent);display:block}
+.stat-lbl{font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--muted);letter-spacing:1px;text-transform:uppercase}
+/* DBH class buttons */
+.dbh-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin-bottom:14px}
+.dbh-btn{background:var(--card);border:2px solid var(--border);border-radius:6px;padding:12px 4px;text-align:center;cursor:pointer;transition:all .12s;font-family:'Bebas Neue',sans-serif;font-size:20px;color:var(--text);line-height:1}
+.dbh-btn:active,.dbh-btn.sel{border-color:var(--accent);color:var(--accent);background:rgba(92,184,92,.12)}
+/* logs buttons */
+.logs-row{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px}
+.log-btn{background:var(--card);border:2px solid var(--border);border-radius:6px;padding:8px 12px;font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--text);cursor:pointer;transition:all .12s;white-space:nowrap}
+.log-btn.sel{border-color:var(--amber);color:var(--amber);background:rgba(212,133,10,.12)}
+/* tally */
+.tally-section{margin-bottom:16px}
+.tally-table{width:100%;border-collapse:collapse}
+.tally-table th{font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--muted);padding:6px 4px;border-bottom:1px solid var(--border);text-align:center}
+.tally-table th:first-child{text-align:left}
+.tally-table td{padding:6px 4px;border-bottom:1px solid rgba(45,90,39,.3);text-align:center;vertical-align:middle;font-size:13px}
+.tally-table td:first-child{font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--amber);text-align:left;padding-left:0}
+.del-btn{background:none;border:none;color:var(--red);font-size:18px;cursor:pointer;padding:0 6px;line-height:1}
+/* report */
+.report-scroll{flex:1;overflow-y:auto;padding:16px}
+.report-card{background:var(--card);border:1px solid var(--border);border-radius:4px;padding:14px;margin-bottom:14px}
+.report-card h3{font-family:'Bebas Neue',sans-serif;font-size:16px;letter-spacing:2px;color:var(--amber);margin-bottom:10px}
+.report-row{display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid rgba(45,90,39,.3);font-size:13px}
+.report-row:last-child{border-bottom:none}
+.report-row .val{font-family:'IBM Plex Mono',monospace;color:var(--accent);font-size:13px}
+.species-header{font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:2px;color:var(--accent);margin:16px 0 8px;padding-bottom:4px;border-bottom:2px solid var(--pine)}
+/* gps */
+.gps-dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--red);margin-right:5px;animation:pulse 1.5s infinite}
+.gps-dot.active{background:var(--accent)}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+/* toast */
+.toast{position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:var(--pine);color:var(--white);padding:10px 22px;border-radius:20px;font-family:'IBM Plex Mono',monospace;font-size:12px;z-index:9999;opacity:0;transition:opacity .3s;white-space:nowrap;pointer-events:none}
+.toast.show{opacity:1}
+::-webkit-scrollbar{width:4px}::-webkit-scrollbar-track{background:var(--forest)}::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
+input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
+.empty-state{text-align:center;padding:40px 20px;color:var(--muted);font-family:'IBM Plex Mono',monospace;font-size:12px;line-height:1.8}
+.big-icon{font-size:40px;margin-bottom:12px}
+input[readonly]{border-color:var(--amber);color:var(--amber)}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">Timber<span>Cruise</span></div>
+  <div class="cruise-label" id="headerLabel">No cruise loaded</div>
+</header>
+
+<!-- SETUP -->
+<div class="screen active" id="screen-setup">
+  <div class="setup-scroll">
+    <div class="section-title">Cruise Setup</div>
+
+    <div class="field-group">
+      <label>Tract / Stand Name</label>
+      <input type="text" id="tractName" placeholder="e.g. Jordan Tract 14A">
+    </div>
+    <div class="field-group">
+      <label>Cruiser Name</label>
+      <input type="text" id="cruiserName" placeholder="Your name">
+    </div>
+
+    <div class="row-2">
+      <div class="field-group">
+        <label>Tract Acres <span style="color:var(--amber);font-size:9px;text-transform:none">(auto from map)</span></label>
+        <input type="number" id="tractAcres" placeholder="Draw polygon →" step="0.1" readonly>
+      </div>
+      <div class="field-group">
+        <label>BAF (sq ft/ac)</label>
+        <select id="bafSelect">
+          <option value="5">5</option>
+          <option value="10" selected>10</option>
+          <option value="20">20</option>
+          <option value="40">40</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="field-group">
+      <label>Cruise Date</label>
+      <input type="date" id="cruiseDate">
+    </div>
+
+    <div class="section-title">Plot Grid Pattern</div>
+    <div class="grid-picker" id="gridPicker">
+      <div class="grid-opt selected" data-type="3x3" onclick="selectGridType(this,'3x3')">
+        <div class="gname">3×3</div><div class="gsub">3 chain sq</div>
+      </div>
+      <div class="grid-opt" data-type="4x4" onclick="selectGridType(this,'4x4')">
+        <div class="gname">4×4</div><div class="gsub">4 chain sq</div>
+      </div>
+      <div class="grid-opt" data-type="4x5" onclick="selectGridType(this,'4x5')">
+        <div class="gname">4×5</div><div class="gsub">4×5 chains</div>
+      </div>
+      <div class="grid-opt" data-type="5x5" onclick="selectGridType(this,'5x5')">
+        <div class="gname">5×5</div><div class="gsub">5 chain sq</div>
+      </div>
+      <div class="grid-opt" data-type="5x6" onclick="selectGridType(this,'5x6')">
+        <div class="gname">5×6</div><div class="gsub">5×6 chains</div>
+      </div>
+      <div class="grid-opt" data-type="custom" onclick="selectGridType(this,'custom')">
+        <div class="gname">CUST</div><div class="gsub">Custom</div>
+      </div>
+    </div>
+    <div id="customSpacingRow" style="display:none" class="row-2">
+      <div class="field-group">
+        <label>X Spacing (chains)</label>
+        <input type="number" id="spacingX" value="3" step="0.5" min="0.5">
+      </div>
+      <div class="field-group">
+        <label>Y Spacing (chains)</label>
+        <input type="number" id="spacingY" value="3" step="0.5" min="0.5">
+      </div>
+    </div>
+
+    <div class="field-group">
+      <label>Species</label>
+      <select id="speciesSelect" multiple style="height:96px">
+        <option value="LP" selected>Loblolly Pine (LP)</option>
+        <option value="LL">Longleaf Pine (LL)</option>
+        <option value="SP">Shortleaf Pine (SP)</option>
+        <option value="WO">White Oak (WO)</option>
+        <option value="RO">Red Oak (RO)</option>
+        <option value="HW">Hardwood Mix (HW)</option>
+        <option value="GU">Sweetgum (GU)</option>
+        <option value="OTH">Other (OTH)</option>
+      </select>
+      <label style="margin-top:4px;font-size:9px;text-transform:none">Hold Ctrl/Cmd to select multiple</label>
+    </div>
+
+    <button class="btn btn-primary" onclick="saveCruise()">Save &amp; Go to Map →</button>
+    <div style="height:30px"></div>
+  </div>
+</div>
+
+<!-- MAP -->
+<div class="screen" id="screen-map">
+  <div class="map-toolbar">
+    <button id="btnDraw" onclick="activateDraw()">✏️ Draw</button>
+    <button onclick="triggerShpUpload()">📂 Shapefile</button>
+    <button id="btnGrid" onclick="generateGrid()">⊞ Gen Grid</button>
+    <button id="btnGPS" onclick="toggleGPS()"><span class="gps-dot" id="gpsDot"></span>GPS</button>
+    <button onclick="clearMap()" style="color:var(--red)">🗑 Clear</button>
+  </div>
+  <div class="map-status-bar" id="mapStatus">Draw your tract boundary or upload a shapefile</div>
+  <input type="file" id="shpFileInput" accept=".zip,.geojson,.json" style="display:none" onchange="handleShpUpload(event)">
+  <div id="map"></div>
+</div>
+
+<!-- PLOTS -->
+<div class="screen" id="screen-plots">
+  <div class="plots-header">
+    <div class="section-title" style="margin-bottom:6px">Cruise Plots</div>
+    <div class="plots-summary">
+      <div><span id="plotsDone">0</span> done</div>
+      <div><span id="plotsTotal">0</span> total</div>
+      <div><span id="plotsBA">—</span> BA/ac avg</div>
+    </div>
+  </div>
+  <div class="plots-list" id="plotsList">
+    <div class="empty-state"><div class="big-icon">📍</div>Generate a grid on the Map tab first.</div>
+  </div>
+</div>
+
+<!-- REPORT -->
+<div class="screen" id="screen-report">
+  <div class="map-toolbar">
+    <button onclick="generateReport()">↻ Refresh</button>
+    <button onclick="exportCSV()">⬇ CSV</button>
+  </div>
+  <div class="report-scroll" id="reportContent">
+    <div class="empty-state"><div class="big-icon">📊</div>Complete some plots to generate a report.</div>
+  </div>
+</div>
+
+<!-- NAV -->
+<nav>
+  <button class="active" onclick="switchTab('setup',this)">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg>Setup
+  </button>
+  <button onclick="switchTab('map',this)">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="3,6 9,3 15,6 21,3 21,18 15,21 9,18 3,21"/><line x1="9" y1="3" x2="9" y2="18"/><line x1="15" y1="6" x2="15" y2="21"/></svg>Map
+  </button>
+  <button onclick="switchTab('plots',this)">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><circle cx="3" cy="6" r="1" fill="currentColor"/><circle cx="3" cy="12" r="1" fill="currentColor"/><circle cx="3" cy="18" r="1" fill="currentColor"/></svg>Plots
+  </button>
+  <button onclick="switchTab('report',this)">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>Report
+  </button>
+</nav>
+
+<!-- DATA ENTRY MODAL -->
+<div class="modal-overlay" id="plotModal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title" id="modalTitle">Plot #1</div>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <div class="modal-body">
+
+      <div class="plot-live-stats">
+        <div class="stat-box"><span class="stat-val" id="liveBA">0</span><span class="stat-lbl">BA/Acre</span></div>
+        <div class="stat-box"><span class="stat-val" id="liveTPA">0</span><span class="stat-lbl">TPA</span></div>
+        <div class="stat-box"><span class="stat-val" id="liveVol">0</span><span class="stat-lbl">BF/Acre</span></div>
+      </div>
+
+      <div class="section-title">Add Tree</div>
+
+      <div class="field-group" style="margin-bottom:12px">
+        <label>Species</label>
+        <select id="entrySpecies"></select>
+      </div>
+
+      <label>DBH Class — tap to select</label>
+      <div class="dbh-grid" id="dbhGrid"></div>
+
+      <label>16-ft Merchantable Logs</label>
+      <div class="logs-row" id="logsRow"></div>
+
+      <div class="row-2" style="margin-bottom:16px;gap:8px">
+        <button class="btn btn-primary" onclick="addTree()" style="font-size:16px;padding:13px">＋ Add Tree</button>
+        <button class="btn btn-amber" onclick="repeatLastTree()" style="font-size:16px;padding:13px">⟳ Repeat</button>
+      </div>
+
+      <div class="tally-section">
+        <div class="section-title">Tallied: <span id="tallyCount" style="color:var(--text)">0</span> trees</div>
+        <table class="tally-table">
+          <thead><tr><th>Spp</th><th>DBH</th><th>Logs</th><th>BA/Ac</th><th>BF/Ac</th><th></th></tr></thead>
+          <tbody id="tallyBody"></tbody>
+        </table>
+      </div>
+
+      <button class="btn btn-primary" onclick="savePlot()">✓ Save &amp; Close Plot</button>
+      <div style="height:8px"></div>
+      <button class="btn btn-danger" onclick="clearPlot()" style="opacity:.65">Clear All Trees</button>
+      <div style="height:24px"></div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Turf.js/6.5.0/turf.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/shpjs/3.6.3/shp.min.js"></script>
+
+<script>
+// ─────────────────────────────────────────
+// SCRIBNER DECIMAL C — Southern Pine
+// DBH (integer) x 16-ft logs → Board Feet
+// ─────────────────────────────────────────
+const SCRIBNER = {
+   6:[5,10,13,15,16,17,17,18,18,18],
+   7:[7,15,20,22,24,25,26,26,27,27],
+   8:[10,20,27,32,35,37,38,39,40,40],
+   9:[13,27,37,44,49,52,54,56,57,58],
+  10:[17,35,49,59,66,71,74,77,79,80],
+  11:[22,45,63,77,86,93,97,101,103,105],
+  12:[28,57,79,97,109,118,124,128,131,134],
+  13:[34,70,99,121,137,148,156,162,166,169],
+  14:[42,86,120,148,168,182,192,199,204,208],
+  15:[51,103,145,178,202,220,232,241,247,252],
+  16:[61,123,173,213,242,264,279,290,298,304],
+  17:[72,145,205,252,287,313,332,345,355,362],
+  18:[85,170,240,296,337,368,390,406,418,426],
+  19:[99,198,279,345,393,430,456,475,489,499],
+  20:[115,229,323,399,455,498,529,551,568,580],
+  21:[132,263,372,460,525,575,611,637,657,671],
+  22:[151,301,426,527,601,659,701,731,754,770],
+  23:[172,342,484,599,684,750,799,833,859,878],
+  24:[194,387,547,678,774,849,904,944,974,995],
+  25:[218,435,616,763,872,957,1020,1065,1099,1123],
+  26:[244,487,690,855,977,1073,1144,1195,1233,1261],
+  27:[272,542,768,953,1089,1197,1277,1334,1377,1408],
+  28:[301,601,853,1058,1210,1329,1419,1483,1531,1566],
+  29:[333,664,943,1170,1338,1471,1571,1642,1696,1735],
+  30:[367,731,1038,1289,1474,1621,1731,1812,1872,1915],
+};
+const LOG_STEPS=[0.5,1,1.5,2,2.5,3,3.5,4,4.5,5];
+const DBH_CLASSES=[6,8,10,12,14,16,18,20,22,24,26,28,30];
+const GRID_PRESETS={'3x3':[3,3],'4x4':[4,4],'4x5':[4,5],'5x5':[5,5],'5x6':[5,6],'custom':null};
+
+function scribnerVol(dbh,logs){
+  const d=Math.round(dbh);
+  if(d<6||d>30)return 0;
+  const idx=LOG_STEPS.indexOf(parseFloat(logs));
+  if(idx<0)return 0;
+  return(SCRIBNER[d]||[])[idx]||0;
+}
+function calcTPA(baf,dbh){return baf/(0.005454*dbh*dbh);}
+
+// ─────────────────────────────────────────
+// STATE
+// ─────────────────────────────────────────
+let cruise=null,plots=[],currentPlotIdx=null,editTrees=[],lastTree=null;
+let map,drawnItems,drawControl,tractLayer,plotMarkers=[];
+let gpsWatchId=null,gpsMarker=null;
+let selDBH=10,selLogs=1,gridType='3x3';
+
+// ─────────────────────────────────────────
+// STORAGE
+// ─────────────────────────────────────────
+function saveState(){
+  try{localStorage.setItem('tc_cruise',JSON.stringify(cruise));localStorage.setItem('tc_plots',JSON.stringify(plots));}catch(e){}
+}
+function loadState(){
+  try{
+    const c=localStorage.getItem('tc_cruise'),p=localStorage.getItem('tc_plots');
+    if(c)cruise=JSON.parse(c);if(p)plots=JSON.parse(p);
+  }catch(e){}
+}
+
+// ─────────────────────────────────────────
+// SETUP
+// ─────────────────────────────────────────
+function selectGridType(el,type){
+  gridType=type;
+  document.querySelectorAll('.grid-opt').forEach(e=>e.classList.remove('selected'));
+  el.classList.add('selected');
+  document.getElementById('customSpacingRow').style.display=type==='custom'?'grid':'none';
+}
+
+function saveCruise(){
+  const name=document.getElementById('tractName').value.trim();
+  if(!name){showToast('Enter a tract name');return;}
+  const specOpts=document.getElementById('speciesSelect').selectedOptions;
+  const species=Array.from(specOpts).map(o=>({code:o.value,label:o.text}));
+  const prevGeo=cruise?cruise.tractGeoJSON:null;
+  const prevAcres=cruise?cruise.acres:0;
+  cruise={
+    name,
+    cruiser:document.getElementById('cruiserName').value.trim(),
+    acres:parseFloat(document.getElementById('tractAcres').value)||prevAcres||0,
+    baf:parseInt(document.getElementById('bafSelect').value),
+    gridType,
+    spacingX:parseFloat(document.getElementById('spacingX').value)||3,
+    spacingY:parseFloat(document.getElementById('spacingY').value)||3,
+    date:document.getElementById('cruiseDate').value,
+    species,
+    tractGeoJSON:prevGeo
+  };
+  plots=[];saveState();updateHeader();
+  showToast('Saved! Go to Map →');
+  switchTab('map',document.querySelectorAll('nav button')[1]);
+}
+
+function updateHeader(){
+  document.getElementById('headerLabel').textContent=cruise?`${cruise.name} · BAF ${cruise.baf}`:'No cruise loaded';
+}
+
+// ─────────────────────────────────────────
+// MAP
+// ─────────────────────────────────────────
+function initMap(){
+  if(map)return;
+  map=L.map('map',{zoomControl:true}).setView([35.5,-80.0],13);
+  const osm=L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution:'© OpenStreetMap',maxZoom:19});
+  const sat=L.tileLayer('https://mt1.google.com/vt/lyrs=s&x={x}&y={y}&z={z}',{attribution:'© Google',maxZoom:20});
+  const hyb=L.tileLayer('https://mt1.google.com/vt/lyrs=y&x={x}&y={y}&z={z}',{attribution:'© Google',maxZoom:20});
+  osm.addTo(map);
+  L.control.layers({'Street':osm,'Satellite':sat,'Satellite+Labels':hyb},{},{position:'topright'}).addTo(map);
+  drawnItems=new L.FeatureGroup().addTo(map);
+  drawControl=new L.Control.Draw({
+    draw:{polygon:{shapeOptions:{color:'#5cb85c',fillOpacity:.15}},polyline:false,rectangle:false,circle:false,circlemarker:false,marker:false},
+    edit:{featureGroup:drawnItems}
+  });
+  map.addControl(drawControl);
+  map.on(L.Draw.Event.CREATED,e=>{
+    drawnItems.clearLayers();drawnItems.addLayer(e.layer);tractLayer=e.layer;
+    onTractSet(tractLayer.toGeoJSON());
+  });
+}
+
+function onTractSet(gj){
+  if(cruise)cruise.tractGeoJSON=gj;
+  try{
+    let feat=gj;
+    if(gj.type==='FeatureCollection')feat=gj.features[0];
+    if(feat.type!=='Feature')feat={type:'Feature',geometry:feat};
+    const ac=turf.area(feat)*0.000247105;
+    document.getElementById('tractAcres').value=ac.toFixed(1);
+    if(cruise)cruise.acres=parseFloat(ac.toFixed(1));
+    document.getElementById('mapStatus').textContent=`Tract: ${ac.toFixed(1)} ac · Tap Gen Grid to place plots`;
+    showToast(`${ac.toFixed(1)} acres calculated`);
+  }catch(e){
+    document.getElementById('mapStatus').textContent='Tract drawn. Tap Gen Grid.';
+  }
+  saveState();
+}
+
+function activateDraw(){
+  if(!map){initMap();setTimeout(activateDraw,400);return;}
+  new L.Draw.Polygon(map,drawControl.options.draw.polygon).enable();
+  document.getElementById('btnDraw').classList.add('active-tool');
+}
+
+// ─────────────────────────────────────────
+// SHAPEFILE / GEOJSON UPLOAD
+// ─────────────────────────────────────────
+function triggerShpUpload(){
+  if(!map){initMap();setTimeout(triggerShpUpload,400);return;}
+  document.getElementById('shpFileInput').click();
+}
+
+async function handleShpUpload(ev){
+  const file=ev.target.files[0];if(!file)return;
+  document.getElementById('mapStatus').textContent='Loading file…';
+  try{
+    let gj;
+    if(file.name.match(/\.(geojson|json)$/i)){
+      gj=JSON.parse(await file.text());
+    }else{
+      const buf=await file.arrayBuffer();
+      gj=await shp(buf);
+    }
+    drawnItems.clearLayers();
+    plotMarkers.forEach(m=>map.removeLayer(m));plotMarkers=[];plots=[];
+    const layer=L.geoJSON(gj,{style:{color:'#5cb85c',fillOpacity:.15,weight:2}}).addTo(drawnItems);
+    tractLayer=layer;map.fitBounds(layer.getBounds());
+    let feat=gj;
+    if(gj.type==='FeatureCollection'&&gj.features.length>0)feat=gj.features[0];
+    onTractSet(feat);
+  }catch(err){
+    showToast('Upload failed: '+err.message);
+    document.getElementById('mapStatus').textContent='Upload failed — try GeoJSON or zipped shapefile';
+  }
+  ev.target.value='';
+}
+
+// ─────────────────────────────────────────
+// GRID
+// ─────────────────────────────────────────
+function getSpacing(){
+  const gt=cruise?cruise.gridType:gridType;
+  if(gt==='custom')return{x:cruise?cruise.spacingX:3,y:cruise?cruise.spacingY:3};
+  const p=GRID_PRESETS[gt]||[3,3];return{x:p[0],y:p[1]};
+}
+
+function generateGrid(){
+  if(!tractLayer&&(!cruise||!cruise.tractGeoJSON)){showToast('Draw your tract first');return;}
+  if(!cruise){showToast('Save cruise setup first');return;}
+  if(!tractLayer&&cruise.tractGeoJSON){
+    const l=L.geoJSON(cruise.tractGeoJSON,{style:{color:'#5cb85c',fillOpacity:.15,weight:2}}).addTo(drawnItems);
+    tractLayer=l;
+  }
+  const sp=getSpacing();
+  let gj=cruise.tractGeoJSON;
+  if(!gj)return;
+  if(gj.type==='FeatureCollection')gj=gj.features[0];
+  let poly=gj.type==='Feature'?gj:{type:'Feature',geometry:gj};
+  const bb=turf.bbox(poly);
+  const latC=(bb[1]+bb[3])/2;
+  const xM=sp.x*20.1168,yM=sp.y*20.1168;
+  const mPerLng=111320*Math.cos(latC*Math.PI/180),mPerLat=110540;
+  const xDeg=xM/mPerLng,yDeg=yM/mPerLat;
+
+  const pts=[];
+  for(let lat=bb[1];lat<=bb[3];lat+=yDeg)
+    for(let lng=bb[0];lng<=bb[2];lng+=xDeg)
+      pts.push(turf.point([lng,lat]));
+
+  let inside;
+  try{inside=turf.pointsWithinPolygon(turf.featureCollection(pts),poly);}
+  catch(e){showToast('Grid error');return;}
+  if(!inside.features.length){showToast('No plots fit — try smaller spacing');return;}
+
+  plotMarkers.forEach(m=>map.removeLayer(m));plotMarkers=[];plots=[];
+  inside.features.forEach((pt,i)=>{
+    const[lng,lat]=pt.geometry.coordinates;
+    plots.push({id:i+1,lat,lng,trees:[],done:false});
+    const m=L.circleMarker([lat,lng],{radius:8,color:'#d4850a',fillColor:'#d4850a',fillOpacity:.85,weight:2}).addTo(map);
+    m.on('click',()=>openPlotModal(i));
+    plotMarkers.push(m);
+  });
+  saveState();
+  document.getElementById('mapStatus').textContent=`${plots.length} plots · ${sp.x}×${sp.y} chain grid`;
+  showToast(`${plots.length} plots generated`);
+  refreshPlotsList();
+}
+
+function clearMap(){
+  if(drawnItems)drawnItems.clearLayers();
+  plotMarkers.forEach(m=>map.removeLayer(m));plotMarkers=[];plots=[];tractLayer=null;
+  if(cruise)cruise.tractGeoJSON=null;
+  document.getElementById('tractAcres').value='';
+  saveState();
+  document.getElementById('mapStatus').textContent='Draw your tract boundary or upload a shapefile';
+  refreshPlotsList();
+}
+
+// ─────────────────────────────────────────
+// GPS
+// ─────────────────────────────────────────
+function toggleGPS(){
+  if(gpsWatchId){
+    navigator.geolocation.clearWatch(gpsWatchId);gpsWatchId=null;
+    document.getElementById('gpsDot').classList.remove('active');
+    if(gpsMarker){map.removeLayer(gpsMarker);gpsMarker=null;}
+    showToast('GPS off');
+  }else{
+    if(!navigator.geolocation){showToast('GPS unavailable');return;}
+    document.getElementById('gpsDot').classList.add('active');
+    gpsWatchId=navigator.geolocation.watchPosition(pos=>{
+      const{latitude:lat,longitude:lng}=pos.coords;
+      if(!gpsMarker){
+        gpsMarker=L.circleMarker([lat,lng],{radius:10,color:'#5cb85c',fillColor:'#5cb85c',fillOpacity:.9,weight:3}).addTo(map);
+        map.setView([lat,lng],16);
+      }else gpsMarker.setLatLng([lat,lng]);
+    },err=>showToast('GPS: '+err.message),{enableHighAccuracy:true});
+  }
+}
+
+// ─────────────────────────────────────────
+// MODAL — DATA ENTRY
+// ─────────────────────────────────────────
+function buildDBHButtons(){
+  document.getElementById('dbhGrid').innerHTML=DBH_CLASSES.map(d=>
+    `<div class="dbh-btn${d===selDBH?' sel':''}" onclick="pickDBH(${d})">${d}"</div>`
+  ).join('');
+}
+function pickDBH(d){
+  selDBH=d;
+  document.querySelectorAll('.dbh-btn').forEach(b=>b.classList.toggle('sel',parseInt(b.textContent)===d));
+}
+
+function buildLogButtons(){
+  document.getElementById('logsRow').innerHTML=LOG_STEPS.map(l=>
+    `<div class="log-btn${l===selLogs?' sel':''}" onclick="pickLogs(${l})">${l}</div>`
+  ).join('');
+}
+function pickLogs(l){
+  selLogs=l;
+  document.querySelectorAll('.log-btn').forEach(b=>b.classList.toggle('sel',parseFloat(b.textContent)===l));
+}
+
+function openPlotModal(idx){
+  currentPlotIdx=idx;
+  const plot=plots[idx];
+  editTrees=JSON.parse(JSON.stringify(plot.trees||[]));
+  document.getElementById('modalTitle').textContent=`Plot #${plot.id}`;
+  const sel=document.getElementById('entrySpecies');
+  sel.innerHTML='';
+  (cruise?cruise.species:[{code:'LP',label:'Loblolly Pine (LP)'}]).forEach(sp=>{
+    const o=document.createElement('option');o.value=sp.code;o.textContent=sp.label;sel.appendChild(o);
+  });
+  buildDBHButtons();buildLogButtons();renderTallyTable();updateLiveStats();
+  document.getElementById('plotModal').classList.add('open');
+}
+
+function closeModal(){
+  document.getElementById('plotModal').classList.remove('open');
+  currentPlotIdx=null;
+}
+
+function addTree(){
+  const spp=document.getElementById('entrySpecies').value;
+  const tree={spp,dbh:selDBH,logs:selLogs};
+  editTrees.push(tree);lastTree={...tree};
+  renderTallyTable();updateLiveStats();
+  showToast(`${spp} ${selDBH}" · ${selLogs} log`);
+}
+
+function repeatLastTree(){
+  if(!lastTree){showToast('No previous tree to repeat');return;}
+  editTrees.push({...lastTree});
+  renderTallyTable();updateLiveStats();
+  showToast(`Repeated: ${lastTree.spp} ${lastTree.dbh}"·${lastTree.logs}log`);
+}
+
+function removeTree(i){
+  editTrees.splice(i,1);renderTallyTable();updateLiveStats();
+}
+
+function renderTallyTable(){
+  const baf=cruise?cruise.baf:10;
+  document.getElementById('tallyCount').textContent=editTrees.length;
+  const tbody=document.getElementById('tallyBody');
+  if(!editTrees.length){
+    tbody.innerHTML='<tr><td colspan="6" style="text-align:center;color:var(--muted);padding:16px;font-family:\'IBM Plex Mono\',monospace;font-size:11px">Select DBH + logs then tap Add Tree</td></tr>';
+    return;
+  }
+  tbody.innerHTML=editTrees.map((t,i)=>{
+    const tpa=calcTPA(baf,t.dbh);
+    const volAc=Math.round(scribnerVol(t.dbh,t.logs)*tpa);
+    return`<tr><td>${t.spp}</td><td>${t.dbh}"</td><td>${t.logs}</td><td>${baf}</td><td>${volAc}</td><td><button class="del-btn" onclick="removeTree(${i})">✕</button></td></tr>`;
+  }).join('');
+}
+
+function updateLiveStats(){
+  const baf=cruise?cruise.baf:10;
+  let ba=0,tpa=0,vol=0;
+  editTrees.forEach(t=>{
+    const tp=calcTPA(baf,t.dbh);
+    const v=scribnerVol(t.dbh,t.logs);
+    ba+=baf;tpa+=tp;vol+=v*tp;
+  });
+  document.getElementById('liveBA').textContent=ba;
+  document.getElementById('liveTPA').textContent=Math.round(tpa);
+  document.getElementById('liveVol').textContent=Math.round(vol);
+}
+
+function savePlot(){
+  if(currentPlotIdx===null)return;
+  const id=plots[currentPlotIdx].id;
+  plots[currentPlotIdx].trees=JSON.parse(JSON.stringify(editTrees));
+  plots[currentPlotIdx].done=true;
+  saveState();refreshPlotsList();updatePlotMarker(currentPlotIdx);closeModal();
+  showToast(`Plot #${id} saved!`);
+}
+
+function clearPlot(){editTrees=[];renderTallyTable();updateLiveStats();}
+
+function updatePlotMarker(idx){
+  const m=plotMarkers[idx];if(!m)return;
+  const c=plots[idx].done?'#5cb85c':'#d4850a';
+  m.setStyle({color:c,fillColor:c});
+}
+
+// ─────────────────────────────────────────
+// PLOTS LIST
+// ─────────────────────────────────────────
+function refreshPlotsList(){
+  const list=document.getElementById('plotsList');
+  const done=plots.filter(p=>p.done).length;
+  document.getElementById('plotsDone').textContent=done;
+  document.getElementById('plotsTotal').textContent=plots.length;
+  if(done>0){
+    const baf=cruise?cruise.baf:10;
+    let tot=0;plots.filter(p=>p.done).forEach(p=>{tot+=p.trees.length*baf;});
+    document.getElementById('plotsBA').textContent=Math.round(tot/done);
+  }else document.getElementById('plotsBA').textContent='—';
+  if(!plots.length){
+    list.innerHTML='<div class="empty-state"><div class="big-icon">📍</div>Generate a grid on the Map tab first.</div>';return;
+  }
+  list.innerHTML=plots.map((p,i)=>{
+    const tc=p.trees?p.trees.length:0;
+    return`<div class="plot-item" onclick="openPlotModal(${i})">
+      <div class="plot-num">${p.id}</div>
+      <div class="plot-info">
+        <div class="plot-trees">${tc} tree${tc!==1?'s':''} tallied</div>
+        <div class="plot-coords">${p.lat.toFixed(5)}, ${p.lng.toFixed(5)}</div>
+      </div>
+      <div class="plot-status ${p.done?'done':'pending'}">${p.done?'DONE':'OPEN'}</div>
+    </div>`;
+  }).join('');
+}
+
+// ─────────────────────────────────────────
+// REPORT
+// ─────────────────────────────────────────
+function generateReport(){
+  const done=plots.filter(p=>p.done),n=done.length;
+  const baf=cruise?cruise.baf:10,acres=cruise?cruise.acres:0;
+  const el=document.getElementById('reportContent');
+  if(!n){el.innerHTML='<div class="empty-state"><div class="big-icon">📊</div>Complete some plots to generate a report.</div>';return;}
+  const sd={};
+  done.forEach(plot=>plot.trees.forEach(t=>{
+    if(!sd[t.spp])sd[t.spp]={baT:0,tpaT:0,volT:0};
+    const tp=calcTPA(baf,t.dbh),v=scribnerVol(t.dbh,t.logs);
+    sd[t.spp].baT+=baf;sd[t.spp].tpaT+=tp;sd[t.spp].volT+=v*tp;
+  }));
+  let totBA=0,totTPA=0,totVol=0;
+  Object.keys(sd).forEach(s=>{
+    const d=sd[s];d.baAc=d.baT/n;d.tpaAc=d.tpaT/n;d.volAc=d.volT/n;
+    totBA+=d.baAc;totTPA+=d.tpaAc;totVol+=d.volAc;
+  });
+  const sp=getSpacing();
+  let html=`<div class="report-card"><h3>Cruise Summary</h3>
+    <div class="report-row"><span>Tract</span><span class="val">${cruise?cruise.name:'—'}</span></div>
+    <div class="report-row"><span>Cruiser</span><span class="val">${cruise?cruise.cruiser:'—'}</span></div>
+    <div class="report-row"><span>Date</span><span class="val">${cruise?cruise.date:'—'}</span></div>
+    <div class="report-row"><span>BAF</span><span class="val">${baf}</span></div>
+    <div class="report-row"><span>Grid</span><span class="val">${sp.x}×${sp.y} chains</span></div>
+    <div class="report-row"><span>Plots</span><span class="val">${n} / ${plots.length} done</span></div>
+    <div class="report-row"><span>Acres</span><span class="val">${acres>0?acres.toFixed(1):'—'}</span></div>
+  </div>
+  <div class="report-card"><h3>All Species Combined</h3>
+    <div class="report-row"><span>BA / Acre</span><span class="val">${totBA.toFixed(1)} sq ft</span></div>
+    <div class="report-row"><span>Trees / Acre</span><span class="val">${totTPA.toFixed(1)}</span></div>
+    <div class="report-row"><span>Volume / Acre</span><span class="val">${Math.round(totVol).toLocaleString()} BF</span></div>
+    ${acres>0?`<div class="report-row"><span>Total Volume</span><span class="val">${Math.round(totVol*acres).toLocaleString()} BF</span></div>`:''}
+    ${acres>0?`<div class="report-row"><span>Total MBF</span><span class="val">${(totVol*acres/1000).toFixed(1)} MBF</span></div>`:''}
+  </div>`;
+  Object.keys(sd).forEach(spp=>{
+    const s=sd[spp];
+    html+=`<div class="species-header">${spp}</div><div class="report-card">
+      <div class="report-row"><span>BA / Acre</span><span class="val">${s.baAc.toFixed(1)} sq ft</span></div>
+      <div class="report-row"><span>Trees / Acre</span><span class="val">${s.tpaAc.toFixed(1)}</span></div>
+      <div class="report-row"><span>Volume / Acre</span><span class="val">${Math.round(s.volAc).toLocaleString()} BF</span></div>
+      ${acres>0?`<div class="report-row"><span>Total Volume</span><span class="val">${Math.round(s.volAc*acres).toLocaleString()} BF</span></div>`:''}
+    </div>`;
+  });
+  el.innerHTML=html;
+}
+
+// ─────────────────────────────────────────
+// CSV EXPORT
+// ─────────────────────────────────────────
+function exportCSV(){
+  const baf=cruise?cruise.baf:10;
+  if(!plots.filter(p=>p.done).length){showToast('No data to export');return;}
+  let rows=[['Plot','Species','DBH_in','Logs','BA_per_Acre','TPA','BF_per_Acre','Lat','Lng']];
+  plots.forEach(p=>{
+    if(!p.done)return;
+    p.trees.forEach(t=>{
+      const tpa=calcTPA(baf,t.dbh),vol=scribnerVol(t.dbh,t.logs);
+      rows.push([p.id,t.spp,t.dbh,t.logs,baf,tpa.toFixed(2),(vol*tpa).toFixed(1),p.lat.toFixed(6),p.lng.toFixed(6)]);
+    });
+  });
+  const blob=new Blob([rows.map(r=>r.join(',')).join('\n')],{type:'text/csv'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);
+  a.download=`${(cruise?cruise.name:'cruise').replace(/\s+/g,'_')}_cruise.csv`;a.click();
+  showToast('CSV exported!');
+}
+
+// ─────────────────────────────────────────
+// NAV
+// ─────────────────────────────────────────
+function switchTab(name,btn){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('nav button').forEach(b=>b.classList.remove('active'));
+  document.getElementById('screen-'+name).classList.add('active');
+  btn.classList.add('active');
+  if(name==='map'){
+    initMap();
+    setTimeout(()=>{if(map)map.invalidateSize();},100);
+    if(cruise&&cruise.tractGeoJSON&&drawnItems&&!drawnItems.getLayers().length){
+      const l=L.geoJSON(cruise.tractGeoJSON,{style:{color:'#5cb85c',fillOpacity:.15,weight:2}}).addTo(drawnItems);
+      tractLayer=l;
+    }
+    if(plots.length&&!plotMarkers.length){
+      plots.forEach((p,i)=>{
+        const m=L.circleMarker([p.lat,p.lng],{radius:8,color:p.done?'#5cb85c':'#d4850a',fillColor:p.done?'#5cb85c':'#d4850a',fillOpacity:.85,weight:2}).addTo(map);
+        m.on('click',()=>openPlotModal(i));plotMarkers.push(m);
+      });
+      if(plots.length)map.setView([plots[0].lat,plots[0].lng],15);
+    }
+  }
+  if(name==='plots')refreshPlotsList();
+  if(name==='report')generateReport();
+}
+
+// ─────────────────────────────────────────
+// TOAST
+// ─────────────────────────────────────────
+function showToast(msg){
+  const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),2500);
+}
+
+// ─────────────────────────────────────────
+// INIT
+// ─────────────────────────────────────────
+window.addEventListener('DOMContentLoaded',()=>{
+  loadState();updateHeader();
+  const d=document.getElementById('cruiseDate');
+  if(!d.value)d.value=new Date().toISOString().split('T')[0];
+  if(cruise){
+    document.getElementById('tractName').value=cruise.name||'';
+    document.getElementById('cruiserName').value=cruise.cruiser||'';
+    if(cruise.acres)document.getElementById('tractAcres').value=cruise.acres;
+    document.getElementById('bafSelect').value=cruise.baf||10;
+    document.getElementById('spacingX').value=cruise.spacingX||3;
+    document.getElementById('spacingY').value=cruise.spacingY||3;
+    document.getElementById('cruiseDate').value=cruise.date||'';
+    if(cruise.gridType){
+      gridType=cruise.gridType;
+      document.querySelectorAll('.grid-opt').forEach(el=>el.classList.toggle('selected',el.dataset.type===gridType));
+      if(gridType==='custom')document.getElementById('customSpacingRow').style.display='grid';
+    }
+    if(cruise.species){
+      const sel=document.getElementById('speciesSelect');
+      Array.from(sel.options).forEach(o=>{o.selected=cruise.species.some(s=>s.code===o.value);});
+    }
+  }
+});
+</script>
+</body>
+</html>
