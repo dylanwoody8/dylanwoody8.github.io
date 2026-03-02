@@ -28,12 +28,7 @@ input:focus,select:focus{border-color:var(--accent)}
 .btn{width:100%;padding:14px;border:none;border-radius:4px;font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:2px;cursor:pointer;transition:opacity .2s}
 .btn:active{opacity:.8}.btn-primary{background:var(--pine);color:var(--white)}.btn-amber{background:var(--amber);color:var(--white)}.btn-danger{background:var(--red);color:var(--white)}
 .btn-sm{width:auto;padding:8px 16px;font-size:14px;letter-spacing:1px}
-/* Grid picker */
-.grid-picker{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:10px}
-.grid-opt{background:var(--card);border:2px solid var(--border);border-radius:6px;padding:10px 4px;text-align:center;cursor:pointer;transition:border-color .15s}
-.grid-opt.selected{border-color:var(--accent)}
-.grid-opt .gname{font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:1px;color:var(--accent)}
-.grid-opt .gsub{font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--muted);margin-top:2px}
+
 /* map */
 #map{flex:1}
 .map-toolbar{background:var(--forest);border-bottom:1px solid var(--border);padding:8px 10px;display:flex;gap:6px;align-items:center;flex-shrink:0;flex-wrap:wrap}
@@ -146,28 +141,8 @@ input[readonly]{border-color:var(--amber);color:var(--amber)}
       <input type="date" id="cruiseDate">
     </div>
 
-    <div class="section-title">Plot Grid Pattern</div>
-    <div class="grid-picker" id="gridPicker">
-      <div class="grid-opt selected" data-type="3x3" onclick="selectGridType(this,'3x3')">
-        <div class="gname">3×3</div><div class="gsub">3 chain sq</div>
-      </div>
-      <div class="grid-opt" data-type="4x4" onclick="selectGridType(this,'4x4')">
-        <div class="gname">4×4</div><div class="gsub">4 chain sq</div>
-      </div>
-      <div class="grid-opt" data-type="4x5" onclick="selectGridType(this,'4x5')">
-        <div class="gname">4×5</div><div class="gsub">4×5 chains</div>
-      </div>
-      <div class="grid-opt" data-type="5x5" onclick="selectGridType(this,'5x5')">
-        <div class="gname">5×5</div><div class="gsub">5 chain sq</div>
-      </div>
-      <div class="grid-opt" data-type="5x6" onclick="selectGridType(this,'5x6')">
-        <div class="gname">5×6</div><div class="gsub">5×6 chains</div>
-      </div>
-      <div class="grid-opt" data-type="custom" onclick="selectGridType(this,'custom')">
-        <div class="gname">CUST</div><div class="gsub">Custom</div>
-      </div>
-    </div>
-    <div id="customSpacingRow" style="display:none" class="row-2">
+    <div class="section-title">Plot Grid Spacing</div>
+    <div class="row-2">
       <div class="field-group">
         <label>X Spacing (chains)</label>
         <input type="number" id="spacingX" value="3" step="0.5" min="0.5">
@@ -344,7 +319,7 @@ const SCRIBNER = {
 };
 const LOG_STEPS=[0.5,1,1.5,2,2.5,3,3.5,4,4.5,5];
 const DBH_CLASSES=[6,8,10,12,14,16,18,20,22,24,26,28,30];
-const GRID_PRESETS={'3x3':[3,3],'4x4':[4,4],'4x5':[4,5],'5x5':[5,5],'5x6':[5,6],'custom':null};
+const GRID_PRESETS={}; // legacy, unused
 
 function scribnerVol(dbh,logs){
   const d=Math.round(dbh);
@@ -361,7 +336,7 @@ function calcTPA(baf,dbh){return baf/(0.005454*dbh*dbh);}
 let cruise=null,plots=[],currentPlotIdx=null,editTrees=[],lastTree=null;
 let map,drawnItems,drawControl,tractLayer,plotMarkers=[];
 let gpsWatchId=null,gpsMarker=null;
-let selDBH=10,selLogs=1,gridType='3x3';
+let selDBH=10,selLogs=1;
 
 // ─────────────────────────────────────────
 // STORAGE
@@ -379,11 +354,10 @@ function loadState(){
 // ─────────────────────────────────────────
 // SETUP
 // ─────────────────────────────────────────
-function selectGridType(el,type){
-  gridType=type;
-  document.querySelectorAll('.grid-opt').forEach(e=>e.classList.remove('selected'));
-  el.classList.add('selected');
-  document.getElementById('customSpacingRow').style.display=type==='custom'?'grid':'none';
+function getSpacing(){
+  const x=parseFloat(document.getElementById('spacingX').value)||cruise&&cruise.spacingX||3;
+  const y=parseFloat(document.getElementById('spacingY').value)||cruise&&cruise.spacingY||3;
+  return{x,y};
 }
 
 function saveCruise(){
@@ -398,7 +372,6 @@ function saveCruise(){
     cruiser:document.getElementById('cruiserName').value.trim(),
     acres:parseFloat(document.getElementById('tractAcres').value)||prevAcres||0,
     baf:parseInt(document.getElementById('bafSelect').value),
-    gridType,
     spacingX:parseFloat(document.getElementById('spacingX').value)||3,
     spacingY:parseFloat(document.getElementById('spacingY').value)||3,
     date:document.getElementById('cruiseDate').value,
@@ -496,11 +469,7 @@ async function handleShpUpload(ev){
 // ─────────────────────────────────────────
 // GRID
 // ─────────────────────────────────────────
-function getSpacing(){
-  const gt=cruise?cruise.gridType:gridType;
-  if(gt==='custom')return{x:cruise?cruise.spacingX:3,y:cruise?cruise.spacingY:3};
-  const p=GRID_PRESETS[gt]||[3,3];return{x:p[0],y:p[1]};
-}
+
 
 function generateGrid(){
   if(!tractLayer&&(!cruise||!cruise.tractGeoJSON)){showToast('Draw your tract first');return;}
@@ -830,9 +799,7 @@ window.addEventListener('DOMContentLoaded',()=>{
     document.getElementById('spacingY').value=cruise.spacingY||3;
     document.getElementById('cruiseDate').value=cruise.date||'';
     if(cruise.gridType){
-      gridType=cruise.gridType;
-      document.querySelectorAll('.grid-opt').forEach(el=>el.classList.toggle('selected',el.dataset.type===gridType));
-      if(gridType==='custom')document.getElementById('customSpacingRow').style.display='grid';
+      // legacy compat — ignore
     }
     if(cruise.species){
       const sel=document.getElementById('speciesSelect');
