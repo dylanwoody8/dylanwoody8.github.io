@@ -69,7 +69,16 @@ input:focus,select:focus{border-color:var(--accent)}
 .logs-row{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px}
 .log-btn{background:var(--card);border:2px solid var(--border);border-radius:6px;padding:8px 12px;font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--text);cursor:pointer;transition:all .12s;white-space:nowrap}
 .log-btn.sel{border-color:var(--amber);color:var(--amber);background:rgba(212,133,10,.12)}
-/* tally */
+/* product toggle */
+.product-toggle{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px}
+.product-btn{background:var(--card);border:2px solid var(--border);border-radius:6px;padding:10px 4px;text-align:center;cursor:pointer;transition:all .12s;font-family:'Bebas Neue',sans-serif;font-size:17px;letter-spacing:1px;color:var(--text)}
+.product-btn.sel-saw{border-color:var(--accent);color:var(--accent);background:rgba(92,184,92,.12)}
+.product-btn.sel-pulp{border-color:#6ab0de;color:#6ab0de;background:rgba(106,176,222,.12)}
+/* height buttons (pulpwood) */
+.ht-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin-bottom:10px}
+.ht-btn{background:var(--card);border:2px solid var(--border);border-radius:6px;padding:10px 4px;text-align:center;cursor:pointer;transition:all .12s;font-family:'IBM Plex Mono',monospace;font-size:13px;color:var(--text);line-height:1}
+.ht-btn.sel{border-color:#6ab0de;color:#6ab0de;background:rgba(106,176,222,.12)}
+.ht-note{font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--muted);margin-bottom:14px;letter-spacing:.5px}
 .tally-section{margin-bottom:16px}
 .tally-table{width:100%;border-collapse:collapse}
 .tally-table th{font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--muted);padding:6px 4px;border-bottom:1px solid var(--border);text-align:center}
@@ -241,7 +250,7 @@ input[readonly]{border-color:var(--amber);color:var(--amber)}
       <div class="plot-live-stats">
         <div class="stat-box"><span class="stat-val" id="liveBA">0</span><span class="stat-lbl">BA/Acre</span></div>
         <div class="stat-box"><span class="stat-val" id="liveTPA">0</span><span class="stat-lbl">TPA</span></div>
-        <div class="stat-box"><span class="stat-val" id="liveVol">0</span><span class="stat-lbl">BF/Acre</span></div>
+        <div class="stat-box"><span class="stat-val" id="liveVol">0</span><span class="stat-lbl" id="liveVolLbl">BF/Acre</span></div>
       </div>
 
       <div class="section-title">Add Tree</div>
@@ -251,11 +260,25 @@ input[readonly]{border-color:var(--amber);color:var(--amber)}
         <select id="entrySpecies"></select>
       </div>
 
+      <label>Product</label>
+      <div class="product-toggle" style="margin-bottom:14px">
+        <div class="product-btn sel-saw" id="btnSaw" onclick="pickProduct('sawtimber')">🪵 Sawtimber</div>
+        <div class="product-btn" id="btnPulp" onclick="pickProduct('pulpwood')">📦 Pulpwood</div>
+      </div>
+
       <label>DBH Class — tap to select</label>
       <div class="dbh-grid" id="dbhGrid"></div>
 
-      <label>16-ft Merchantable Logs</label>
-      <div class="logs-row" id="logsRow"></div>
+      <div id="logsSection">
+        <label>16-ft Merchantable Logs</label>
+        <div class="logs-row" id="logsRow"></div>
+      </div>
+
+      <div id="heightSection" style="display:none">
+        <label>Total Tree Height</label>
+        <div class="ht-grid" id="htGrid"></div>
+        <div class="ht-note" id="htNote"></div>
+      </div>
 
       <div class="row-2" style="margin-bottom:16px;gap:8px">
         <button class="btn btn-primary" onclick="addTree()" style="font-size:16px;padding:13px">＋ Add Tree</button>
@@ -265,7 +288,7 @@ input[readonly]{border-color:var(--amber);color:var(--amber)}
       <div class="tally-section">
         <div class="section-title">Tallied: <span id="tallyCount" style="color:var(--text)">0</span> trees</div>
         <table class="tally-table">
-          <thead><tr><th>Spp</th><th>DBH</th><th>Logs</th><th>BA/Ac</th><th>BF/Ac</th><th></th></tr></thead>
+          <thead><tr><th>Spp</th><th>DBH</th><th>Prod</th><th>Logs</th><th>BA/Ac</th><th>Vol/Ac</th><th></th></tr></thead>
           <tbody id="tallyBody"></tbody>
         </table>
       </div>
@@ -287,46 +310,135 @@ input[readonly]{border-color:var(--amber);color:var(--amber)}
 
 <script>
 // ─────────────────────────────────────────
-// SCRIBNER DECIMAL C — Southern Pine
-// DBH (integer) x 16-ft logs → Board Feet
+// SCRIBNER LOG RULE — Form Class 78
+// Gross Tree Volume, Board Feet
+// By Number of Usable 16-Foot Logs
+// Source: Service Forester's Handbook
+//         handbook.sref.info (SREF)
+// Columns: 1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5 logs
 // ─────────────────────────────────────────
 const SCRIBNER = {
-   6:[5,10,13,15,16,17,17,18,18,18],
-   7:[7,15,20,22,24,25,26,26,27,27],
-   8:[10,20,27,32,35,37,38,39,40,40],
-   9:[13,27,37,44,49,52,54,56,57,58],
-  10:[17,35,49,59,66,71,74,77,79,80],
-  11:[22,45,63,77,86,93,97,101,103,105],
-  12:[28,57,79,97,109,118,124,128,131,134],
-  13:[34,70,99,121,137,148,156,162,166,169],
-  14:[42,86,120,148,168,182,192,199,204,208],
-  15:[51,103,145,178,202,220,232,241,247,252],
-  16:[61,123,173,213,242,264,279,290,298,304],
-  17:[72,145,205,252,287,313,332,345,355,362],
-  18:[85,170,240,296,337,368,390,406,418,426],
-  19:[99,198,279,345,393,430,456,475,489,499],
-  20:[115,229,323,399,455,498,529,551,568,580],
-  21:[132,263,372,460,525,575,611,637,657,671],
-  22:[151,301,426,527,601,659,701,731,754,770],
-  23:[172,342,484,599,684,750,799,833,859,878],
-  24:[194,387,547,678,774,849,904,944,974,995],
-  25:[218,435,616,763,872,957,1020,1065,1099,1123],
-  26:[244,487,690,855,977,1073,1144,1195,1233,1261],
-  27:[272,542,768,953,1089,1197,1277,1334,1377,1408],
-  28:[301,601,853,1058,1210,1329,1419,1483,1531,1566],
-  29:[333,664,943,1170,1338,1471,1571,1642,1696,1735],
-  30:[367,731,1038,1289,1474,1621,1731,1812,1872,1915],
+  10: [28,  36,  44,  48,  52,   0,   0,    0,    0],
+  11: [38,  49,  60,  67,  74,   0,   0,    0,    0],
+  12: [47,  61,  75,  85,  95, 100, 106,    0,    0],
+  13: [58,  76,  94, 107, 120, 128, 136,    0,    0],
+  14: [69,  92, 114, 130, 146, 156, 166,    0,    0],
+  15: [82, 109, 136, 157, 178, 192, 206,    0,    0],
+  16: [95, 127, 159, 185, 211, 229, 247,    0,    0],
+  17: [109, 146, 184, 215, 246, 268, 289,   0,    0],
+  18: [123, 166, 209, 244, 280, 306, 331,   0,    0],
+  19: [140, 190, 240, 281, 322, 352, 382,   0,    0],
+  20: [157, 214, 270, 317, 364, 398, 432, 459,  486],
+  21: [176, 240, 304, 358, 411, 450, 490, 523,  556],
+  22: [194, 266, 338, 398, 458, 504, 549, 588,  626],
+  23: [214, 294, 374, 441, 508, 558, 607, 652,  698],
+  24: [234, 322, 409, 484, 558, 611, 665, 718,  770],
+  25: [258, 355, 452, 534, 617, 678, 740, 799,  858],
+  26: [281, 388, 494, 585, 676, 745, 814, 880,  945],
+  27: [304, 420, 536, 636, 736, 811, 886, 959, 1032],
+  28: [327, 452, 578, 686, 795, 877, 939,1040, 1120],
+  29: [354, 491, 628, 746, 864, 953,1042,1132, 1222],
+  30: [382, 530, 678, 806, 933,1028,1124,1224, 1325],
+  31: [411, 571, 731, 871,1011,1117,1223,1328, 1434],
+  32: [440, 612, 784, 938,1089,1206,1322,1432, 1543],
+  33: [469, 654, 838,1001,1164,1289,1414,1534, 1654],
+  34: [498, 695, 892,1066,1239,1373,1507,1636, 1766],
+  35: [530, 742, 954,1141,1328,1473,1618,1757, 1896],
+  36: [563, 789,1015,1216,1416,1572,1728,1877, 2026],
+  37: [598, 836,1075,1209,1506,1670,1835,1998, 2160],
+  38: [629, 882,1135,1366,1596,1769,1952,2118, 2295],
+  39: [666, 935,1204,1449,1694,1881,2088,2251, 2434],
+  40: [703, 988,1274,1532,1791,1993,2195,2384, 2574],
 };
-const LOG_STEPS=[0.5,1,1.5,2,2.5,3,3.5,4,4.5,5];
-const DBH_CLASSES=[6,8,10,12,14,16,18,20,22,24,26,28,30];
+// Columns correspond to: 1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5 logs
+const LOG_STEPS=[1,1.5,2,2.5,3,3.5,4,4.5,5];
+const DBH_CLASSES=[6,7,8,9,10,12,14,16,18,20,22,24,26,28,30,32,34,36,38,40];
 const GRID_PRESETS={}; // legacy, unused
 
-function scribnerVol(dbh,logs){
+// ─────────────────────────────────────────
+// LOBLOLLY PINE GREEN WEIGHT — WITH HEIGHT
+// Source: Arkansas Forest Resources Center
+//   FSA-5017R, Cunningham/Patterson
+//
+// Table 2: Pulpwood stems 6-9" DBH
+//   Heights: 35,40,45,50,55,60 ft
+// Table 3: Sawlog stems 10-32" DBH
+//   Heights: 40,50,60,70,80,90,100,110,120 ft
+// All values in pounds to 3-inch top
+// ─────────────────────────────────────────
+const PULP_HTS_SMALL=[35,40,45,50,55,60]; // for DBH 6-9
+const PULP_HTS_LARGE=[40,50,60,70,80,90,100,110,120]; // for DBH 10-32
+const PULP_TBL2={
+   6:[158,184,210,238,264,290],
+   7:[224,260,296,332,368,404],
+   8:[302,348,394,442,488,536],
+   9:[388,448,506,566,624,684],
+};
+const PULP_TBL3={
+  10:[702, 808, 904, 996,1082,   0,    0,    0,    0],
+  11:[856, 984,1102,1212,1318,   0,    0,    0,    0],
+  12:[1024,1176,1318,1450,1576,  0,    0,    0,    0],
+  13:[1208,1388,1556,1712,1860,2002,   0,    0,    0],
+  14:[1408,1618,1812,1994,2168,2332,   0,    0,    0],
+  15:[1866,2090,2300,2500,2690,2872,   0,    0,    0],
+  16:[2132,2388,2628,2856,3072,3280,   0,    0,    0],
+  17:[2706,2978,3236,3482,3718,3946,   0,    0,    0],
+  18:[3046,3352,3642,3920,4184,4440,   0,    0,    0],
+  19:[3406,3748,4072,4382,4678,4964,   0,    0,    0],
+  20:[3786,4166,4528,4872,5202,5520,   0,    0,    0],
+  21:[4188,4608,5008,5388,5754,6104,6444,   0,    0],
+  22:[4610,5074,5512,5932,6334,6720,7094,   0,    0],
+  23:[   0,5562,6042,6502,6942,7366,7776,   0,    0],
+  24:[   0,6072,6598,7100,7586,8044,8490,   0,    0],
+  25:[   0,6606,7178,7724,8248,8752,9238,   0,    0],
+  26:[   0,7164,7784,8376,8944,9490,10018,  0,    0],
+  27:[   0,7744,8416,9054,9668,10258,10830, 0,    0],
+  28:[   0,8348,9072,9762,10422,11060,11674,0,    0],
+  29:[   0,8976,9754,10494,11206,11890,12552,0,   0],
+  30:[   0,9626,10460,11256,12018,12752,13462,0,  0],
+  31:[   0,10302,11194,12044,12864,13646,14406,0, 0],
+  32:[   0,11000,11952,12862,13732,14572,15382,0, 0],
+};
+
+function pulpwoodTons(dbh,ht){
   const d=Math.round(dbh);
-  if(d<6||d>30)return 0;
+  // DBH > 32 or no height — fall back to Table 1 (diameter only)
+  if(!ht||d>32){
+    const lbs=PULP_LBS[Math.min(30,Math.max(6,d))];
+    return(lbs||0)/2000;
+  }
+  if(d<=9&&d>=6){
+    // Table 2: interpolate to nearest height bucket
+    const hts=PULP_HTS_SMALL;
+    const idx=nearestIdx(hts,ht);
+    return(PULP_TBL2[d][idx]||0)/2000;
+  }
+  // Table 3: DBH 10-32
+  const row=PULP_TBL3[d];
+  if(!row)return(PULP_LBS[Math.min(30,Math.max(6,d))]||0)/2000;
+  const hts=PULP_HTS_LARGE;
+  const idx=nearestIdx(hts,ht);
+  return(row[idx]||0)/2000;
+}
+// Find index of nearest value in a sorted array
+function nearestIdx(arr,val){
+  let best=0,bestDiff=Math.abs(arr[0]-val);
+  for(let i=1;i<arr.length;i++){
+    const diff=Math.abs(arr[i]-val);
+    if(diff<bestDiff){bestDiff=diff;best=i;}
+  }
+  return best;
+}
+
+function scribnerVol(dbh,logs){
+  // Round DBH to nearest even inch (2" classes), clamp to table range 10-40
+  let d=Math.round(dbh/2)*2;
+  if(d<10)d=10;if(d>40)d=40;
   const idx=LOG_STEPS.indexOf(parseFloat(logs));
   if(idx<0)return 0;
-  return(SCRIBNER[d]||[])[idx]||0;
+  const row=SCRIBNER[d];
+  if(!row)return 0;
+  return row[idx]||0;
 }
 function calcTPA(baf,dbh){return baf/(0.005454*dbh*dbh);}
 
@@ -336,7 +448,7 @@ function calcTPA(baf,dbh){return baf/(0.005454*dbh*dbh);}
 let cruise=null,plots=[],currentPlotIdx=null,editTrees=[],lastTree=null;
 let map,drawnItems,drawControl,tractLayer,plotMarkers=[];
 let gpsWatchId=null,gpsMarker=null;
-let selDBH=10,selLogs=1;
+let selDBH=14,selLogs=2,selProduct='sawtimber',selHeight=50;
 
 // ─────────────────────────────────────────
 // STORAGE
@@ -548,24 +660,54 @@ function toggleGPS(){
 // ─────────────────────────────────────────
 // MODAL — DATA ENTRY
 // ─────────────────────────────────────────
+function pickProduct(p){
+  selProduct=p;
+  document.getElementById('btnSaw').className='product-btn'+(p==='sawtimber'?' sel-saw':'');
+  document.getElementById('btnPulp').className='product-btn'+(p==='pulpwood'?' sel-pulp':'');
+  document.getElementById('logsSection').style.display=p==='pulpwood'?'none':'block';
+  document.getElementById('heightSection').style.display=p==='pulpwood'?'block':'none';
+  document.getElementById('liveVolLbl').textContent=p==='pulpwood'?'T/Ac':'BF/Ac';
+  selDBH=p==='pulpwood'?6:14;
+  buildDBHButtons();
+  if(p==='pulpwood') buildHeightButtons();
+  updateLiveStats();
+}
+function buildHeightButtons(){
+  const d=selDBH;
+  const hts=d<=9?PULP_HTS_SMALL:PULP_HTS_LARGE;
+  // clamp selHeight to valid range for this DBH
+  if(!hts.includes(selHeight)) selHeight=hts[Math.floor(hts.length/2)];
+  document.getElementById('htGrid').innerHTML=hts.map(h=>
+    `<div class="ht-btn${h===selHeight?' sel':''}" onclick="pickHeight(${h})">${h}'</div>`
+  ).join('');
+  // note for DBH > 32 fallback
+  const note=d>32?'⚠ DBH >32" — using diameter-only table':'';
+  document.getElementById('htNote').textContent=note;
+}
+function pickHeight(h){
+  selHeight=h;
+  document.querySelectorAll('.ht-btn').forEach(b=>b.classList.toggle('sel',parseInt(b.textContent)===h));
+  updateLiveStats();
+}
 function buildDBHButtons(){
   document.getElementById('dbhGrid').innerHTML=DBH_CLASSES.map(d=>
-    `<div class="dbh-btn${d===selDBH?' sel':''}" onclick="pickDBH(${d})">${d}"</div>`
+    `<div class="dbh-btn${d===selDBH?' sel':''}" data-dbh="${d}" onclick="pickDBH(${d})">${d}"</div>`
   ).join('');
 }
 function pickDBH(d){
   selDBH=d;
-  document.querySelectorAll('.dbh-btn').forEach(b=>b.classList.toggle('sel',parseInt(b.textContent)===d));
+  document.querySelectorAll('.dbh-btn').forEach(b=>b.classList.toggle('sel',parseInt(b.dataset.dbh)===d));
+  if(selProduct==='pulpwood') buildHeightButtons();
 }
 
 function buildLogButtons(){
   document.getElementById('logsRow').innerHTML=LOG_STEPS.map(l=>
-    `<div class="log-btn${l===selLogs?' sel':''}" onclick="pickLogs(${l})">${l}</div>`
+    `<div class="log-btn${l===selLogs?' sel':''}" data-log="${l}" onclick="pickLogs(${l})">${l}</div>`
   ).join('');
 }
 function pickLogs(l){
   selLogs=l;
-  document.querySelectorAll('.log-btn').forEach(b=>b.classList.toggle('sel',parseFloat(b.textContent)===l));
+  document.querySelectorAll('.log-btn').forEach(b=>b.classList.toggle('sel',parseFloat(b.dataset.log)===l));
 }
 
 function openPlotModal(idx){
@@ -578,7 +720,17 @@ function openPlotModal(idx){
   (cruise?cruise.species:[{code:'LP',label:'Loblolly Pine (LP)'}]).forEach(sp=>{
     const o=document.createElement('option');o.value=sp.code;o.textContent=sp.label;sel.appendChild(o);
   });
-  buildDBHButtons();buildLogButtons();renderTallyTable();updateLiveStats();
+  selProduct='sawtimber';
+  selDBH=14;
+  selLogs=2;
+  selHeight=50;
+  document.getElementById('btnSaw').className='product-btn sel-saw';
+  document.getElementById('btnPulp').className='product-btn';
+  document.getElementById('logsSection').style.display='block';
+  document.getElementById('heightSection').style.display='none';
+  document.getElementById('liveVolLbl').textContent='BF/Ac';
+  buildDBHButtons();buildLogButtons();
+  renderTallyTable();updateLiveStats();
   document.getElementById('plotModal').classList.add('open');
 }
 
@@ -589,17 +741,24 @@ function closeModal(){
 
 function addTree(){
   const spp=document.getElementById('entrySpecies').value;
-  const tree={spp,dbh:selDBH,logs:selLogs};
+  const isPulp=selProduct==='pulpwood';
+  const tree={spp,dbh:selDBH,logs:isPulp?0:selLogs,product:selProduct,height:isPulp?selHeight:null};
   editTrees.push(tree);lastTree={...tree};
   renderTallyTable();updateLiveStats();
-  showToast(`${spp} ${selDBH}" · ${selLogs} log`);
+  const label=isPulp
+    ?`${spp} ${selDBH}" · ${selHeight}' · Pulpwood`
+    :`${spp} ${selDBH}" · ${selLogs} log`;
+  showToast(label);
 }
 
 function repeatLastTree(){
   if(!lastTree){showToast('No previous tree to repeat');return;}
   editTrees.push({...lastTree});
   renderTallyTable();updateLiveStats();
-  showToast(`Repeated: ${lastTree.spp} ${lastTree.dbh}"·${lastTree.logs}log`);
+  const label=lastTree.product==='pulpwood'
+    ?`Repeated: ${lastTree.spp} ${lastTree.dbh}" · ${lastTree.height}'`
+    :`Repeated: ${lastTree.spp} ${lastTree.dbh}" · ${lastTree.logs}log`;
+  showToast(label);
 }
 
 function removeTree(i){
@@ -611,27 +770,52 @@ function renderTallyTable(){
   document.getElementById('tallyCount').textContent=editTrees.length;
   const tbody=document.getElementById('tallyBody');
   if(!editTrees.length){
-    tbody.innerHTML='<tr><td colspan="6" style="text-align:center;color:var(--muted);padding:16px;font-family:\'IBM Plex Mono\',monospace;font-size:11px">Select DBH + logs then tap Add Tree</td></tr>';
+    tbody.innerHTML='<tr><td colspan="7" style="text-align:center;color:var(--muted);padding:16px;font-family:\'IBM Plex Mono\',monospace;font-size:11px">Select product + DBH then tap Add Tree</td></tr>';
     return;
   }
   tbody.innerHTML=editTrees.map((t,i)=>{
     const tpa=calcTPA(baf,t.dbh);
-    const volAc=Math.round(scribnerVol(t.dbh,t.logs)*tpa);
-    return`<tr><td>${t.spp}</td><td>${t.dbh}"</td><td>${t.logs}</td><td>${baf}</td><td>${volAc}</td><td><button class="del-btn" onclick="removeTree(${i})">✕</button></td></tr>`;
+    const isPulp=(t.product==='pulpwood');
+    let volDisplay,volUnit;
+    if(isPulp){
+      const tonsAc=pulpwoodTons(t.dbh,t.height)*tpa;
+      volDisplay=tonsAc.toFixed(2);volUnit='T';
+    }else{
+      volDisplay=Math.round(scribnerVol(t.dbh,t.logs)*tpa);volUnit='BF';
+    }
+    const prodLabel=isPulp?'<span style="color:#6ab0de">PULP</span>':'<span style="color:var(--accent)">SAW</span>';
+    const logsCell=isPulp?(t.height?`${t.height}'`:'—'):t.logs;
+    return`<tr>
+      <td>${t.spp}</td>
+      <td>${t.dbh}"</td>
+      <td>${prodLabel}</td>
+      <td>${logsCell}</td>
+      <td>${baf}</td>
+      <td>${volDisplay}<span style="font-size:9px;color:var(--muted)"> ${volUnit}</span></td>
+      <td><button class="del-btn" onclick="removeTree(${i})">✕</button></td>
+    </tr>`;
   }).join('');
 }
 
 function updateLiveStats(){
   const baf=cruise?cruise.baf:10;
-  let ba=0,tpa=0,vol=0;
+  let ba=0,tpa=0,sawVol=0,pulpTons=0,hasPulp=false,hasSaw=false;
   editTrees.forEach(t=>{
     const tp=calcTPA(baf,t.dbh);
-    const v=scribnerVol(t.dbh,t.logs);
-    ba+=baf;tpa+=tp;vol+=v*tp;
+    ba+=baf;tpa+=tp;
+    if(t.product==='pulpwood'){pulpTons+=pulpwoodTons(t.dbh,t.height)*tp;hasPulp=true;}
+    else{sawVol+=scribnerVol(t.dbh,t.logs)*tp;hasSaw=true;}
   });
   document.getElementById('liveBA').textContent=ba;
   document.getElementById('liveTPA').textContent=Math.round(tpa);
-  document.getElementById('liveVol').textContent=Math.round(vol);
+  // Show whichever product was last selected, or mix
+  if(selProduct==='pulpwood'||(!hasSaw&&hasPulp)){
+    document.getElementById('liveVol').textContent=pulpTons.toFixed(1);
+    document.getElementById('liveVolLbl').textContent='T/Ac';
+  }else{
+    document.getElementById('liveVol').textContent=Math.round(sawVol);
+    document.getElementById('liveVolLbl').textContent='BF/Ac';
+  }
 }
 
 function savePlot(){
@@ -688,16 +872,24 @@ function generateReport(){
   const baf=cruise?cruise.baf:10,acres=cruise?cruise.acres:0;
   const el=document.getElementById('reportContent');
   if(!n){el.innerHTML='<div class="empty-state"><div class="big-icon">📊</div>Complete some plots to generate a report.</div>';return;}
+
+  // Accumulate by species + product
   const sd={};
   done.forEach(plot=>plot.trees.forEach(t=>{
-    if(!sd[t.spp])sd[t.spp]={baT:0,tpaT:0,volT:0};
-    const tp=calcTPA(baf,t.dbh),v=scribnerVol(t.dbh,t.logs);
-    sd[t.spp].baT+=baf;sd[t.spp].tpaT+=tp;sd[t.spp].volT+=v*tp;
+    const key=t.spp+'|'+(t.product||'sawtimber');
+    if(!sd[key])sd[key]={spp:t.spp,product:t.product||'sawtimber',baT:0,tpaT:0,volT:0};
+    const tp=calcTPA(baf,t.dbh);
+    sd[key].baT+=baf;sd[key].tpaT+=tp;
+    if((t.product||'sawtimber')==='pulpwood') sd[key].volT+=pulpwoodTons(t.dbh,t.height)*tp;
+    else sd[key].volT+=scribnerVol(t.dbh,t.logs)*tp;
   }));
-  let totBA=0,totTPA=0,totVol=0;
-  Object.keys(sd).forEach(s=>{
-    const d=sd[s];d.baAc=d.baT/n;d.tpaAc=d.tpaT/n;d.volAc=d.volT/n;
-    totBA+=d.baAc;totTPA+=d.tpaAc;totVol+=d.volAc;
+
+  let totSawBA=0,totSawTPA=0,totSawVol=0;
+  let totPulpBA=0,totPulpTPA=0,totPulpVol=0;
+  Object.values(sd).forEach(d=>{
+    d.baAc=d.baT/n;d.tpaAc=d.tpaT/n;d.volAc=d.volT/n;
+    if(d.product==='pulpwood'){totPulpBA+=d.baAc;totPulpTPA+=d.tpaAc;totPulpVol+=d.volAc;}
+    else{totSawBA+=d.baAc;totSawTPA+=d.tpaAc;totSawVol+=d.volAc;}
   });
   const sp=getSpacing();
   let html=`<div class="report-card"><h3>Cruise Summary</h3>
@@ -708,22 +900,51 @@ function generateReport(){
     <div class="report-row"><span>Grid</span><span class="val">${sp.x}×${sp.y} chains</span></div>
     <div class="report-row"><span>Plots</span><span class="val">${n} / ${plots.length} done</span></div>
     <div class="report-row"><span>Acres</span><span class="val">${acres>0?acres.toFixed(1):'—'}</span></div>
-  </div>
-  <div class="report-card"><h3>All Species Combined</h3>
-    <div class="report-row"><span>BA / Acre</span><span class="val">${totBA.toFixed(1)} sq ft</span></div>
-    <div class="report-row"><span>Trees / Acre</span><span class="val">${totTPA.toFixed(1)}</span></div>
-    <div class="report-row"><span>Volume / Acre</span><span class="val">${Math.round(totVol).toLocaleString()} BF</span></div>
-    ${acres>0?`<div class="report-row"><span>Total Volume</span><span class="val">${Math.round(totVol*acres).toLocaleString()} BF</span></div>`:''}
-    ${acres>0?`<div class="report-row"><span>Total MBF</span><span class="val">${(totVol*acres/1000).toFixed(1)} MBF</span></div>`:''}
   </div>`;
-  Object.keys(sd).forEach(spp=>{
-    const s=sd[spp];
-    html+=`<div class="species-header">${spp}</div><div class="report-card">
-      <div class="report-row"><span>BA / Acre</span><span class="val">${s.baAc.toFixed(1)} sq ft</span></div>
-      <div class="report-row"><span>Trees / Acre</span><span class="val">${s.tpaAc.toFixed(1)}</span></div>
-      <div class="report-row"><span>Volume / Acre</span><span class="val">${Math.round(s.volAc).toLocaleString()} BF</span></div>
-      ${acres>0?`<div class="report-row"><span>Total Volume</span><span class="val">${Math.round(s.volAc*acres).toLocaleString()} BF</span></div>`:''}
+
+  // Sawtimber summary
+  if(totSawTPA>0){
+    html+=`<div class="report-card"><h3>Sawtimber — All Species</h3>
+      <div class="report-row"><span>BA / Acre</span><span class="val">${totSawBA.toFixed(1)} sq ft</span></div>
+      <div class="report-row"><span>Trees / Acre</span><span class="val">${totSawTPA.toFixed(1)}</span></div>
+      <div class="report-row"><span>Volume / Acre</span><span class="val">${Math.round(totSawVol).toLocaleString()} BF</span></div>
+      ${acres>0?`<div class="report-row"><span>Total Volume</span><span class="val">${Math.round(totSawVol*acres).toLocaleString()} BF</span></div>`:''}
+      ${acres>0?`<div class="report-row"><span>Total MBF</span><span class="val">${(totSawVol*acres/1000).toFixed(1)} MBF</span></div>`:''}
     </div>`;
+  }
+
+  // Pulpwood summary
+  if(totPulpTPA>0){
+    html+=`<div class="report-card"><h3>Pulpwood — All Species</h3>
+      <div class="report-row"><span>BA / Acre</span><span class="val">${totPulpBA.toFixed(1)} sq ft</span></div>
+      <div class="report-row"><span>Trees / Acre</span><span class="val">${totPulpTPA.toFixed(1)}</span></div>
+      <div class="report-row"><span>Tons / Acre</span><span class="val">${totPulpVol.toFixed(2)} GT</span></div>
+      ${acres>0?`<div class="report-row"><span>Total Tons</span><span class="val">${(totPulpVol*acres).toFixed(1)} GT</span></div>`:''}
+    </div>`;
+  }
+
+  // Per-species breakdown
+  const species=[...new Set(Object.values(sd).map(d=>d.spp))];
+  species.forEach(spp=>{
+    const sawKey=spp+'|sawtimber',pulpKey=spp+'|pulpwood';
+    const saw=sd[sawKey],pulp=sd[pulpKey];
+    html+=`<div class="species-header">${spp}</div>`;
+    if(saw){
+      html+=`<div class="report-card"><h3>Sawtimber</h3>
+        <div class="report-row"><span>BA / Acre</span><span class="val">${saw.baAc.toFixed(1)} sq ft</span></div>
+        <div class="report-row"><span>Trees / Acre</span><span class="val">${saw.tpaAc.toFixed(1)}</span></div>
+        <div class="report-row"><span>Volume / Acre</span><span class="val">${Math.round(saw.volAc).toLocaleString()} BF</span></div>
+        ${acres>0?`<div class="report-row"><span>Total Volume</span><span class="val">${Math.round(saw.volAc*acres).toLocaleString()} BF</span></div>`:''}
+      </div>`;
+    }
+    if(pulp){
+      html+=`<div class="report-card"><h3>Pulpwood</h3>
+        <div class="report-row"><span>BA / Acre</span><span class="val">${pulp.baAc.toFixed(1)} sq ft</span></div>
+        <div class="report-row"><span>Trees / Acre</span><span class="val">${pulp.tpaAc.toFixed(1)}</span></div>
+        <div class="report-row"><span>Tons / Acre</span><span class="val">${pulp.volAc.toFixed(2)} GT</span></div>
+        ${acres>0?`<div class="report-row"><span>Total Tons</span><span class="val">${(pulp.volAc*acres).toFixed(1)} GT</span></div>`:''}
+      </div>`;
+    }
   });
   el.innerHTML=html;
 }
@@ -734,12 +955,17 @@ function generateReport(){
 function exportCSV(){
   const baf=cruise?cruise.baf:10;
   if(!plots.filter(p=>p.done).length){showToast('No data to export');return;}
-  let rows=[['Plot','Species','DBH_in','Logs','BA_per_Acre','TPA','BF_per_Acre','Lat','Lng']];
+  let rows=[['Plot','Species','Product','DBH_in','Logs','Height_ft','BA_per_Acre','TPA','Volume_per_Acre','Volume_Unit','Lat','Lng']];
   plots.forEach(p=>{
     if(!p.done)return;
     p.trees.forEach(t=>{
-      const tpa=calcTPA(baf,t.dbh),vol=scribnerVol(t.dbh,t.logs);
-      rows.push([p.id,t.spp,t.dbh,t.logs,baf,tpa.toFixed(2),(vol*tpa).toFixed(1),p.lat.toFixed(6),p.lng.toFixed(6)]);
+      const tpa=calcTPA(baf,t.dbh);
+      const isPulp=(t.product||'sawtimber')==='pulpwood';
+      const vol=isPulp?pulpwoodTons(t.dbh,t.height)*tpa:scribnerVol(t.dbh,t.logs)*tpa;
+      const unit=isPulp?'GT':'BF';
+      const logs=isPulp?'':t.logs;
+      const ht=isPulp?(t.height||''):'';
+      rows.push([p.id,t.spp,t.product||'sawtimber',t.dbh,logs,ht,baf,tpa.toFixed(2),vol.toFixed(2),unit,p.lat.toFixed(6),p.lng.toFixed(6)]);
     });
   });
   const blob=new Blob([rows.map(r=>r.join(',')).join('\n')],{type:'text/csv'});
