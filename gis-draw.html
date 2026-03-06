@@ -356,7 +356,342 @@
   }
   .export-check.dimmed { opacity: 0.4; pointer-events: none; }
   .export-check input[type=checkbox] { accent-color: var(--lime); cursor: pointer; }
+  .export-layers-list {
+    max-height: 180px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding-right: 4px;
+  }
+  .export-layers-list::-webkit-scrollbar { width: 4px; }
+  .export-layers-list::-webkit-scrollbar-thumb { background: var(--leaf); }
+  .export-sep {
+    border: none;
+    border-top: 1px solid var(--moss);
+    margin: 4px 0 2px;
+  }
+  .export-section-label {
+    font-size: 0.58rem;
+    color: var(--sand);
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    opacity: 0.7;
+    margin-top: 2px;
+  }
+  .geopdf-btn {
+    background: #1565c0;
+    border-color: #1976d2;
+    color: #fff;
+    font-weight: 700;
+  }
+  .geopdf-btn:hover { background: #1976d2; border-color: #2196f3; }
 
+  /* ── Layer manager panel ─────────────────────────────────────────────── */
+  .layer-panel {
+    position: absolute;
+    left: 60px;
+    top: 70px;
+    width: 260px;
+    max-height: calc(100vh - 140px);
+    background: var(--bark);
+    border: 1px solid var(--leaf);
+    border-top: 3px solid var(--lime);
+    z-index: 1000;
+    padding: 14px;
+    display: none;
+    flex-direction: column;
+    gap: 8px;
+    overflow-y: auto;
+  }
+  .layer-panel.open { display: flex; }
+  .layer-panel h3 {
+    font-family: 'Syne', sans-serif;
+    font-size: 0.8rem;
+    font-weight: 800;
+    color: var(--lime);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 2px;
+  }
+  .layer-item {
+    background: var(--forest);
+    border: 1px solid var(--leaf);
+    padding: 8px 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    cursor: pointer;
+    transition: border-color 0.15s;
+  }
+  .layer-item:hover { border-color: var(--lime); }
+  .layer-item.selected { border-color: var(--lime); border-width: 2px; }
+  .layer-item-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 6px;
+  }
+  .layer-name {
+    font-size: 0.68rem;
+    color: var(--cream);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    flex: 1;
+  }
+  .layer-feat-count {
+    font-size: 0.58rem;
+    color: var(--sand);
+    opacity: 0.7;
+    flex-shrink: 0;
+  }
+  .layer-swatch {
+    width: 18px;
+    height: 12px;
+    border: 1px solid rgba(255,255,255,0.3);
+    flex-shrink: 0;
+  }
+  .layer-controls {
+    display: none;
+    flex-direction: column;
+    gap: 6px;
+    padding-top: 6px;
+    border-top: 1px solid var(--moss);
+  }
+  .layer-item.selected .layer-controls { display: flex; }
+  .layer-ctrl-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .layer-ctrl-label {
+    font-size: 0.58rem;
+    color: var(--sand);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    width: 52px;
+    flex-shrink: 0;
+  }
+  .layer-ctrl-row input[type=color] {
+    width: 28px;
+    height: 22px;
+    border: 1px solid var(--leaf);
+    background: var(--forest);
+    padding: 1px;
+    cursor: pointer;
+  }
+  .layer-ctrl-row input[type=range] {
+    flex: 1;
+    accent-color: var(--lime);
+    height: 4px;
+    cursor: pointer;
+  }
+  .layer-ctrl-row input[type=number] {
+    width: 48px;
+    background: var(--forest);
+    border: 1px solid var(--leaf);
+    color: var(--cream);
+    font-family: 'Space Mono', monospace;
+    font-size: 0.65rem;
+    padding: 3px 4px;
+    text-align: center;
+  }
+  .layer-remove-btn {
+    font-size: 0.58rem;
+    color: #e74c3c;
+    background: none;
+    border: 1px solid #c0392b;
+    padding: 4px 8px;
+    cursor: pointer;
+    font-family: 'Space Mono', monospace;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    transition: all 0.15s;
+    align-self: flex-start;
+  }
+  .layer-remove-btn:hover { background: #c0392b; color: #fff; }
+  .layer-empty {
+    font-size: 0.65rem;
+    color: var(--sand);
+    opacity: 0.6;
+    font-style: italic;
+    padding: 8px 0;
+  }
+
+  /* ── GeoPDF preview overlay ──────────────────────────────────────────── */
+  .geopdf-preview-bar {
+    position: absolute;
+    top: 60px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--bark);
+    border: 1px solid var(--lime);
+    z-index: 2000;
+    padding: 8px 16px;
+    display: none;
+    align-items: center;
+    gap: 12px;
+    white-space: nowrap;
+  }
+  .geopdf-preview-bar.open { display: flex; }
+  .geopdf-preview-bar .field-label { margin: 0; }
+  .geopdf-preview-bar button {
+    padding: 6px 14px;
+    font-family: 'Space Mono', monospace;
+    font-size: 0.65rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    cursor: pointer;
+    border: 1px solid;
+    letter-spacing: 0.5px;
+  }
+
+  @media (max-width: 768px) {
+    .layer-panel { left: 8px; right: 8px; width: auto; top: 52px; }
+    .geopdf-preview-bar { left: 8px; right: 8px; transform: none; flex-wrap: wrap; justify-content: center; }
+  }
+
+
+  /* ── Splash / Help Screen ────────────────────────────────────────────── */
+  .splash-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(10, 25, 18, 0.92);
+    z-index: 5000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    overflow-y: auto;
+  }
+  .splash-overlay.hidden { display: none; }
+  .splash-card {
+    background: var(--bark);
+    border: 1px solid var(--leaf);
+    border-top: 3px solid var(--lime);
+    max-width: 640px;
+    width: 100%;
+    max-height: calc(100vh - 40px);
+    overflow-y: auto;
+    padding: 28px 32px 20px;
+  }
+  .splash-card::-webkit-scrollbar { width: 5px; }
+  .splash-card::-webkit-scrollbar-thumb { background: var(--leaf); }
+  .splash-logo {
+    font-family: 'Syne', sans-serif;
+    font-weight: 800;
+    font-size: 1.6rem;
+    color: var(--lime);
+    letter-spacing: -0.5px;
+    margin-bottom: 4px;
+  }
+  .splash-logo small {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.7rem;
+    font-weight: 400;
+    color: var(--sand);
+    opacity: 0.7;
+    margin-left: 8px;
+  }
+  .splash-subtitle {
+    font-size: 0.72rem;
+    color: var(--sand);
+    margin-bottom: 20px;
+    line-height: 1.6;
+  }
+  .splash-section {
+    margin-bottom: 16px;
+  }
+  .splash-section-title {
+    font-family: 'Syne', sans-serif;
+    font-weight: 800;
+    font-size: 0.75rem;
+    color: var(--lime);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .splash-section-title svg { width: 16px; height: 16px; stroke: var(--lime); flex-shrink: 0; }
+  .splash-item {
+    display: flex;
+    gap: 10px;
+    padding: 6px 0;
+    border-bottom: 1px solid rgba(74, 140, 92, 0.15);
+    align-items: flex-start;
+  }
+  .splash-item:last-child { border-bottom: none; }
+  .splash-key {
+    font-size: 0.65rem;
+    font-weight: 700;
+    color: var(--cream);
+    background: var(--moss);
+    padding: 2px 8px;
+    white-space: nowrap;
+    flex-shrink: 0;
+    min-width: 90px;
+    text-align: center;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  .splash-desc {
+    font-size: 0.68rem;
+    color: var(--sand);
+    line-height: 1.5;
+  }
+  .splash-tip {
+    font-size: 0.62rem;
+    color: var(--lime);
+    font-style: italic;
+    margin-top: 2px;
+  }
+  .splash-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 20px;
+    padding-top: 14px;
+    border-top: 1px solid var(--moss);
+    gap: 12px;
+  }
+  .splash-dismiss {
+    padding: 10px 28px;
+    background: var(--lime);
+    border: none;
+    color: var(--forest);
+    font-family: 'Space Mono', monospace;
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+  .splash-dismiss:hover { background: #a5d65f; }
+  .splash-noshow {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.62rem;
+    color: var(--sand);
+    cursor: pointer;
+  }
+  .splash-noshow input { accent-color: var(--lime); cursor: pointer; }
+  .splash-help-btn {
+    background: transparent;
+    border-color: var(--leaf);
+    color: var(--sand);
+  }
+  .splash-help-btn:hover { background: var(--leaf); color: #fff; border-color: var(--lime); }
+
+  @media (max-width: 768px) {
+    .splash-card { padding: 20px 16px 16px; }
+    .splash-logo { font-size: 1.3rem; }
+    .splash-key { min-width: 72px; font-size: 0.6rem; }
+  }
   /* ── Mobile bottom bar ───────────────────────────────────────────────── */
   .mobile-bar {
     display: none;
@@ -516,6 +851,10 @@
       Cruise Grid
     </button>
     <div class="sep"></div>
+    <button class="tool-btn" id="btn-layers" onclick="toggleLayerPanel()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+      Layers
+    </button>
     <button class="tool-btn upload-btn" onclick="document.getElementById('shp-upload-input').click()">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7,10 12,5 17,10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
       Upload .SHP
@@ -523,6 +862,11 @@
     <button class="tool-btn export-btn" onclick="exportShapefile()">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7,10 12,15 17,10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
       Export .SHP
+    </button>
+    <div class="sep"></div>
+    <button class="tool-btn splash-help-btn" onclick="showSplash()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><circle cx="12" cy="17" r="0.5" fill="currentColor"/></svg>
+      Help
     </button>
   </div>
 </header>
@@ -556,6 +900,21 @@
     <button class="btn-clear-grid" onclick="clearCruiseGrid()">Clear</button>
   </div>
   <div class="cruise-info" id="cruise-info">No grid generated yet.</div>
+</div>
+
+<!-- Layer Style Manager -->
+<div class="layer-panel" id="layer-panel">
+  <h3>■ Layers</h3>
+  <div id="layer-list">
+    <div class="layer-empty">No imported shapefiles yet.</div>
+  </div>
+</div>
+
+<!-- GeoPDF Export Preview Bar -->
+<div class="geopdf-preview-bar" id="geopdf-preview-bar">
+  <div class="field-label" style="color:var(--cream);">Draw a box on the map to define GeoPDF area</div>
+  <button class="btn-generate geopdf-btn" id="geopdf-confirm-btn" onclick="confirmGeoPDFExport()" style="opacity:0.4; pointer-events:none;">Export GeoPDF</button>
+  <button class="btn-clear-grid" onclick="cancelGeoPDFMode()">Cancel</button>
 </div>
 
 <div id="map"></div>
@@ -615,6 +974,10 @@
       <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7,10 12,15 17,10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
       Export .SHP
     </button>
+    <button class="mob-drawer-btn full" onclick="closeMobileMenu(); exportGeoPDF()" style="border-color:#1976d2; color:#64b5f6;">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M3.6 9h16.8M3.6 15h16.8"/><ellipse cx="12" cy="12" rx="4" ry="9"/></svg>
+      Export GeoPDF
+    </button>
     <button class="mob-drawer-btn full danger" onclick="closeMobileMenu(); clearAll()">
       <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><polyline points="3,6 5,6 21,6"/><path d="M19,6l-1,14H6L5,6"/><path d="M10,11v6"/><path d="M14,11v6"/></svg>
       Clear All Features
@@ -622,23 +985,154 @@
   </div>
 </div>
 
+<!-- Splash / Help Screen -->
+<div class="splash-overlay" id="splash-overlay">
+  <div class="splash-card">
+    <div class="splash-logo">ForestDraw <small>GIS Sketch Tool</small></div>
+    <div class="splash-subtitle">
+      Draw stand boundaries, import shapefiles, generate cruise grids, and export georeferenced PDFs for Avenza Maps. Built for foresters in the field.
+    </div>
+
+    <div class="splash-section">
+      <div class="splash-section-title">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><polygon points="12,2 22,20 2,20"/></svg>
+        Drawing Tools
+      </div>
+      <div class="splash-item">
+        <span class="splash-key">Polygon</span>
+        <div class="splash-desc">Click points to draw a stand boundary. Double-click or click the first point to close. Acreage calculates automatically.</div>
+      </div>
+      <div class="splash-item">
+        <span class="splash-key">Line</span>
+        <div class="splash-desc">Draw roads, streams, or property lines. Click to add vertices, double-click to finish.</div>
+      </div>
+      <div class="splash-item">
+        <span class="splash-key">Point</span>
+        <div class="splash-desc">Drop a single marker on the map for reference points, gates, or landmarks.</div>
+      </div>
+      <div class="splash-item">
+        <span class="splash-key">Edit</span>
+        <div class="splash-desc">Toggle edit mode to drag vertices and reshape existing features. Click Edit again to save changes.</div>
+      </div>
+    </div>
+
+    <div class="splash-section">
+      <div class="splash-section-title">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7,10 12,5 17,10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        Import &amp; Export Shapefiles
+      </div>
+      <div class="splash-item">
+        <span class="splash-key">Upload .SHP</span>
+        <div class="splash-desc">Click the button or drag-and-drop .shp/.dbf files (or a .zip containing them) onto the map. Supports multiple shapefiles in one zip. Auto-reprojects from any CRS to WGS 84.</div>
+      </div>
+      <div class="splash-item">
+        <span class="splash-key">Export .SHP</span>
+        <div class="splash-desc">Export drawn features, cruise points, and/or imported layers as a zipped shapefile bundle. DBF attributes are preserved on re-export.</div>
+      </div>
+    </div>
+
+    <div class="splash-section">
+      <div class="splash-section-title">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+        Layer Styling
+      </div>
+      <div class="splash-item">
+        <span class="splash-key">Layers</span>
+        <div class="splash-desc">Open the Layers panel to manage imported shapefiles. Click any layer to expand style controls: outline color, fill color, fill opacity, and line weight. Each imported layer gets a unique auto-color.</div>
+      </div>
+      <div class="splash-item">
+        <span class="splash-key">Basemaps</span>
+        <div class="splash-desc">Use the layer control (top-right corner) to switch between Streets, Satellite, Imagery Hybrid, and Topo basemaps. Toggle NC Parcels overlay on/off.</div>
+      </div>
+    </div>
+
+    <div class="splash-section">
+      <div class="splash-section-title">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><circle cx="5" cy="5" r="1.5" fill="currentColor"/><circle cx="12" cy="5" r="1.5" fill="currentColor"/><circle cx="19" cy="5" r="1.5" fill="currentColor"/><circle cx="5" cy="12" r="1.5" fill="currentColor"/><circle cx="12" cy="12" r="1.5" fill="currentColor"/><circle cx="19" cy="12" r="1.5" fill="currentColor"/></svg>
+        Cruise Grid
+      </div>
+      <div class="splash-item">
+        <span class="splash-key">Setup</span>
+        <div class="splash-desc">Open the Cruise Grid panel, check which polygons to grid, set chain spacing for columns (X) and rows (Y), and optionally set a bearing angle for rotated grids.</div>
+      </div>
+      <div class="splash-item">
+        <span class="splash-key">Generate</span>
+        <div class="splash-desc">Click Generate to place numbered cruise plots inside the selected polygons. Points are clipped to polygon boundaries using ray-casting. Export them as a shapefile with PLOT_ID attributes.</div>
+      </div>
+    </div>
+
+    <div class="splash-section">
+      <div class="splash-section-title">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M3.6 9h16.8M3.6 15h16.8"/><ellipse cx="12" cy="12" rx="4" ry="9"/></svg>
+        GeoPDF Export (Avenza Maps)
+      </div>
+      <div class="splash-item">
+        <span class="splash-key">Step 1</span>
+        <div class="splash-desc">Click "Export GeoPDF" from the export menu or mobile drawer.</div>
+      </div>
+      <div class="splash-item">
+        <span class="splash-key">Step 2</span>
+        <div class="splash-desc">Draw a rectangle on the map around the area you want to export. Zoom in/out to get the detail level you need.</div>
+      </div>
+      <div class="splash-item">
+        <span class="splash-key">Step 3</span>
+        <div class="splash-desc">Click "Export GeoPDF" in the toolbar to generate a portrait 8.5x11 PDF with georeferencing. Open in Avenza Maps on your phone to see your GPS position on top of the map in the field.</div>
+      </div>
+      <div class="splash-item">
+        <span class="splash-key">Tip</span>
+        <div class="splash-desc splash-tip">Make sure the entire rectangle is visible on screen before exporting. The PDF captures exactly what's inside the box at the current zoom level. Shapefiles, drawn features, and cruise points all appear in the export.</div>
+      </div>
+    </div>
+
+    <div class="splash-section">
+      <div class="splash-section-title">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg>
+        Other Tools
+      </div>
+      <div class="splash-item">
+        <span class="splash-key">Locate Me</span>
+        <div class="splash-desc">Uses your device GPS to show a blue dot with accuracy ring on the map. Great for ground-truthing in the field.</div>
+      </div>
+      <div class="splash-item">
+        <span class="splash-key">Clear</span>
+        <div class="splash-desc">Removes all drawn features from the map. Does not affect imported shapefiles (use the Layers panel to remove those).</div>
+      </div>
+    </div>
+
+    <div class="splash-footer">
+      <label class="splash-noshow">
+        <input type="checkbox" id="splash-noshow-check"> Don't show this again
+      </label>
+      <button class="splash-dismiss" onclick="dismissSplash()">Got It</button>
+    </div>
+  </div>
+</div>
+
 <div class="notification" id="notif"></div>
 
 <!-- Export selection modal -->
 <div class="export-modal" id="export-modal">
-  <h3>↓ Export Shapefile</h3>
-  <div class="field-label">Select layers to export:</div>
-  <label class="export-check" id="exp-drawn-label">
-    <input type="checkbox" id="exp-drawn" checked>
-    Drawn Features (<span id="exp-drawn-count">0</span>)
-  </label>
-  <label class="export-check" id="exp-cruise-label">
-    <input type="checkbox" id="exp-cruise" checked>
-    Cruise Points (<span id="exp-cruise-count">0</span>)
-  </label>
+  <h3>↓ Export</h3>
+  <div class="field-label">Select layers to export as Shapefile:</div>
+  <div class="export-layers-list">
+    <label class="export-check" id="exp-drawn-label">
+      <input type="checkbox" id="exp-drawn" checked>
+      Drawn Features (<span id="exp-drawn-count">0</span>)
+    </label>
+    <label class="export-check" id="exp-cruise-label">
+      <input type="checkbox" id="exp-cruise" checked>
+      Cruise Points (<span id="exp-cruise-count">0</span>)
+    </label>
+    <div id="exp-imported-container"></div>
+  </div>
   <div class="cruise-actions" style="margin-top:4px;">
     <button class="btn-clear-grid" onclick="closeExportModal()">Cancel</button>
-    <button class="btn-generate" onclick="doExport()">Export</button>
+    <button class="btn-generate" onclick="doExport()">Export .SHP</button>
+  </div>
+  <hr class="export-sep">
+  <div class="field-label">Or export the current map view:</div>
+  <div class="cruise-actions" style="margin-top:2px;">
+    <button class="btn-generate geopdf-btn" onclick="closeExportModal(); exportGeoPDF()">🌎 Export GeoPDF</button>
   </div>
 </div>
 
@@ -674,7 +1168,19 @@ const topo = L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', {
   maxZoom: 17
 });
 
-osm.addTo(map);
+const hybrid = L.layerGroup([
+  L.tileLayer('https://mt1.google.com/vt/lyrs=s&x={x}&y={y}&z={z}', {
+    attribution: '© Google',
+    maxZoom: 20
+  }),
+  L.tileLayer('https://mt1.google.com/vt/lyrs=h&x={x}&y={y}&z={z}', {
+    attribution: '© Google',
+    maxZoom: 20,
+    opacity: 1
+  })
+]);
+
+hybrid.addTo(map);
 
 // ── NC OneMap Parcels WMS ──────────────────────────────────────────────────
 const ncParcels = L.tileLayer.wms('https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/WMSServer', {
@@ -689,6 +1195,7 @@ const ncParcels = L.tileLayer.wms('https://services.nconemap.gov/secure/rest/ser
 const layerControl = L.control.layers({
   'Streets (OSM)': osm,
   'Satellite': satellite,
+  'Imagery Hybrid': hybrid,
   'Topo': topo
 }, {
   'NC Parcels (OneMap)': ncParcels
@@ -706,8 +1213,8 @@ map.addLayer(drawnItems);
 const drawControl = new L.Control.Draw({
   edit: { featureGroup: drawnItems },
   draw: {
-    polygon: { shapeOptions: { color: '#8bc34a', fillOpacity: 0.2 } },
-    polyline: { shapeOptions: { color: '#8bc34a' } },
+    polygon: { shapeOptions: { color: '#e53935', fillOpacity: 0, opacity: 1, fill: false, weight: 4 } },
+    polyline: { shapeOptions: { color: '#e53935', opacity: 1, weight: 4 } },
     marker: true,
     rectangle: false,
     circle: false,
@@ -718,9 +1225,15 @@ map.addControl(drawControl);
 
 map.on(L.Draw.Event.CREATED, e => {
   drawnItems.addLayer(e.layer);
+  const st = getDrawnStyle(e.layer);
+  // Apply tracked style immediately so it matches imported layer look
+  if (e.layer.setStyle) {
+    e.layer.setStyle({ color: st.color, fillColor: st.fillColor, fillOpacity: st.fillOpacity, weight: st.weight, opacity: 1, fill: st.fillOpacity > 0 });
+  }
   updateCount();
   refreshPolySelect();
   updateAcres();
+  refreshLayerPanel();
   if (e.layer instanceof L.Polygon) {
     const acres = calcAcres(e.layer);
     e.layer.bindPopup(`<b>${acres.toFixed(2)} acres</b>`).openPopup();
@@ -728,8 +1241,25 @@ map.on(L.Draw.Event.CREATED, e => {
   notify('Feature added');
 });
 
-map.on(L.Draw.Event.EDITED, () => { updateCount(); refreshPolySelect(); updateAcres(); });
-map.on(L.Draw.Event.DELETED, () => { updateCount(); refreshPolySelect(); updateAcres(); });
+map.on(L.Draw.Event.EDITED, () => {
+  // Reapply tracked styles after editing (Leaflet.Draw can reset them)
+  drawnItems.eachLayer(layer => {
+    const st = getDrawnStyle(layer);
+    if (layer.setStyle) {
+      layer.setStyle({ color: st.color, fillColor: st.fillColor, fillOpacity: st.fillOpacity, weight: st.weight, opacity: 1, fill: st.fillOpacity > 0 });
+    }
+  });
+  updateCount(); refreshPolySelect(); updateAcres();
+});
+map.on(L.Draw.Event.DELETED, () => {
+  // Clean up styles for deleted features
+  const remaining = new Set();
+  drawnItems.eachLayer(l => remaining.add(L.Util.stamp(l)));
+  for (const id of drawnFeatureStyles.keys()) {
+    if (!remaining.has(id)) drawnFeatureStyles.delete(id);
+  }
+  updateCount(); refreshPolySelect(); updateAcres(); refreshLayerPanel();
+});
 
 function updateCount() {
   document.getElementById('feat-count').textContent = drawnItems.getLayers().length;
@@ -790,8 +1320,8 @@ function startDraw(type) {
   document.getElementById('active-tool').textContent = type.charAt(0).toUpperCase() + type.slice(1);
 
   const opts = {
-    polygon: () => new L.Draw.Polygon(map, { shapeOptions: { color: '#8bc34a', fillOpacity: 0.2 } }),
-    polyline: () => new L.Draw.Polyline(map, { shapeOptions: { color: '#8bc34a' } }),
+    polygon: () => new L.Draw.Polygon(map, { shapeOptions: { color: '#e53935', fillOpacity: 0, opacity: 1, fill: false, weight: 4 } }),
+    polyline: () => new L.Draw.Polyline(map, { shapeOptions: { color: '#e53935', opacity: 1, weight: 4 } }),
     marker: () => new L.Draw.Marker(map)
   };
 
@@ -821,7 +1351,10 @@ function clearAll() {
   if (!drawnItems.getLayers().length) return;
   if (confirm('Clear all features?')) {
     drawnItems.clearLayers();
+    drawnFeatureStyles.clear();
+    drawnFeatureCounter = 0;
     updateCount();
+    refreshLayerPanel();
     notify('All features cleared');
   }
 }
@@ -832,7 +1365,8 @@ function clearAll() {
 function exportShapefile() {
   const drawnCount = drawnItems.getLayers().length;
   const cruiseCount = cruisePoints.length;
-  if (!drawnCount && !cruiseCount) { notify('Nothing to export'); return; }
+  const hasImported = importedShapefiles.length > 0;
+  if (!drawnCount && !cruiseCount && !hasImported) { notify('Nothing to export'); return; }
 
   document.getElementById('exp-drawn-count').textContent = drawnCount;
   document.getElementById('exp-cruise-count').textContent = cruiseCount;
@@ -843,6 +1377,31 @@ function exportShapefile() {
   cruiseLabel.classList.toggle('dimmed', !cruiseCount);
   document.getElementById('exp-drawn').checked = drawnCount > 0;
   document.getElementById('exp-cruise').checked = cruiseCount > 0;
+
+  // Populate imported shapefile checkboxes
+  const impContainer = document.getElementById('exp-imported-container');
+  impContainer.innerHTML = '';
+  if (importedShapefiles.length) {
+    const sep = document.createElement('hr');
+    sep.className = 'export-sep';
+    impContainer.appendChild(sep);
+    const lbl = document.createElement('div');
+    lbl.className = 'export-section-label';
+    lbl.textContent = 'Imported Shapefiles';
+    impContainer.appendChild(lbl);
+    importedShapefiles.forEach((shp, idx) => {
+      const geomTypes = {};
+      shp.features.forEach(f => {
+        const t = f.geometry ? f.geometry.type : 'Unknown';
+        geomTypes[t] = (geomTypes[t] || 0) + 1;
+      });
+      const summary = Object.entries(geomTypes).map(([t,c]) => c + ' ' + t.toLowerCase()).join(', ');
+      const label = document.createElement('label');
+      label.className = 'export-check';
+      label.innerHTML = '<input type="checkbox" data-imp-idx="' + idx + '" checked> ' + shp.name + ' (' + summary + ')';
+      impContainer.appendChild(label);
+    });
+  }
 
   document.getElementById('export-modal').classList.add('open');
 }
@@ -855,7 +1414,9 @@ function doExport() {
   closeExportModal();
   const inclDrawn  = document.getElementById('exp-drawn').checked;
   const inclCruise = document.getElementById('exp-cruise').checked;
-  if (!inclDrawn && !inclCruise) { notify('Nothing selected to export'); return; }
+  const checkedImports = Array.from(document.querySelectorAll('#exp-imported-container input[type=checkbox]:checked'))
+    .map(cb => parseInt(cb.getAttribute('data-imp-idx'))).filter(i => !isNaN(i));
+  if (!inclDrawn && !inclCruise && !checkedImports.length) { notify('Nothing selected to export'); return; }
 
   const zip = new JSZip();
   const prjContent = 'GEOGCS["GCS_WGS_1984",DATUM["D_WGS_1984",SPHEROID["WGS_1984",6378137.0,298.257223563]],PRIMEM["Greenwich",0.0],UNIT["Degree",0.0174532925199433]]';
@@ -902,6 +1463,62 @@ function doExport() {
     zip.file('cruise_points.dbf', buildCruiseDbf(cruisePoints));
     zip.file('cruise_points.prj', prjContent);
   }
+
+  // Export checked imported shapefiles
+  checkedImports.forEach(idx => {
+    const shp = importedShapefiles[idx];
+    if (!shp) return;
+    const safeName = shp.name.replace(/[^a-zA-Z0-9_-]/g, '_').substring(0, 40);
+    const points = [], lines = [], polygons = [];
+    const pointProps = [], lineProps = [], polyProps = [];
+
+    shp.features.forEach(feat => {
+      const g = feat.geometry;
+      const p = feat.properties || {};
+      if (!g) return;
+      if (g.type === 'Point') {
+        points.push(g);
+        pointProps.push(p);
+      } else if (g.type === 'LineString' || g.type === 'MultiLineString') {
+        if (g.type === 'MultiLineString') {
+          g.coordinates.forEach(coords => {
+            lines.push({ type: 'LineString', coordinates: coords });
+            lineProps.push(p);
+          });
+        } else {
+          lines.push(g);
+          lineProps.push(p);
+        }
+      } else if (g.type === 'Polygon') {
+        polygons.push(g);
+        polyProps.push(p);
+      } else if (g.type === 'MultiPolygon') {
+        g.coordinates.forEach(coords => {
+          polygons.push({ type: 'Polygon', coordinates: coords });
+          polyProps.push(p);
+        });
+      }
+    });
+
+    if (points.length) {
+      zip.file(safeName + '_points.shp', buildPointShp(points));
+      zip.file(safeName + '_points.shx', buildPointShx(points));
+      zip.file(safeName + '_points.dbf', buildAttrDbf(pointProps));
+      zip.file(safeName + '_points.prj', prjContent);
+    }
+    if (lines.length) {
+      zip.file(safeName + '_lines.shp', buildPolylineShp(lines));
+      zip.file(safeName + '_lines.shx', buildPolylineShx(lines));
+      zip.file(safeName + '_lines.dbf', buildAttrDbf(lineProps));
+      zip.file(safeName + '_lines.prj', prjContent);
+    }
+    if (polygons.length) {
+      zip.file(safeName + '_polygons.shp', buildPolygonShp(polygons));
+      zip.file(safeName + '_polygons.shx', buildPolygonShx(polygons));
+      zip.file(safeName + '_polygons.dbf', buildAttrDbf(polyProps));
+      zip.file(safeName + '_polygons.prj', prjContent);
+    }
+  });
 
   zip.generateAsync({ type: 'blob' }).then(blob => {
     const a = document.createElement('a');
@@ -1185,6 +1802,28 @@ let cruiseLayer = null;
 let cruisePoints = []; // [{lat, lng, id}]
 let polygonLayers = []; // track drawn polygons for select dropdown
 let uploadedPolygons = []; // [{layer: L.Polygon, name: string}] from uploaded shapefiles
+let importedShapefiles = []; // [{name: string, features: GeoJSON[], leafletLayer: L.GeoJSON}]
+
+// Per-feature style tracking for drawn features
+let drawnFeatureCounter = 0;
+const drawnFeatureStyles = new Map(); // leaflet_id -> {name, color, fillColor, weight, fillOpacity}
+
+function getDrawnStyle(layer) {
+  const id = L.Util.stamp(layer);
+  if (!drawnFeatureStyles.has(id)) {
+    drawnFeatureCounter++;
+    const type = (layer instanceof L.Polygon) ? 'Polygon' :
+                 (layer instanceof L.Polyline) ? 'Line' : 'Point';
+    drawnFeatureStyles.set(id, {
+      name: type + ' ' + drawnFeatureCounter,
+      color: '#e53935',
+      fillColor: '#e53935',
+      weight: 4,
+      fillOpacity: 0
+    });
+  }
+  return drawnFeatureStyles.get(id);
+}
 
 function toggleCruisePanel() {
   const panel = document.getElementById('cruise-panel');
@@ -1350,22 +1989,30 @@ function handleShpFiles(files) {
   const fileMap = {};
   Array.from(files).forEach(f => { fileMap[f.name.split('.').pop().toLowerCase()] = f; });
 
-  // Zip bundle (.zip containing .shp + .dbf + optional .prj)
+  // Zip bundle (.zip containing one or more .shp + .dbf + optional .prj)
   if (fileMap.zip) {
     JSZip.loadAsync(fileMap.zip).then(zip => {
-      let shpEntry = null, dbfEntry = null, prjEntry = null, name = 'upload';
+      // Group files by base name to support multiple shapefiles in one zip
+      const shpSets = {};
       zip.forEach((path, entry) => {
-        const ext = path.split('.').pop().toLowerCase();
-        if (ext === 'shp') { shpEntry = entry; name = path.split('/').pop().replace(/\.shp$/i, ''); }
-        if (ext === 'dbf') dbfEntry = entry;
-        if (ext === 'prj') prjEntry = entry;
+        const fileName = path.split('/').pop();
+        const ext = fileName.split('.').pop().toLowerCase();
+        const baseName = fileName.replace(/\.[^.]+$/, '');
+        if (['shp', 'dbf', 'prj', 'shx'].includes(ext)) {
+          if (!shpSets[baseName]) shpSets[baseName] = {};
+          shpSets[baseName][ext] = entry;
+        }
       });
-      if (!shpEntry) { notify('No .shp found in zip'); return; }
-      Promise.all([
-        shpEntry.async('arraybuffer'),
-        dbfEntry ? dbfEntry.async('arraybuffer') : Promise.resolve(null),
-        prjEntry ? prjEntry.async('string') : Promise.resolve(null)
-      ]).then(([s, d, p]) => loadShpLayer(s, d, name, p));
+      const validSets = Object.entries(shpSets).filter(([_, files]) => files.shp);
+      if (!validSets.length) { notify('No .shp found in zip'); return; }
+      validSets.forEach(([baseName, files]) => {
+        Promise.all([
+          files.shp.async('arraybuffer'),
+          files.dbf ? files.dbf.async('arraybuffer') : Promise.resolve(null),
+          files.prj ? files.prj.async('string') : Promise.resolve(null)
+        ]).then(([s, d, p]) => loadShpLayer(s, d, baseName, p));
+      });
+      if (validSets.length > 1) notify(`Loading ${validSets.length} shapefiles from zip...`);
     }).catch(() => notify('Error reading zip'));
     return;
   }
@@ -1390,6 +2037,14 @@ function reprojectCoords(coords, fromProj) {
   return coords.map(c => reprojectCoords(c, fromProj));
 }
 
+// Auto-color palette for imported layers
+const LAYER_COLORS = [
+  '#e5c229', '#e74c3c', '#3498db', '#2ecc71', '#9b59b6',
+  '#e67e22', '#1abc9c', '#f39c12', '#c0392b', '#2980b9',
+  '#27ae60', '#8e44ad', '#d35400', '#16a085', '#f1c40f'
+];
+let layerColorIdx = 0;
+
 function loadShpLayer(shpBuf, dbfBuf, name, prjWkt) {
   let features;
   try { features = readShpFeatures(shpBuf); }
@@ -1413,10 +2068,16 @@ function loadShpLayer(shpBuf, dbfBuf, name, prjWkt) {
     } catch(e) { console.warn('[SHP] reprojection failed:', e); notify('Warning: could not reproject coordinates'); }
   }
 
+  // Assign auto-color
+  const autoColor = LAYER_COLORS[layerColorIdx % LAYER_COLORS.length];
+  layerColorIdx++;
+
+  const styleObj = { color: '#e53935', fillColor: '#e53935', weight: 4, fillOpacity: 0, pointRadius: 5 };
+
   const layer = L.geoJSON({ type: 'FeatureCollection', features }, {
-    style: () => ({ color: '#e5c229', weight: 2, fillOpacity: 0.15, fillColor: '#e5c229' }),
+    style: () => ({ color: styleObj.color, weight: styleObj.weight, fillOpacity: styleObj.fillOpacity, fillColor: styleObj.fillColor }),
     pointToLayer: (feat, ll) => L.circleMarker(ll, {
-      radius: 5, color: '#e5c229', fillColor: '#e5c229', fillOpacity: 0.9, weight: 1.5
+      radius: styleObj.pointRadius, color: styleObj.color, fillColor: styleObj.fillColor, fillOpacity: 0.9, weight: styleObj.weight
     }),
     onEachFeature: (feat, lyr) => {
       const p = feat.properties;
@@ -1428,6 +2089,10 @@ function loadShpLayer(shpBuf, dbfBuf, name, prjWkt) {
 
   try { map.fitBounds(layer.getBounds().pad(0.1)); } catch(e) {}
   layerControl.addOverlay(layer, `⬆ ${name}`);
+
+  // Register in imported shapefiles for export with style info
+  importedShapefiles.push({ name, features, leafletLayer: layer, style: styleObj });
+  refreshLayerPanel();
 
   // Register any polygon/multipolygon features for use as cruise grid targets
   let polyCount = 0;
@@ -1633,12 +2298,661 @@ function notify(msg) {
   n.classList.add('show');
   setTimeout(() => n.classList.remove('show'), 2500);
 }
+
+
+// ── Layer Style Manager ───────────────────────────────────────────────────
+
+function toggleLayerPanel() {
+  const panel = document.getElementById('layer-panel');
+  const btn = document.getElementById('btn-layers');
+  panel.classList.toggle('open');
+  if (btn) btn.classList.toggle('active');
+  refreshLayerPanel();
+}
+
+let selectedLayerIdx = -1;
+
+function refreshLayerPanel() {
+  const list = document.getElementById('layer-list');
+  if (!list) return;
+  list.innerHTML = '';
+
+  const drawnLayers = drawnItems.getLayers();
+  const hasDrawn = drawnLayers.length > 0;
+  const hasImported = importedShapefiles.length > 0;
+
+  if (!hasDrawn && !hasImported) {
+    list.innerHTML = '<div class="layer-empty">No layers yet. Draw or import features.</div>';
+    return;
+  }
+
+  // ── Drawn features section ──────────────────────────────────────
+  if (hasDrawn) {
+    const hdr = document.createElement('div');
+    hdr.className = 'export-section-label';
+    hdr.style.marginBottom = '4px';
+    hdr.textContent = 'Drawn Features';
+    list.appendChild(hdr);
+
+    drawnLayers.forEach(layer => {
+      const lid = L.Util.stamp(layer);
+      const st = getDrawnStyle(layer);
+      const selKey = 'd_' + lid;
+
+      const item = document.createElement('div');
+      item.className = 'layer-item' + (selectedLayerIdx === selKey ? ' selected' : '');
+      item.onclick = (e) => {
+        if (e.target.closest('.layer-controls')) return;
+        selectedLayerIdx = selectedLayerIdx === selKey ? -1 : selKey;
+        refreshLayerPanel();
+      };
+
+      item.innerHTML = `
+        <div class="layer-item-header">
+          <div class="layer-swatch" style="background:${st.fillColor}; border-color:${st.color};"></div>
+          <div class="layer-name" title="${st.name}">${st.name}</div>
+          <div class="layer-feat-count">${(layer instanceof L.Polygon) ? 'polygon' : (layer instanceof L.Polyline ? 'line' : 'point')}</div>
+        </div>
+        <div class="layer-controls">
+          <div class="layer-ctrl-row">
+            <span class="layer-ctrl-label">Color</span>
+            <input type="color" value="${st.color}" onchange="updateDrawnStyle(${lid}, 'color', this.value)">
+          </div>
+          <div class="layer-ctrl-row">
+            <span class="layer-ctrl-label">Fill</span>
+            <input type="color" value="${st.fillColor}" onchange="updateDrawnStyle(${lid}, 'fillColor', this.value)">
+          </div>
+          <div class="layer-ctrl-row">
+            <span class="layer-ctrl-label">Opacity</span>
+            <input type="range" min="0" max="100" value="${Math.round(st.fillOpacity * 100)}" oninput="updateDrawnStyle(${lid}, 'fillOpacity', this.value / 100)">
+          </div>
+          <div class="layer-ctrl-row">
+            <span class="layer-ctrl-label">Weight</span>
+            <input type="number" min="0.5" max="10" step="0.5" value="${st.weight}" onchange="updateDrawnStyle(${lid}, 'weight', parseFloat(this.value))">
+          </div>
+        </div>
+      `;
+      list.appendChild(item);
+    });
+  }
+
+  // ── Imported shapefiles section ──────────────────────────────────
+  if (hasImported) {
+    if (hasDrawn) {
+      const sep = document.createElement('hr');
+      sep.className = 'export-sep';
+      list.appendChild(sep);
+    }
+    const hdr = document.createElement('div');
+    hdr.className = 'export-section-label';
+    hdr.style.marginBottom = '4px';
+    hdr.textContent = 'Imported Shapefiles';
+    list.appendChild(hdr);
+
+    importedShapefiles.forEach((shp, idx) => {
+      const geomTypes = {};
+      shp.features.forEach(f => {
+        const t = f.geometry ? f.geometry.type : '?';
+        geomTypes[t] = (geomTypes[t] || 0) + 1;
+      });
+      const summary = Object.entries(geomTypes).map(([t,c]) => c + ' ' + t.toLowerCase()).join(', ');
+      const st = shp.style;
+      const selKey = 'i_' + idx;
+
+      const item = document.createElement('div');
+      item.className = 'layer-item' + (selectedLayerIdx === selKey ? ' selected' : '');
+      item.onclick = (e) => {
+        if (e.target.closest('.layer-controls')) return;
+        selectedLayerIdx = selectedLayerIdx === selKey ? -1 : selKey;
+        refreshLayerPanel();
+      };
+
+      item.innerHTML = `
+        <div class="layer-item-header">
+          <div class="layer-swatch" style="background:${st.fillColor}; border-color:${st.color};"></div>
+          <div class="layer-name" title="${shp.name}">${shp.name}</div>
+          <div class="layer-feat-count">${summary}</div>
+        </div>
+        <div class="layer-controls">
+          <div class="layer-ctrl-row">
+            <span class="layer-ctrl-label">Color</span>
+            <input type="color" value="${st.color}" onchange="updateLayerStyle(${idx}, 'color', this.value)">
+          </div>
+          <div class="layer-ctrl-row">
+            <span class="layer-ctrl-label">Fill</span>
+            <input type="color" value="${st.fillColor}" onchange="updateLayerStyle(${idx}, 'fillColor', this.value)">
+          </div>
+          <div class="layer-ctrl-row">
+            <span class="layer-ctrl-label">Opacity</span>
+            <input type="range" min="0" max="100" value="${Math.round(st.fillOpacity * 100)}" oninput="updateLayerStyle(${idx}, 'fillOpacity', this.value / 100)">
+          </div>
+          <div class="layer-ctrl-row">
+            <span class="layer-ctrl-label">Weight</span>
+            <input type="number" min="0.5" max="10" step="0.5" value="${st.weight}" onchange="updateLayerStyle(${idx}, 'weight', parseFloat(this.value))">
+          </div>
+          <button class="layer-remove-btn" onclick="event.stopPropagation(); removeImportedLayer(${idx})">Remove Layer</button>
+        </div>
+      `;
+      list.appendChild(item);
+    });
+  }
+}
+
+function updateDrawnStyle(leafletId, prop, val) {
+  const st = drawnFeatureStyles.get(leafletId);
+  if (!st) return;
+  st[prop] = val;
+
+  // Find the layer and restyle it
+  drawnItems.eachLayer(layer => {
+    if (L.Util.stamp(layer) === leafletId) {
+      if (layer.setStyle) {
+        layer.setStyle({
+          color: st.color,
+          fillColor: st.fillColor,
+          fillOpacity: st.fillOpacity,
+          weight: st.weight,
+          opacity: 1,
+          fill: st.fillOpacity > 0
+        });
+      }
+    }
+  });
+
+  // Update swatch
+  const selKey = 'd_' + leafletId;
+  const items = document.querySelectorAll('.layer-item');
+  items.forEach(item => {
+    const swatch = item.querySelector('.layer-swatch');
+    if (swatch && item.querySelector(`[onchange*="${leafletId}"]`)) {
+      swatch.style.background = st.fillColor;
+      swatch.style.borderColor = st.color;
+    }
+  });
+}
+
+function updateLayerStyle(idx, prop, val) {
+  const shp = importedShapefiles[idx];
+  if (!shp) return;
+  shp.style[prop] = val;
+  const st = shp.style;
+
+  // Re-style leaflet layer
+  shp.leafletLayer.eachLayer(lyr => {
+    if (lyr.setStyle) {
+      lyr.setStyle({
+        color: st.color,
+        fillColor: st.fillColor,
+        fillOpacity: st.fillOpacity,
+        weight: st.weight
+      });
+    }
+    // For circle markers (points)
+    if (lyr.setRadius) {
+      lyr.setRadius(st.pointRadius || 5);
+    }
+  });
+
+  // Update swatch without full refresh (avoid losing focus on color picker)
+  const items = document.querySelectorAll('.layer-item');
+  if (items[idx]) {
+    const swatch = items[idx].querySelector('.layer-swatch');
+    if (swatch) {
+      swatch.style.background = st.fillColor;
+      swatch.style.borderColor = st.color;
+    }
+  }
+}
+
+function removeImportedLayer(idx) {
+  const shp = importedShapefiles[idx];
+  if (!shp) return;
+  if (!confirm(`Remove "${shp.name}" from map?`)) return;
+  map.removeLayer(shp.leafletLayer);
+
+  // Remove associated uploaded polygons
+  uploadedPolygons = uploadedPolygons.filter(up => {
+    const isFromThis = up.name.startsWith(shp.name);
+    return !isFromThis;
+  });
+
+  importedShapefiles.splice(idx, 1);
+  if (selectedLayerIdx === idx) selectedLayerIdx = -1;
+  else if (selectedLayerIdx > idx) selectedLayerIdx--;
+  refreshLayerPanel();
+  refreshPolySelect();
+  notify(`Removed ${shp.name}`);
+}
+
+// ── GeoPDF with draw-a-box preview ────────────────────────────────────────
+
+let geoPDFMode = false;
+let geoPDFRect = null;
+let geoPDFBounds = null;
+let geoPDFDrawHandler = null;
+
+function exportGeoPDF() {
+  // Enter box-drawing mode
+  geoPDFMode = true;
+  document.getElementById('geopdf-preview-bar').classList.add('open');
+  document.getElementById('geopdf-confirm-btn').style.opacity = '0.4';
+  document.getElementById('geopdf-confirm-btn').style.pointerEvents = 'none';
+  notify('Draw a rectangle on the map to define the export area');
+
+  // Enable rectangle draw
+  geoPDFDrawHandler = new L.Draw.Rectangle(map, {
+    shapeOptions: {
+      color: '#2196f3',
+      weight: 2,
+      fillOpacity: 0.1,
+      fillColor: '#2196f3',
+      dashArray: '6,6'
+    }
+  });
+  geoPDFDrawHandler.enable();
+
+  map.once(L.Draw.Event.CREATED, e => {
+    if (geoPDFRect) map.removeLayer(geoPDFRect);
+    geoPDFRect = e.layer;
+    geoPDFRect.setStyle({ color: '#2196f3', weight: 2, fillOpacity: 0.08, dashArray: '6,6' });
+    geoPDFRect.addTo(map);
+    geoPDFBounds = geoPDFRect.getBounds();
+
+    // Enable the export button
+    document.getElementById('geopdf-confirm-btn').style.opacity = '1';
+    document.getElementById('geopdf-confirm-btn').style.pointerEvents = 'auto';
+
+    // Allow re-drawing
+    document.getElementById('geopdf-preview-bar').querySelector('.field-label').textContent =
+      'Box drawn. Adjust zoom, then export or re-draw.';
+
+    // Let user re-draw by clicking the map
+    map.on('click', geoPDFRedrawHandler);
+  });
+}
+
+function geoPDFRedrawHandler() {
+  if (!geoPDFMode) return;
+  if (geoPDFRect) map.removeLayer(geoPDFRect);
+  geoPDFRect = null;
+  geoPDFBounds = null;
+  document.getElementById('geopdf-confirm-btn').style.opacity = '0.4';
+  document.getElementById('geopdf-confirm-btn').style.pointerEvents = 'none';
+  document.getElementById('geopdf-preview-bar').querySelector('.field-label').textContent =
+    'Draw a box on the map to define GeoPDF area';
+  map.off('click', geoPDFRedrawHandler);
+
+  geoPDFDrawHandler = new L.Draw.Rectangle(map, {
+    shapeOptions: { color: '#2196f3', weight: 2, fillOpacity: 0.1, fillColor: '#2196f3', dashArray: '6,6' }
+  });
+  geoPDFDrawHandler.enable();
+
+  map.once(L.Draw.Event.CREATED, e => {
+    if (geoPDFRect) map.removeLayer(geoPDFRect);
+    geoPDFRect = e.layer;
+    geoPDFRect.setStyle({ color: '#2196f3', weight: 2, fillOpacity: 0.08, dashArray: '6,6' });
+    geoPDFRect.addTo(map);
+    geoPDFBounds = geoPDFRect.getBounds();
+    document.getElementById('geopdf-confirm-btn').style.opacity = '1';
+    document.getElementById('geopdf-confirm-btn').style.pointerEvents = 'auto';
+    document.getElementById('geopdf-preview-bar').querySelector('.field-label').textContent =
+      'Box drawn. Adjust zoom, then export or re-draw.';
+    map.on('click', geoPDFRedrawHandler);
+  });
+}
+
+function cancelGeoPDFMode() {
+  geoPDFMode = false;
+  if (geoPDFDrawHandler) { geoPDFDrawHandler.disable(); geoPDFDrawHandler = null; }
+  if (geoPDFRect) { map.removeLayer(geoPDFRect); geoPDFRect = null; }
+  geoPDFBounds = null;
+  map.off('click', geoPDFRedrawHandler);
+  document.getElementById('geopdf-preview-bar').classList.remove('open');
+}
+
+async function confirmGeoPDFExport() {
+  if (!geoPDFBounds) { notify('Draw a box first'); return; }
+  const bar = document.getElementById('geopdf-preview-bar');
+  bar.querySelector('.field-label').textContent = 'Capturing map...';
+
+  if (geoPDFRect) geoPDFRect.setStyle({ opacity: 0, fillOpacity: 0 });
+
+  try {
+    const mapEl = document.getElementById('map');
+    const mapW = mapEl.offsetWidth;
+    const mapH = mapEl.offsetHeight;
+
+    const sw = geoPDFBounds.getSouthWest();
+    const ne = geoPDFBounds.getNorthEast();
+    const swPx = map.latLngToContainerPoint(sw);
+    const nePx = map.latLngToContainerPoint(ne);
+    const cropX = Math.min(swPx.x, nePx.x);
+    const cropY = Math.min(swPx.y, nePx.y);
+    const cropW = Math.abs(nePx.x - swPx.x);
+    const cropH = Math.abs(nePx.y - swPx.y);
+
+    if (cropW < 20 || cropH < 20) throw new Error('Box is too small');
+    if (cropX < 0 || cropY < 0 || cropX + cropW > mapW || cropY + cropH > mapH) {
+      throw new Error('Zoom out so the entire box is visible');
+    }
+
+    const west = sw.lng, east = ne.lng, south = sw.lat, north = ne.lat;
+
+    // ── Build canvas by re-fetching visible tiles directly ────────────
+    const scale = 2;
+    const canvas = document.createElement('canvas');
+    canvas.width = Math.round(cropW * scale);
+    canvas.height = Math.round(cropH * scale);
+    const ctx = canvas.getContext('2d');
+    ctx.scale(scale, scale);
+
+    // Gather all visible tile <img> elements with their positions
+    const tilePane = mapEl.querySelector('.leaflet-tile-pane');
+    const tileImgs = tilePane ? Array.from(tilePane.querySelectorAll('img.leaflet-tile')) : [];
+
+    bar.querySelector('.field-label').textContent = `Loading ${tileImgs.length} tiles...`;
+
+    // For each tile, compute its position and re-fetch with CORS
+    const tilePromises = tileImgs.map(tile => {
+      return new Promise(resolve => {
+        if (!tile.src || !tile.complete || tile.naturalWidth === 0) { resolve(null); return; }
+
+        // Compute tile position relative to map container
+        let tileX = 0, tileY = 0;
+        const tileW = tile.offsetWidth || 256;
+        const tileH = tile.offsetHeight || 256;
+
+        // Walk up the DOM to accumulate CSS transforms
+        let el = tile;
+        while (el && el !== mapEl) {
+          const style = window.getComputedStyle(el);
+          const t = style.transform;
+          if (t && t !== 'none') {
+            const m = t.match(/matrix\(([^)]+)\)/);
+            if (m) {
+              const v = m[1].split(',').map(s => parseFloat(s.trim()));
+              tileX += v[4] || 0;
+              tileY += v[5] || 0;
+            }
+          }
+          // Also check left/top for older Leaflet positioning
+          if (el.style.left) tileX += parseInt(el.style.left) || 0;
+          if (el.style.top) tileY += parseInt(el.style.top) || 0;
+          el = el.parentElement;
+        }
+
+        // Check if tile overlaps crop area
+        const drawX = tileX - cropX;
+        const drawY = tileY - cropY;
+        if (drawX + tileW <= 0 || drawY + tileH <= 0 || drawX >= cropW || drawY >= cropH) {
+          resolve(null); return;
+        }
+
+        // Re-fetch the tile image with CORS enabled
+        const img = new Image();
+        img.crossOrigin = 'anonymous';
+        img.onload = () => resolve({ img, x: drawX, y: drawY, w: tileW, h: tileH });
+        img.onerror = () => {
+          // Fallback: try to draw the original DOM element directly
+          resolve({ img: tile, x: drawX, y: drawY, w: tileW, h: tileH, fallback: true });
+        };
+        img.src = tile.src;
+      });
+    });
+
+    const tiles = (await Promise.all(tilePromises)).filter(Boolean);
+    bar.querySelector('.field-label').textContent = `Drawing ${tiles.length} tiles + vectors...`;
+
+    // Draw tiles onto canvas
+    let tainted = false;
+    for (const t of tiles) {
+      try {
+        ctx.drawImage(t.img, t.x, t.y, t.w, t.h);
+      } catch(e) {
+        if (t.fallback) continue;
+        tainted = true;
+      }
+    }
+
+    // ── Draw vector layers ────────────────────────────────────────────
+    function llToPx(lat, lng) {
+      const pt = map.latLngToContainerPoint(L.latLng(lat, lng));
+      return [pt.x - cropX, pt.y - cropY];
+    }
+
+    function hexToRgba(hex, a) {
+      if (!hex) return `rgba(128,128,128,${a})`;
+      hex = hex.replace('#','');
+      if (hex.length===3) hex=hex[0]+hex[0]+hex[1]+hex[1]+hex[2]+hex[2];
+      return `rgba(${parseInt(hex.substring(0,2),16)},${parseInt(hex.substring(2,4),16)},${parseInt(hex.substring(4,6),16)},${a})`;
+    }
+
+    function drawPoly(ring, style) {
+      if (!ring || ring.length < 3) return;
+      ctx.beginPath();
+      const [x0,y0] = llToPx(ring[0][1], ring[0][0]);
+      ctx.moveTo(x0, y0);
+      for (let i=1; i<ring.length; i++) { const [x,y]=llToPx(ring[i][1],ring[i][0]); ctx.lineTo(x,y); }
+      ctx.closePath();
+      // NO fill on PDF export - just outlines for clear imagery
+      ctx.strokeStyle = style.color || '#888';
+      ctx.lineWidth = (style.weight || 2) + 0.5;
+      ctx.stroke();
+    }
+
+    function drawLine(coords, style) {
+      if (!coords || coords.length < 2) return;
+      ctx.beginPath();
+      const [x0,y0] = llToPx(coords[0][1], coords[0][0]);
+      ctx.moveTo(x0, y0);
+      for (let i=1; i<coords.length; i++) { const [x,y]=llToPx(coords[i][1],coords[i][0]); ctx.lineTo(x,y); }
+      ctx.strokeStyle = style.color || '#888';
+      ctx.lineWidth = style.weight || 2;
+      ctx.stroke();
+    }
+
+    function drawDot(lat, lng, r, style) {
+      const [x,y] = llToPx(lat, lng);
+      ctx.beginPath();
+      ctx.arc(x, y, r, 0, Math.PI*2);
+      ctx.fillStyle = hexToRgba(style.fillColor||style.color, style.fillOpacity!=null?style.fillOpacity:0.9);
+      ctx.fill();
+      ctx.strokeStyle = style.color||'#888';
+      ctx.lineWidth = style.weight||1.5;
+      ctx.stroke();
+    }
+
+    function drawPin(lat, lng, color) {
+      const [x,y] = llToPx(lat, lng);
+      ctx.beginPath(); ctx.arc(x, y-9, 6, 0, Math.PI*2);
+      ctx.fillStyle = color||'#3388ff'; ctx.fill();
+      ctx.strokeStyle = '#fff'; ctx.lineWidth = 2; ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(x-4,y-4); ctx.lineTo(x,y+1); ctx.lineTo(x+4,y-4);
+      ctx.fillStyle = color||'#3388ff'; ctx.fill();
+    }
+
+    function renderGeom(geom, style) {
+      if (!geom) return;
+      if (geom.type==='Polygon') geom.coordinates.forEach(r => drawPoly(r, style));
+      else if (geom.type==='MultiPolygon') geom.coordinates.forEach(p => p.forEach(r => drawPoly(r, style)));
+      else if (geom.type==='LineString') drawLine(geom.coordinates, style);
+      else if (geom.type==='MultiLineString') geom.coordinates.forEach(l => drawLine(l, style));
+      else if (geom.type==='Point') drawDot(geom.coordinates[1], geom.coordinates[0], style.pointRadius||5, style);
+    }
+
+    // Imported shapefiles
+    importedShapefiles.forEach(shp => {
+      if (!map.hasLayer(shp.leafletLayer)) return;
+      shp.features.forEach(f => renderGeom(f.geometry, shp.style));
+    });
+
+    // Drawn features (using per-feature styles)
+    drawnItems.eachLayer(layer => {
+      const st = getDrawnStyle(layer);
+      if (layer instanceof L.Polygon) {
+        const lls = layer.getLatLngs()[0];
+        const ring = lls.map(ll => [ll.lng, ll.lat]); ring.push(ring[0]);
+        drawPoly(ring, st);
+      } else if (layer instanceof L.Polyline) {
+        drawLine(layer.getLatLngs().map(ll => [ll.lng, ll.lat]), st);
+      } else if (layer instanceof L.Marker) {
+        const ll = layer.getLatLng(); drawPin(ll.lat, ll.lng, st.color);
+      }
+    });
+
+    // Cruise points
+    if (cruisePoints.length && cruiseLayer && map.hasLayer(cruiseLayer)) {
+      cruisePoints.forEach(p => drawDot(p.lat, p.lng, 4, { color:'#ff5722', fillColor:'#ff5722', fillOpacity:0.95, weight:1 }));
+      ctx.font = 'bold 8px "Space Mono", monospace';
+      ctx.textAlign = 'center'; ctx.textBaseline = 'bottom';
+      cruisePoints.forEach(p => {
+        const [x,y] = llToPx(p.lat, p.lng);
+        ctx.strokeStyle = 'rgba(0,0,0,0.7)'; ctx.lineWidth = 3;
+        ctx.strokeText(String(p.id), x, y-6);
+        ctx.fillStyle = '#fff';
+        ctx.fillText(String(p.id), x, y-6);
+      });
+    }
+
+    ctx.setTransform(1,0,0,1,0,0); // reset transform
+
+    // ── Test if canvas is tainted ─────────────────────────────────────
+    let pngDataUrl;
+    try {
+      pngDataUrl = canvas.toDataURL('image/png');
+    } catch(e) {
+      // Canvas was tainted by CORS tiles. Fallback: use html2canvas
+      console.warn('Direct tile capture tainted, falling back to html2canvas');
+      bar.querySelector('.field-label').textContent = 'Fallback capture...';
+
+      const svgPane = document.querySelector('.leaflet-overlay-pane');
+      const markerPane = document.querySelector('.leaflet-marker-pane');
+      if (svgPane) svgPane.style.display = 'none';
+      if (markerPane) markerPane.style.display = 'none';
+
+      const fallbackCanvas = await html2canvas(mapEl, { useCORS:true, allowTaint:true, scale:scale, logging:false });
+
+      if (svgPane) svgPane.style.display = '';
+      if (markerPane) markerPane.style.display = '';
+
+      // Crop and redraw vectors on fallback
+      const fc = document.createElement('canvas');
+      fc.width = Math.round(cropW*scale); fc.height = Math.round(cropH*scale);
+      const fctx = fc.getContext('2d');
+      fctx.drawImage(fallbackCanvas, Math.round(cropX*scale), Math.round(cropY*scale), fc.width, fc.height, 0, 0, fc.width, fc.height);
+
+      // Redraw vectors on the fallback canvas
+      fctx.scale(scale, scale);
+      importedShapefiles.forEach(shp => {
+        if (!map.hasLayer(shp.leafletLayer)) return;
+        shp.features.forEach(f => { if(f.geometry) renderGeom(f.geometry, shp.style); });
+      });
+      drawnItems.eachLayer(layer => {
+        const st = getDrawnStyle(layer);
+        if (layer instanceof L.Polygon) {
+          const lls=layer.getLatLngs()[0]; const ring=lls.map(ll=>[ll.lng,ll.lat]); ring.push(ring[0]);
+          drawPoly(ring, st);
+        } else if (layer instanceof L.Polyline) {
+          drawLine(layer.getLatLngs().map(ll=>[ll.lng,ll.lat]), st);
+        } else if (layer instanceof L.Marker) {
+          const ll=layer.getLatLng(); drawPin(ll.lat,ll.lng,st.color);
+        }
+      });
+      if (cruisePoints.length && cruiseLayer && map.hasLayer(cruiseLayer)) {
+        cruisePoints.forEach(p => drawDot(p.lat,p.lng,4,{color:'#ff5722',fillColor:'#ff5722',fillOpacity:0.95,weight:1}));
+        fctx.font='bold 8px "Space Mono",monospace'; fctx.textAlign='center'; fctx.textBaseline='bottom';
+        cruisePoints.forEach(p => {
+          const [x,y]=llToPx(p.lat,p.lng);
+          fctx.strokeStyle='rgba(0,0,0,0.7)'; fctx.lineWidth=3; fctx.strokeText(String(p.id),x,y-6);
+          fctx.fillStyle='#fff'; fctx.fillText(String(p.id),x,y-6);
+        });
+      }
+
+      try { pngDataUrl = fc.toDataURL('image/png'); }
+      catch(e2) { throw new Error('Export failed (CORS). Switch to OSM basemap and retry.'); }
+    }
+
+    const pngBytes = Uint8Array.from(atob(pngDataUrl.split(',')[1]), c => c.charCodeAt(0));
+
+    // ── Build PDF ─────────────────────────────────────────────────────
+    const { PDFDocument, PDFName, PDFString, PDFNumber } = PDFLib;
+    const pdfDoc = await PDFDocument.create();
+    const pageW = 612, pageH = 792, titleBarH = 20, margin = 18;
+    const printW = pageW-margin*2, printH = pageH-titleBarH-margin*2;
+    const boxAspect = cropW/cropH;
+    let imgW, imgH;
+    if (printW/printH > boxAspect) { imgH=printH; imgW=imgH*boxAspect; }
+    else { imgW=printW; imgH=imgW/boxAspect; }
+    const imgX = margin+(printW-imgW)/2, imgY = titleBarH+margin+(printH-imgH)/2;
+
+    const page = pdfDoc.addPage([pageW, pageH]);
+    page.drawRectangle({x:0,y:0,width:pageW,height:pageH, color:PDFLib.rgb(0.15,0.15,0.15)});
+    const pngImage = await pdfDoc.embedPng(pngBytes);
+    page.drawImage(pngImage, {x:imgX,y:imgY,width:imgW,height:imgH});
+    page.drawRectangle({x:imgX,y:imgY,width:imgW,height:imgH, borderColor:PDFLib.rgb(0.545,0.765,0.290), borderWidth:0.5, color:PDFLib.rgb(0,0,0), opacity:0});
+
+    // LGIDict
+    const gsx=(east-west)/imgW, gsy=(north-south)/imgH;
+    const pdfCtx = pdfDoc.context;
+    const projDict = pdfCtx.obj({Type:PDFName.of('Projection'),ProjectionType:PDFString.of('Geographic'),Datum:PDFString.of('WGS 1984')});
+    const ctm = pdfCtx.obj([PDFNumber.of(gsx),PDFNumber.of(0),PDFNumber.of(0),PDFNumber.of(gsy),PDFNumber.of(west-gsx*imgX),PDFNumber.of(south-gsy*imgY)]);
+    const neat = pdfCtx.obj([PDFNumber.of(imgX),PDFNumber.of(imgY),PDFNumber.of(imgX+imgW),PDFNumber.of(imgY),PDFNumber.of(imgX+imgW),PDFNumber.of(imgY+imgH),PDFNumber.of(imgX),PDFNumber.of(imgY+imgH)]);
+    const rp=(a,b,c,d)=>pdfCtx.obj([PDFNumber.of(a),PDFNumber.of(b),PDFNumber.of(c),PDFNumber.of(d)]);
+    const reg = pdfCtx.obj([rp(imgX,imgY,west,south),rp(imgX+imgW,imgY,east,south),rp(imgX+imgW,imgY+imgH,east,north),rp(imgX,imgY+imgH,west,north)]);
+    const lgi = pdfCtx.obj({Type:PDFName.of('LGIDict'),Version:PDFString.of('2.1'),CTM:ctm,Projection:projDict,Neatline:neat,Registration:reg});
+    page.node.set(PDFName.of('LGIDict'), pdfCtx.obj([lgi]));
+
+    // Title bar
+    page.drawRectangle({x:0,y:0,width:pageW,height:titleBarH, color:PDFLib.rgb(0.239,0.169,0.122)});
+    const hb = await pdfDoc.embedFont(PDFLib.StandardFonts.HelveticaBold);
+    const h = await pdfDoc.embedFont(PDFLib.StandardFonts.Helvetica);
+    page.drawText('ForestDraw GeoPDF',{x:8,y:6,size:7,font:hb,color:PDFLib.rgb(0.545,0.765,0.290)});
+    page.drawText(`WGS 84 | ${south.toFixed(5)}, ${west.toFixed(5)} to ${north.toFixed(5)}, ${east.toFixed(5)}`,{x:160,y:6,size:6,font:h,color:PDFLib.rgb(0.91,0.875,0.784)});
+
+    const pdfBytes = await pdfDoc.save();
+    const blob = new Blob([pdfBytes], {type:'application/pdf'});
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob); a.download = 'forestdraw_geopdf.pdf'; a.click();
+
+    cancelGeoPDFMode();
+    notify('GeoPDF exported! Open in Avenza Maps.');
+  } catch (err) {
+    console.error('GeoPDF export failed:', err);
+    notify('Export failed: ' + err.message);
+    if (geoPDFRect) geoPDFRect.setStyle({ opacity: 1, fillOpacity: 0.08 });
+  }
+}
+// ── Splash / Help Screen ──────────────────────────────────────────────────
+function dismissSplash() {
+  document.getElementById('splash-overlay').classList.add('hidden');
+  if (document.getElementById('splash-noshow-check').checked) {
+    try { localStorage.setItem('forestdraw-nosplash', '1'); } catch(e) {}
+  }
+}
+
+function showSplash() {
+  document.getElementById('splash-overlay').classList.remove('hidden');
+}
+
+// Auto-show on load unless dismissed
+(function() {
+  try {
+    if (localStorage.getItem('forestdraw-nosplash') === '1') {
+      document.getElementById('splash-overlay').classList.add('hidden');
+    }
+  } catch(e) {}
+})();
+
 </script>
 
 <!-- JSZip for bundling the .zip -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <!-- proj4js for reprojecting shapefiles in non-WGS84 CRS -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/proj4js/2.9.0/proj4.js"></script>
+<!-- pdf-lib for GeoPDF export -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
+<!-- html2canvas for map capture -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 
 </body>
 </html>
