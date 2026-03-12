@@ -953,6 +953,114 @@
   }
   .confirm-yes { background: var(--red); border-color: var(--red); color: #fff; }
   .confirm-no { background: transparent; border-color: var(--border-bright); color: var(--text-secondary); }
+
+  /* ═══ CLOUD CRUISE LIST ═══ */
+  .cloud-cruise-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px;
+    background: var(--bg-deep);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .cloud-cruise-item:active { background: var(--bg-elevated); }
+  .cloud-cruise-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+  .cloud-cruise-icon svg { width: 18px; height: 18px; stroke: var(--accent); }
+  .cloud-cruise-info { flex: 1; min-width: 0; }
+  .cloud-cruise-name {
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .cloud-cruise-meta {
+    font-size: 0.5rem;
+    color: var(--text-muted);
+    margin-top: 2px;
+  }
+  .cloud-cruise-actions {
+    display: flex;
+    gap: 4px;
+    flex-shrink: 0;
+  }
+  .cloud-cruise-actions .icon-btn { width: 32px; height: 32px; }
+  .cloud-cruise-actions .icon-btn svg { width: 14px; height: 14px; }
+
+  /* Account button logged-in indicator */
+  .icon-btn.logged-in { border-color: var(--accent); }
+  .icon-btn.logged-in svg { stroke: var(--accent); }
+
+  /* ═══ JOBS LIST ═══ */
+  .job-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px;
+    background: var(--bg-deep);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .job-item:active { background: var(--bg-elevated); }
+  .job-item.active-job { border-color: var(--accent); background: rgba(106, 191, 75, 0.08); }
+  .job-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+  .job-item.active-job .job-icon { border-color: var(--accent); background: var(--accent-dim); }
+  .job-icon svg { width: 18px; height: 18px; stroke: var(--text-secondary); }
+  .job-item.active-job .job-icon svg { stroke: var(--bg-deep); }
+  .job-info { flex: 1; min-width: 0; }
+  .job-name {
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .job-meta {
+    font-size: 0.5rem;
+    color: var(--text-muted);
+    margin-top: 2px;
+  }
+  .job-actions {
+    display: flex;
+    gap: 4px;
+    flex-shrink: 0;
+  }
+  .job-actions .icon-btn { width: 32px; height: 32px; }
+  .job-actions .icon-btn svg { width: 14px; height: 14px; }
+  .job-active-badge {
+    font-size: 0.45rem;
+    font-weight: 800;
+    color: var(--accent);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
 </style>
 </head>
 <body>
@@ -967,7 +1075,7 @@
 
   <!-- Top Bar -->
   <div class="topbar">
-    <div class="app-title">CruiseNav<small>Field App</small></div>
+    <div class="app-title">CruiseNav<small id="active-job-label">No Job</small></div>
     <div class="topbar-stats">
       <div>Plots: <span class="val" id="stat-plots">0/0</span></div>
       <div>Acres: <span class="val" id="stat-acres">0</span></div>
@@ -975,6 +1083,9 @@
     </div>
     <div class="topbar-actions">
       <button class="unit-toggle" id="unit-toggle" onclick="toggleDistUnit()" title="Toggle distance units">ft</button>
+      <button class="icon-btn" id="btn-account" onclick="openPanel('account')" title="Account">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+      </button>
       <button class="icon-btn" id="btn-basemap" onclick="cycleBasemap()" title="Switch basemap">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
       </button>
@@ -1075,6 +1186,10 @@
       <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><circle cx="4" cy="6" r="1" fill="currentColor"/><circle cx="4" cy="12" r="1" fill="currentColor"/><circle cx="4" cy="18" r="1" fill="currentColor"/></svg>
       List
     </button>
+    <button class="nav-btn" id="nav-btn-jobs" onclick="openPanel('jobs')">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+      Jobs
+    </button>
     <button class="nav-btn" id="nav-btn-more" onclick="openPanel('settings')">
       <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
       More
@@ -1162,7 +1277,104 @@
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7,10 12,15 17,10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
     Export Project (GeoJSON)
   </button>
+  <button class="btn btn-secondary" onclick="closePanel(); openPanel('account')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z"/></svg>
+    Cloud Sync & Sharing
+  </button>
   <button class="btn btn-danger" onclick="clearEverything()">Clear All Data</button>
+</div>
+
+<!-- Jobs Panel -->
+<div class="panel" id="panel-jobs">
+  <div class="panel-handle"></div>
+  <div class="panel-title">Jobs</div>
+  <div style="display:flex;gap:8px;margin-bottom:14px;">
+    <button class="btn btn-primary" style="flex:1;margin:0;" onclick="createNewJob()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      New Job
+    </button>
+  </div>
+  <div id="jobs-list" style="display:flex;flex-direction:column;gap:6px;max-height:55vh;overflow-y:auto;">
+    <div style="text-align:center;padding:20px;color:var(--text-muted);font-size:0.6rem;">No jobs yet. Create one to get started.</div>
+  </div>
+</div>
+
+<!-- Account Panel -->
+<div class="panel" id="panel-account">
+  <div class="panel-handle"></div>
+  <div class="panel-title">Account</div>
+  <div id="auth-signed-out">
+    <div style="text-align:center;padding:16px 0 20px;color:var(--text-secondary);font-size:0.65rem;line-height:1.6;">
+      Sign in to save cruises to the cloud, access them on any device, and share with your crew.
+    </div>
+    <button class="btn btn-primary" onclick="firebaseSignIn()" id="btn-google-signin">
+      <svg viewBox="0 0 24 24" width="16" height="16" fill="none"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18A10.96 10.96 0 0 0 1 12c0 1.77.42 3.45 1.18 4.93l3.66-2.84z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
+      Sign in with Google
+    </button>
+  </div>
+  <div id="auth-signed-in" style="display:none;">
+    <div style="display:flex;align-items:center;gap:12px;padding:12px;background:var(--bg-deep);border:1px solid var(--border);border-radius:10px;margin-bottom:16px;">
+      <img id="user-avatar" src="" style="width:40px;height:40px;border-radius:50%;border:2px solid var(--accent);" onerror="this.style.display='none'">
+      <div>
+        <div id="user-name" style="font-size:0.75rem;font-weight:700;color:var(--text-primary);"></div>
+        <div id="user-email" style="font-size:0.55rem;color:var(--text-muted);margin-top:2px;"></div>
+      </div>
+    </div>
+    <button class="btn btn-primary" onclick="openPanel('cloud')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z"/></svg>
+      My Cloud Cruises
+    </button>
+    <button class="btn btn-primary" onclick="saveCruiseToCloud()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17,8 12,3 7,8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+      Save Current Cruise to Cloud
+    </button>
+    <button class="btn btn-secondary" onclick="firebaseSignOut()">Sign Out</button>
+  </div>
+</div>
+
+<!-- Cloud Cruises Panel -->
+<div class="panel" id="panel-cloud">
+  <div class="panel-handle"></div>
+  <div class="panel-title">Cloud Cruises</div>
+  <div style="display:flex;gap:8px;margin-bottom:14px;">
+    <button class="btn btn-secondary" style="flex:1;margin:0;" onclick="loadMyCruises()">My Cruises</button>
+    <button class="btn btn-secondary" style="flex:1;margin:0;" onclick="loadSharedCruises()">Shared With Me</button>
+  </div>
+  <div id="cloud-cruise-list" style="display:flex;flex-direction:column;gap:6px;max-height:50vh;overflow-y:auto;">
+    <div style="text-align:center;padding:20px;color:var(--text-muted);font-size:0.6rem;">Tap a button above to load cruises.</div>
+  </div>
+</div>
+
+<!-- Share Cruise Panel -->
+<div class="panel" id="panel-share">
+  <div class="panel-handle"></div>
+  <div class="panel-title">Share Cruise</div>
+  <div id="share-cruise-name" style="font-size:0.75rem;font-weight:700;color:var(--accent);margin-bottom:14px;"></div>
+  <div class="field-group">
+    <div class="field-label">Share Code</div>
+    <div style="display:flex;gap:8px;align-items:center;">
+      <input class="field-input" id="share-code-display" readonly style="font-size:0.9rem;font-weight:700;letter-spacing:2px;text-align:center;">
+      <button class="icon-btn" onclick="copyShareCode()" title="Copy code" style="flex-shrink:0;">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+      </button>
+    </div>
+    <div style="font-size:0.5rem;color:var(--text-muted);margin-top:6px;">Share this code with others so they can view this cruise.</div>
+  </div>
+  <div style="border-top:1px solid var(--border);margin:16px 0;"></div>
+  <div class="field-group">
+    <div class="field-label">Current Shared Users</div>
+    <div id="shared-users-list" style="display:flex;flex-direction:column;gap:4px;max-height:120px;overflow-y:auto;">
+      <div style="font-size:0.6rem;color:var(--text-muted);font-style:italic;padding:8px 0;text-align:center;">No shared users yet.</div>
+    </div>
+  </div>
+  <div style="border-top:1px solid var(--border);margin:16px 0;"></div>
+  <div class="field-group">
+    <div class="field-label">Join a Shared Cruise</div>
+    <div style="display:flex;gap:8px;">
+      <input class="field-input" id="join-code-input" placeholder="Enter share code" style="flex:1;">
+      <button class="btn btn-primary" onclick="joinCruiseByCode()" style="width:auto;padding:10px 20px;margin:0;">Join</button>
+    </div>
+  </div>
 </div>
 
 <!-- Toast -->
@@ -1187,6 +1399,11 @@
 
 <!-- Hidden file input -->
 <input type="file" id="file-input" accept=".shp,.dbf,.shx,.prj,.zip,.geojson,.json" multiple style="display:none">
+
+<!-- Firebase SDK -->
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
 
 <!-- Libraries -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
@@ -1219,6 +1436,409 @@ let distUnit = 'ft';            // 'ft' or 'm'
 let wakeLock = null;
 let lastToggle = null;           // {id, previousState} for undo
 let _confirmCb = null;
+
+// ── Jobs System ──
+let allJobs = [];                // [{id, name, plots, polygons, createdAt}]
+let activeJobId = null;          // current job id
+
+// ══════════════════════════════════════════════════════════════════════════════
+// FIREBASE CONFIG - Replace with your Firebase project config
+// ══════════════════════════════════════════════════════════════════════════════
+const firebaseConfig = {
+  apiKey: "AIzaSyDnais6tuuBjS_HV48qpY-RFzijL9dlmLU",
+  authDomain: "cruisenav.firebaseapp.com",
+  projectId: "cruisenav",
+  storageBucket: "cruisenav.firebasestorage.app",
+  messagingSenderId: "1008244856480",
+  appId: "1:1008244856480:web:55104ff0a6766d34769bc5",
+  measurementId: "G-1BYZSEQ0WE"
+};
+
+// Initialize Firebase
+let fb_app = null, fb_auth = null, fb_db = null, fb_user = null;
+try {
+  fb_app = firebase.initializeApp(firebaseConfig);
+  fb_auth = firebase.auth();
+  fb_db = firebase.firestore();
+
+  // Listen for auth state changes
+  fb_auth.onAuthStateChanged(user => {
+    fb_user = user;
+    updateAuthUI();
+  });
+} catch(e) {
+  console.warn('Firebase init failed:', e);
+}
+
+function updateAuthUI() {
+  const signedOut = document.getElementById('auth-signed-out');
+  const signedIn = document.getElementById('auth-signed-in');
+  const accountBtn = document.getElementById('btn-account');
+
+  if (fb_user) {
+    signedOut.style.display = 'none';
+    signedIn.style.display = 'block';
+    document.getElementById('user-name').textContent = fb_user.displayName || 'User';
+    document.getElementById('user-email').textContent = fb_user.email || '';
+    const avatar = document.getElementById('user-avatar');
+    if (fb_user.photoURL) {
+      avatar.src = fb_user.photoURL;
+      avatar.style.display = 'block';
+    } else {
+      avatar.style.display = 'none';
+    }
+    accountBtn.classList.add('logged-in');
+  } else {
+    signedOut.style.display = 'block';
+    signedIn.style.display = 'none';
+    accountBtn.classList.remove('logged-in');
+  }
+}
+
+async function firebaseSignIn() {
+  if (!fb_auth) { toast('Firebase not configured'); return; }
+  try {
+    const provider = new firebase.auth.GoogleAuthProvider();
+    await fb_auth.signInWithPopup(provider);
+    toast('Signed in!');
+  } catch(e) {
+    if (e.code === 'auth/popup-blocked') {
+      toast('Popup blocked. Allow popups.');
+    } else if (e.code !== 'auth/popup-closed-by-user') {
+      toast('Sign-in failed');
+      console.error(e);
+    }
+  }
+}
+
+async function firebaseSignOut() {
+  if (!fb_auth) return;
+  await fb_auth.signOut();
+  fb_user = null;
+  closePanel();
+  toast('Signed out');
+}
+
+// ── Generate share code ──
+function generateShareCode() {
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  let code = '';
+  for (let i = 0; i < 6; i++) code += chars[Math.floor(Math.random() * chars.length)];
+  return code;
+}
+
+// ── Save cruise to Firestore ──
+async function saveCruiseToCloud() {
+  if (!fb_user) { toast('Sign in first'); return; }
+  if (allPolygons.length === 0 && plotMarkers.length === 0) { toast('Nothing to save'); return; }
+
+  const activeJob = allJobs.find(j => j.id === activeJobId);
+  const defaultName = activeJob ? activeJob.name : 'Cruise ' + new Date().toLocaleDateString();
+  const name = prompt('Cruise name:', defaultName);
+  if (!name) return;
+
+  try {
+    const cruiseData = {
+      name: name,
+      ownerId: fb_user.uid,
+      ownerName: fb_user.displayName || fb_user.email,
+      ownerEmail: fb_user.email,
+      shareCode: generateShareCode(),
+      sharedWith: [],
+      createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+      updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+      data: {
+        plots: plotMarkers.map(p => ({ id: p.id, lat: p.lat, lng: p.lng, completed: p.completed })),
+        polygons: allPolygons.map(p => {
+          const lls = p.layer.getLatLngs()[0];
+          return { name: p.name, coords: lls.map(ll => [ll.lat, ll.lng]) };
+        }),
+        distUnit: distUnit,
+        basemap: currentBasemap
+      }
+    };
+
+    const docRef = await fb_db.collection('cruises').add(cruiseData);
+    toast('Saved: ' + name);
+    closePanel();
+  } catch(e) {
+    console.error('Save error:', e);
+    toast('Save failed');
+  }
+}
+
+// ── Update existing cruise in Firestore ──
+async function updateCruiseInCloud(cruiseId) {
+  if (!fb_user) return;
+  try {
+    await fb_db.collection('cruises').doc(cruiseId).update({
+      updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+      data: {
+        plots: plotMarkers.map(p => ({ id: p.id, lat: p.lat, lng: p.lng, completed: p.completed })),
+        polygons: allPolygons.map(p => {
+          const lls = p.layer.getLatLngs()[0];
+          return { name: p.name, coords: lls.map(ll => [ll.lat, ll.lng]) };
+        }),
+        distUnit: distUnit,
+        basemap: currentBasemap
+      }
+    });
+    toast('Cloud cruise updated');
+  } catch(e) {
+    console.error('Update error:', e);
+    toast('Update failed');
+  }
+}
+
+// ── Load my cruises ──
+async function loadMyCruises() {
+  if (!fb_user) { toast('Sign in first'); return; }
+  const container = document.getElementById('cloud-cruise-list');
+  container.innerHTML = '<div style="text-align:center;padding:20px;color:var(--text-muted);font-size:0.6rem;">Loading...</div>';
+
+  try {
+    const snap = await fb_db.collection('cruises').where('ownerId', '==', fb_user.uid).orderBy('updatedAt', 'desc').get();
+    if (snap.empty) {
+      container.innerHTML = '<div style="text-align:center;padding:20px;color:var(--text-muted);font-size:0.6rem;">No cruises saved yet.</div>';
+      return;
+    }
+    renderCruiseList(snap, container, true);
+  } catch(e) {
+    console.error(e);
+    container.innerHTML = '<div style="text-align:center;padding:20px;color:var(--red);font-size:0.6rem;">Error loading cruises. Check Firestore indexes.</div>';
+  }
+}
+
+// ── Load shared cruises ──
+async function loadSharedCruises() {
+  if (!fb_user) { toast('Sign in first'); return; }
+  const container = document.getElementById('cloud-cruise-list');
+  container.innerHTML = '<div style="text-align:center;padding:20px;color:var(--text-muted);font-size:0.6rem;">Loading...</div>';
+
+  try {
+    const snap = await fb_db.collection('cruises').where('sharedWith', 'array-contains', fb_user.email).orderBy('updatedAt', 'desc').get();
+    if (snap.empty) {
+      container.innerHTML = '<div style="text-align:center;padding:20px;color:var(--text-muted);font-size:0.6rem;">No cruises shared with you yet.</div>';
+      return;
+    }
+    renderCruiseList(snap, container, false);
+  } catch(e) {
+    console.error(e);
+    container.innerHTML = '<div style="text-align:center;padding:20px;color:var(--red);font-size:0.6rem;">Error loading. Check Firestore indexes.</div>';
+  }
+}
+
+function renderCruiseList(snap, container, isOwner) {
+  let html = '';
+  snap.forEach(doc => {
+    const d = doc.data();
+    const plotCount = d.data && d.data.plots ? d.data.plots.length : 0;
+    const polyCount = d.data && d.data.polygons ? d.data.polygons.length : 0;
+    const done = d.data && d.data.plots ? d.data.plots.filter(p => p.completed).length : 0;
+    const date = d.updatedAt ? d.updatedAt.toDate().toLocaleDateString() : 'Unknown';
+    const ownerLabel = isOwner ? '' : ' &middot; by ' + (d.ownerName || 'Unknown');
+
+    html += '<div class="cloud-cruise-item" onclick="loadCruiseFromCloud(\'' + doc.id + '\')">' +
+      '<div class="cloud-cruise-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg></div>' +
+      '<div class="cloud-cruise-info">' +
+        '<div class="cloud-cruise-name">' + d.name + '</div>' +
+        '<div class="cloud-cruise-meta">' + done + '/' + plotCount + ' plots &middot; ' + polyCount + ' boundaries &middot; ' + date + ownerLabel + '</div>' +
+      '</div>' +
+      '<div class="cloud-cruise-actions">' +
+        (isOwner ? '<button class="icon-btn" onclick="event.stopPropagation(); openSharePanel(\'' + doc.id + '\')" title="Share"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg></button>' : '') +
+        (isOwner ? '<button class="icon-btn" onclick="event.stopPropagation(); deleteCruiseFromCloud(\'' + doc.id + '\')" title="Delete" style="border-color:var(--red);"><svg viewBox="0 0 24 24" fill="none" stroke="var(--red)" stroke-width="2"><polyline points="3,6 5,6 21,6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button>' : '') +
+      '</div>' +
+    '</div>';
+  });
+  container.innerHTML = html;
+}
+
+// ── Load a cruise from Firestore ──
+async function loadCruiseFromCloud(cruiseId) {
+  if (!fb_user) return;
+  try {
+    const doc = await fb_db.collection('cruises').doc(cruiseId).get();
+    if (!doc.exists) { toast('Cruise not found'); return; }
+    const d = doc.data();
+
+    // Check access
+    if (d.ownerId !== fb_user.uid && !(d.sharedWith || []).includes(fb_user.email)) {
+      toast('Access denied'); return;
+    }
+
+    // Clear current state
+    tractLayer.clearLayers();
+    tractBoundary = null;
+    allPolygons = [];
+    plotMarkers.forEach(p => plotLayer.removeLayer(p.marker));
+    plotMarkers = [];
+    stopNavigation();
+
+    const data = d.data;
+
+    // Restore basemap
+    if (data.basemap != null && data.basemap !== currentBasemap) {
+      map.removeLayer(basemaps[basemapOrder[currentBasemap]]);
+      currentBasemap = data.basemap;
+      basemaps[basemapOrder[currentBasemap]].addTo(map);
+    }
+
+    // Restore distance unit
+    if (data.distUnit) {
+      distUnit = data.distUnit;
+      document.getElementById('unit-toggle').textContent = distUnit;
+    }
+
+    // Restore polygons
+    if (data.polygons && data.polygons.length) {
+      data.polygons.forEach(pd => {
+        const latlngs = pd.coords.map(c => L.latLng(c[0], c[1]));
+        const layer = L.polygon(latlngs, { color: '#e53935', fillOpacity: 0, opacity: 1, fill: false, weight: 4 });
+        tractLayer.addLayer(layer);
+        if (!tractBoundary) tractBoundary = layer;
+        allPolygons.push({ layer: layer, name: pd.name });
+      });
+    }
+
+    // Restore plots
+    if (data.plots && data.plots.length) {
+      data.plots.forEach(pd => {
+        addPlot(pd.id, pd.lat, pd.lng);
+        if (pd.completed) {
+          const plot = plotMarkers.find(p => p.id === pd.id);
+          if (plot) { plot.completed = true; updatePlotMarkerStyle(plot); }
+        }
+      });
+    }
+
+    if (allPolygons.length) {
+      try {
+        const group = L.featureGroup(allPolygons.map(p => p.layer));
+        map.fitBounds(group.getBounds().pad(0.1));
+      } catch(e) {}
+    }
+
+    // Store the active cloud cruise ID for re-saving
+    window._activeCloudCruiseId = cruiseId;
+    window._activeCloudCruiseOwner = d.ownerId;
+
+    updateStats();
+    updateTractInfo();
+    updateEmptyHint();
+    refreshPolyChecklist();
+    closePanel();
+    toast('Loaded: ' + d.name);
+    saveSession();
+  } catch(e) {
+    console.error(e);
+    toast('Failed to load cruise');
+  }
+}
+
+// ── Delete cruise ──
+async function deleteCruiseFromCloud(cruiseId) {
+  const ok = await showConfirm('Delete this cruise from the cloud? This cannot be undone.');
+  if (!ok) return;
+  try {
+    await fb_db.collection('cruises').doc(cruiseId).delete();
+    toast('Cruise deleted');
+    loadMyCruises();
+  } catch(e) {
+    toast('Delete failed');
+  }
+}
+
+// ── Share panel ──
+async function openSharePanel(cruiseId) {
+  try {
+    const doc = await fb_db.collection('cruises').doc(cruiseId).get();
+    if (!doc.exists) { toast('Cruise not found'); return; }
+    const d = doc.data();
+
+    window._shareCruiseId = cruiseId;
+    document.getElementById('share-cruise-name').textContent = d.name;
+    document.getElementById('share-code-display').value = d.shareCode || 'N/A';
+
+    const usersList = document.getElementById('shared-users-list');
+    if (d.sharedWith && d.sharedWith.length > 0) {
+      usersList.innerHTML = d.sharedWith.map(email =>
+        '<div style="display:flex;align-items:center;justify-content:space-between;padding:8px 10px;background:var(--bg-deep);border:1px solid var(--border);border-radius:8px;font-size:0.6rem;color:var(--text-primary);">' +
+          '<span>' + email + '</span>' +
+          '<button class="icon-btn" onclick="removeSharedUser(\'' + cruiseId + '\', \'' + email + '\')" style="width:24px;height:24px;border-color:var(--red);"><svg viewBox="0 0 24 24" fill="none" stroke="var(--red)" stroke-width="2" width="12" height="12"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>' +
+        '</div>'
+      ).join('');
+    } else {
+      usersList.innerHTML = '<div style="font-size:0.6rem;color:var(--text-muted);font-style:italic;padding:8px 0;text-align:center;">No shared users yet.</div>';
+    }
+
+    openPanel('share');
+  } catch(e) {
+    toast('Error loading share info');
+  }
+}
+
+function copyShareCode() {
+  const code = document.getElementById('share-code-display').value;
+  if (navigator.clipboard) {
+    navigator.clipboard.writeText(code).then(() => toast('Code copied!')).catch(() => toast('Copy failed'));
+  } else {
+    document.getElementById('share-code-display').select();
+    document.execCommand('copy');
+    toast('Code copied!');
+  }
+}
+
+// ── Join cruise by share code ──
+async function joinCruiseByCode() {
+  if (!fb_user) { toast('Sign in first'); return; }
+  const code = document.getElementById('join-code-input').value.trim().toUpperCase();
+  if (!code || code.length < 4) { toast('Enter a valid code'); return; }
+
+  try {
+    const snap = await fb_db.collection('cruises').where('shareCode', '==', code).limit(1).get();
+    if (snap.empty) { toast('Cruise not found'); return; }
+
+    const doc = snap.docs[0];
+    const d = doc.data();
+
+    if (d.ownerId === fb_user.uid) {
+      toast('This is your own cruise');
+      return;
+    }
+
+    const sharedWith = d.sharedWith || [];
+    if (sharedWith.includes(fb_user.email)) {
+      toast('Already shared with you');
+      loadCruiseFromCloud(doc.id);
+      return;
+    }
+
+    // Add user to sharedWith
+    await fb_db.collection('cruises').doc(doc.id).update({
+      sharedWith: firebase.firestore.FieldValue.arrayUnion(fb_user.email)
+    });
+
+    document.getElementById('join-code-input').value = '';
+    toast('Joined: ' + d.name);
+    loadCruiseFromCloud(doc.id);
+  } catch(e) {
+    console.error(e);
+    toast('Join failed');
+  }
+}
+
+// ── Remove shared user ──
+async function removeSharedUser(cruiseId, email) {
+  try {
+    await fb_db.collection('cruises').doc(cruiseId).update({
+      sharedWith: firebase.firestore.FieldValue.arrayRemove(email)
+    });
+    toast('Removed ' + email);
+    openSharePanel(cruiseId);
+  } catch(e) {
+    toast('Remove failed');
+  }
+}
 
 // ── Map setup ──
 const map = L.map('map', {
@@ -1281,6 +1901,7 @@ function openPanel(name) {
   closePanel();
   if (name === 'plotlist') refreshPlotList();
   if (name === 'grid') refreshPolyChecklist();
+  if (name === 'jobs') refreshJobsList();
   document.getElementById('panel-overlay').classList.add('open');
   document.getElementById('panel-' + name).classList.add('open');
   currentPanel = name;
@@ -1299,6 +1920,10 @@ let drawVertexMarkers = [];
 function startDrawBoundary() {
   if (isDrawing) {
     cancelDraw();
+    return;
+  }
+  if (!activeJobId) {
+    ensureActiveJob().then(ok => { if (ok) startDrawBoundary(); });
     return;
   }
   isDrawing = true;
@@ -1439,6 +2064,10 @@ map.on('draw:drawstop', cancelDraw);
 let placingPlot = false;
 
 function startManualPlot() {
+  if (!activeJobId) {
+    ensureActiveJob().then(ok => { if (ok) startManualPlot(); });
+    return;
+  }
   if (placingPlot) {
     placingPlot = false;
     map.off('click', onManualPlotClick);
@@ -1679,6 +2308,10 @@ function checkAllPolys(checked) {
 
 // ── Generate cruise grid ──
 function generatePlots() {
+  if (!activeJobId) {
+    toast('Create a job first');
+    return;
+  }
   // Get selected polygons
   const checks = document.querySelectorAll('#poly-checklist input[type=checkbox]:checked');
   const selectedIndices = Array.from(checks).map(cb => parseInt(cb.getAttribute('data-poly-idx'))).filter(i => !isNaN(i));
@@ -1917,6 +2550,10 @@ function resetAllPlots() {
 
 // ── Import/Export ──
 function importShapefile() {
+  if (!activeJobId) {
+    ensureActiveJob().then(ok => { if (ok) importShapefile(); });
+    return;
+  }
   const input = document.getElementById('file-input');
   input.onchange = function() {
     if (!this.files.length) return;
@@ -2182,7 +2819,13 @@ function exportProject() {
 }
 
 async function clearEverything() {
-  const ok = await showConfirm('Clear all boundaries and plots? This cannot be undone.');
+  if (!activeJobId) {
+    toast('No active job');
+    return;
+  }
+  const job = allJobs.find(j => j.id === activeJobId);
+  const jobName = job ? job.name : 'this job';
+  const ok = await showConfirm('Clear all boundaries and plots in "' + jobName + '"? This cannot be undone.');
   if (!ok) return;
   tractLayer.clearLayers();
   tractBoundary = null;
@@ -2196,7 +2839,7 @@ async function clearEverything() {
   updateEmptyHint();
   closePanel();
   saveSession();
-  toast('All data cleared');
+  toast('Job cleared');
 }
 
 // ── Calculations ──
@@ -2316,10 +2959,11 @@ function vibrate(pattern) {
 // ── Auto-save to IndexedDB ──
 function openDB() {
   return new Promise((resolve, reject) => {
-    const req = indexedDB.open('CruiseNavDB', 1);
+    const req = indexedDB.open('CruiseNavDB', 2);
     req.onupgradeneeded = e => {
       const db = e.target.result;
       if (!db.objectStoreNames.contains('state')) db.createObjectStore('state');
+      if (!db.objectStoreNames.contains('jobs')) db.createObjectStore('jobs', { keyPath: 'id' });
     };
     req.onsuccess = e => resolve(e.target.result);
     req.onerror = () => reject();
@@ -2329,79 +2973,357 @@ function openDB() {
 async function saveSession() {
   try {
     const db = await openDB();
-    const tx = db.transaction('state', 'readwrite');
-    const store = tx.objectStore('state');
 
-    const data = {
-      plots: plotMarkers.map(p => ({ id: p.id, lat: p.lat, lng: p.lng, completed: p.completed })),
-      polygons: allPolygons.map(p => {
-        const lls = p.layer.getLatLngs()[0];
-        return { name: p.name, coords: lls.map(ll => [ll.lat, ll.lng]) };
-      }),
+    // Save current map state to active job
+    if (activeJobId) {
+      const jobData = getCurrentJobData();
+      const tx = db.transaction('jobs', 'readwrite');
+      const store = tx.objectStore('jobs');
+      const job = allJobs.find(j => j.id === activeJobId);
+      if (job) {
+        job.plots = jobData.plots;
+        job.polygons = jobData.polygons;
+        job.updatedAt = Date.now();
+        store.put(job);
+      }
+      await new Promise((res, rej) => { tx.oncomplete = res; tx.onerror = rej; });
+    }
+
+    // Save global state (active job ID, all jobs metadata, settings)
+    const tx2 = db.transaction('state', 'readwrite');
+    const store2 = tx2.objectStore('state');
+    store2.put({
+      activeJobId: activeJobId,
       distUnit: distUnit,
       basemap: currentBasemap
-    };
-    store.put(data, 'session');
-    await new Promise((res, rej) => { tx.oncomplete = res; tx.onerror = rej; });
-  } catch(e) {}
+    }, 'session');
+    await new Promise((res, rej) => { tx2.oncomplete = res; tx2.onerror = rej; });
+
+    // Auto-sync to cloud if we have an active cloud cruise and user is owner
+    if (window._activeCloudCruiseId && fb_user && window._activeCloudCruiseOwner === fb_user.uid) {
+      updateCruiseInCloud(window._activeCloudCruiseId).catch(() => {});
+    }
+  } catch(e) { console.warn('Save error:', e); }
+}
+
+function getCurrentJobData() {
+  return {
+    plots: plotMarkers.map(p => ({ id: p.id, lat: p.lat, lng: p.lng, completed: p.completed })),
+    polygons: allPolygons.map(p => {
+      const lls = p.layer.getLatLngs()[0];
+      return { name: p.name, coords: lls.map(ll => [ll.lat, ll.lng]) };
+    })
+  };
 }
 
 async function restoreSession() {
   try {
     const db = await openDB();
-    const tx = db.transaction('state', 'readonly');
-    const store = tx.objectStore('state');
-    const req = store.get('session');
+
+    // Load all jobs
+    const tx = db.transaction('jobs', 'readonly');
+    const store = tx.objectStore('jobs');
+    const getAllReq = store.getAll();
+    allJobs = await new Promise((res, rej) => { getAllReq.onsuccess = () => res(getAllReq.result || []); getAllReq.onerror = rej; });
+
+    // Load global state
+    const tx2 = db.transaction('state', 'readonly');
+    const store2 = tx2.objectStore('state');
+    const req = store2.get('session');
     const data = await new Promise((res, rej) => { req.onsuccess = () => res(req.result); req.onerror = rej; });
-    if (!data) return false;
 
-    // Restore basemap
-    if (data.basemap != null && data.basemap !== currentBasemap) {
-      map.removeLayer(basemaps[basemapOrder[currentBasemap]]);
-      currentBasemap = data.basemap;
-      basemaps[basemapOrder[currentBasemap]].addTo(map);
+    if (data) {
+      // Restore basemap
+      if (data.basemap != null && data.basemap !== currentBasemap) {
+        map.removeLayer(basemaps[basemapOrder[currentBasemap]]);
+        currentBasemap = data.basemap;
+        basemaps[basemapOrder[currentBasemap]].addTo(map);
+      }
+      // Restore distance unit
+      if (data.distUnit) {
+        distUnit = data.distUnit;
+        document.getElementById('unit-toggle').textContent = distUnit;
+      }
+      // Restore active job
+      if (data.activeJobId && allJobs.find(j => j.id === data.activeJobId)) {
+        loadJob(data.activeJobId, true);
+        return true;
+      }
     }
 
-    // Restore distance unit
-    if (data.distUnit) {
-      distUnit = data.distUnit;
-      document.getElementById('unit-toggle').textContent = distUnit;
+    // Migrate old session data (pre-jobs) into a job if present
+    if (allJobs.length === 0) {
+      const tx3 = db.transaction('state', 'readonly');
+      const store3 = tx3.objectStore('state');
+      const oldReq = store3.get('session');
+      const oldData = await new Promise((res, rej) => { oldReq.onsuccess = () => res(oldReq.result); oldReq.onerror = rej; });
+      if (oldData && ((oldData.plots && oldData.plots.length) || (oldData.polygons && oldData.polygons.length))) {
+        const migJob = {
+          id: 'job_' + Date.now(),
+          name: 'Migrated Session',
+          plots: oldData.plots || [],
+          polygons: oldData.polygons || [],
+          createdAt: Date.now(),
+          updatedAt: Date.now()
+        };
+        allJobs.push(migJob);
+        const txM = db.transaction('jobs', 'readwrite');
+        txM.objectStore('jobs').put(migJob);
+        await new Promise((res, rej) => { txM.oncomplete = res; txM.onerror = rej; });
+        loadJob(migJob.id, true);
+        return true;
+      }
     }
 
-    // Restore polygons
-    if (data.polygons && data.polygons.length) {
-      data.polygons.forEach(pd => {
-        const latlngs = pd.coords.map(c => L.latLng(c[0], c[1]));
-        const layer = L.polygon(latlngs, { color: '#e53935', fillOpacity: 0, opacity: 1, fill: false, weight: 4 });
-        tractLayer.addLayer(layer);
-        if (!tractBoundary) tractBoundary = layer;
-        allPolygons.push({ layer: layer, name: pd.name });
-      });
-    }
+    return false;
+  } catch(e) { console.warn('Restore error:', e); return false; }
+}
 
-    // Restore plots
-    if (data.plots && data.plots.length) {
-      data.plots.forEach(pd => {
-        addPlot(pd.id, pd.lat, pd.lng);
-        if (pd.completed) {
-          const plot = plotMarkers.find(p => p.id === pd.id);
-          if (plot) { plot.completed = true; updatePlotMarkerStyle(plot); }
-        }
-      });
+// ── Job Management ──
+function loadJob(jobId, skipSave) {
+  // Save current job first (if switching)
+  if (!skipSave && activeJobId && activeJobId !== jobId) {
+    const currentJob = allJobs.find(j => j.id === activeJobId);
+    if (currentJob) {
+      const data = getCurrentJobData();
+      currentJob.plots = data.plots;
+      currentJob.polygons = data.polygons;
+      currentJob.updatedAt = Date.now();
     }
+  }
 
-    if (allPolygons.length) {
-      try {
-        const group = L.featureGroup(allPolygons.map(p => p.layer));
-        map.fitBounds(group.getBounds().pad(0.1));
-      } catch(e) {}
+  // Clear map
+  tractLayer.clearLayers();
+  tractBoundary = null;
+  allPolygons = [];
+  plotMarkers.forEach(p => plotLayer.removeLayer(p.marker));
+  plotMarkers = [];
+  stopNavigation();
+
+  const job = allJobs.find(j => j.id === jobId);
+  if (!job) return;
+
+  activeJobId = jobId;
+
+  // Restore polygons
+  if (job.polygons && job.polygons.length) {
+    job.polygons.forEach(pd => {
+      const latlngs = pd.coords.map(c => L.latLng(c[0], c[1]));
+      const layer = L.polygon(latlngs, { color: '#e53935', fillOpacity: 0, opacity: 1, fill: false, weight: 4 });
+      tractLayer.addLayer(layer);
+      if (!tractBoundary) tractBoundary = layer;
+      allPolygons.push({ layer: layer, name: pd.name });
+    });
+  }
+
+  // Restore plots
+  if (job.plots && job.plots.length) {
+    job.plots.forEach(pd => {
+      addPlot(pd.id, pd.lat, pd.lng);
+      if (pd.completed) {
+        const plot = plotMarkers.find(p => p.id === pd.id);
+        if (plot) { plot.completed = true; updatePlotMarkerStyle(plot); }
+      }
+    });
+  }
+
+  if (allPolygons.length) {
+    try {
+      const group = L.featureGroup(allPolygons.map(p => p.layer));
+      map.fitBounds(group.getBounds().pad(0.1));
+    } catch(e) {}
+  }
+
+  updateStats();
+  updateTractInfo();
+  updateEmptyHint();
+  refreshPolyChecklist();
+  updateJobLabel();
+
+  if (!skipSave) saveSession();
+}
+
+function updateJobLabel() {
+  const label = document.getElementById('active-job-label');
+  if (activeJobId) {
+    const job = allJobs.find(j => j.id === activeJobId);
+    label.textContent = job ? job.name : 'No Job';
+  } else {
+    label.textContent = 'No Job';
+  }
+}
+
+async function createNewJob() {
+  const name = prompt('Job name:', '');
+  if (!name || !name.trim()) return;
+
+  // Save current job before creating new one
+  if (activeJobId) {
+    const currentJob = allJobs.find(j => j.id === activeJobId);
+    if (currentJob) {
+      const data = getCurrentJobData();
+      currentJob.plots = data.plots;
+      currentJob.polygons = data.polygons;
+      currentJob.updatedAt = Date.now();
     }
+  }
 
-    updateStats();
-    updateTractInfo();
-    updateEmptyHint();
-    return data.plots && data.plots.length > 0;
-  } catch(e) { return false; }
+  const job = {
+    id: 'job_' + Date.now(),
+    name: name.trim(),
+    plots: [],
+    polygons: [],
+    createdAt: Date.now(),
+    updatedAt: Date.now()
+  };
+  allJobs.push(job);
+
+  try {
+    const db = await openDB();
+    const tx = db.transaction('jobs', 'readwrite');
+    tx.objectStore('jobs').put(job);
+    // Also save previous job if it existed
+    if (activeJobId) {
+      const prev = allJobs.find(j => j.id === activeJobId);
+      if (prev) tx.objectStore('jobs').put(prev);
+    }
+    await new Promise((res, rej) => { tx.oncomplete = res; tx.onerror = rej; });
+  } catch(e) {}
+
+  loadJob(job.id, true);
+  activeJobId = job.id;
+  saveSession();
+  closePanel();
+  toast('Job created: ' + name.trim());
+}
+
+async function renameJob(jobId) {
+  const job = allJobs.find(j => j.id === jobId);
+  if (!job) return;
+  const name = prompt('Rename job:', job.name);
+  if (!name || !name.trim()) return;
+  job.name = name.trim();
+  job.updatedAt = Date.now();
+
+  try {
+    const db = await openDB();
+    const tx = db.transaction('jobs', 'readwrite');
+    tx.objectStore('jobs').put(job);
+    await new Promise((res, rej) => { tx.oncomplete = res; tx.onerror = rej; });
+  } catch(e) {}
+
+  updateJobLabel();
+  refreshJobsList();
+  toast('Renamed to: ' + name.trim());
+}
+
+async function deleteJob(jobId) {
+  const job = allJobs.find(j => j.id === jobId);
+  if (!job) return;
+  const ok = await showConfirm('Delete job "' + job.name + '"? All boundaries and plots in this job will be lost.');
+  if (!ok) return;
+
+  allJobs = allJobs.filter(j => j.id !== jobId);
+
+  try {
+    const db = await openDB();
+    const tx = db.transaction('jobs', 'readwrite');
+    tx.objectStore('jobs').delete(jobId);
+    await new Promise((res, rej) => { tx.oncomplete = res; tx.onerror = rej; });
+  } catch(e) {}
+
+  if (activeJobId === jobId) {
+    // Switch to another job or clear
+    if (allJobs.length > 0) {
+      loadJob(allJobs[0].id, true);
+    } else {
+      activeJobId = null;
+      tractLayer.clearLayers();
+      tractBoundary = null;
+      allPolygons = [];
+      plotMarkers.forEach(p => plotLayer.removeLayer(p.marker));
+      plotMarkers = [];
+      stopNavigation();
+      updateStats();
+      updateTractInfo();
+      updateEmptyHint();
+      updateJobLabel();
+    }
+    saveSession();
+  }
+  refreshJobsList();
+  toast('Job deleted');
+}
+
+function refreshJobsList() {
+  const container = document.getElementById('jobs-list');
+  if (allJobs.length === 0) {
+    container.innerHTML = '<div style="text-align:center;padding:20px;color:var(--text-muted);font-size:0.6rem;">No jobs yet. Create one to get started.</div>';
+    return;
+  }
+
+  // Sort by most recently updated
+  const sorted = [...allJobs].sort((a, b) => (b.updatedAt || 0) - (a.updatedAt || 0));
+
+  let html = '';
+  sorted.forEach(job => {
+    const isActive = job.id === activeJobId;
+    const plotCount = job.plots ? job.plots.length : 0;
+    const done = job.plots ? job.plots.filter(p => p.completed).length : 0;
+    const polyCount = job.polygons ? job.polygons.length : 0;
+    const date = job.updatedAt ? new Date(job.updatedAt).toLocaleDateString() : '';
+
+    html += '<div class="job-item ' + (isActive ? 'active-job' : '') + '" onclick="switchToJob(\'' + job.id + '\')">' +
+      '<div class="job-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg></div>' +
+      '<div class="job-info">' +
+        '<div class="job-name">' + job.name + '</div>' +
+        '<div class="job-meta">' + done + '/' + plotCount + ' plots &middot; ' + polyCount + ' boundaries &middot; ' + date + '</div>' +
+        (isActive ? '<div class="job-active-badge">Active</div>' : '') +
+      '</div>' +
+      '<div class="job-actions">' +
+        '<button class="icon-btn" onclick="event.stopPropagation(); renameJob(\'' + job.id + '\')" title="Rename"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>' +
+        '<button class="icon-btn" onclick="event.stopPropagation(); deleteJob(\'' + job.id + '\')" title="Delete" style="border-color:var(--red);"><svg viewBox="0 0 24 24" fill="none" stroke="var(--red)" stroke-width="2"><polyline points="3,6 5,6 21,6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button>' +
+      '</div>' +
+    '</div>';
+  });
+  container.innerHTML = html;
+}
+
+function switchToJob(jobId) {
+  if (jobId === activeJobId) {
+    closePanel();
+    return;
+  }
+  loadJob(jobId);
+  closePanel();
+  const job = allJobs.find(j => j.id === jobId);
+  toast('Switched to: ' + (job ? job.name : 'Job'));
+}
+
+// Auto-create a job if none exists when user starts working
+async function ensureActiveJob() {
+  if (activeJobId) return true;
+  const name = prompt('Create a job first. Job name:', 'Job ' + new Date().toLocaleDateString());
+  if (!name || !name.trim()) return false;
+  const job = {
+    id: 'job_' + Date.now(),
+    name: name.trim(),
+    plots: [],
+    polygons: [],
+    createdAt: Date.now(),
+    updatedAt: Date.now()
+  };
+  allJobs.push(job);
+  activeJobId = job.id;
+  updateJobLabel();
+  try {
+    const db = await openDB();
+    const tx = db.transaction('jobs', 'readwrite');
+    tx.objectStore('jobs').put(job);
+    await new Promise((res, rej) => { tx.oncomplete = res; tx.onerror = rej; });
+  } catch(e) {}
+  toast('Job created: ' + name.trim());
+  return true;
 }
 
 // ── UI Updates ──
@@ -2471,6 +3393,7 @@ document.addEventListener('visibilitychange', () => {
 
   updateEmptyHint();
   updateStats();
+  updateJobLabel();
 
   // Dismiss loading screen
   setTimeout(() => {
