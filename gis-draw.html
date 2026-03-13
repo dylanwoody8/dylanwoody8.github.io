@@ -406,6 +406,81 @@
     overflow-y: auto;
   }
   .layer-panel.open { display: flex; }
+
+  /* ── Parcel info panel ──────────────────────────────────────────────────── */
+  .parcel-panel {
+    position: absolute;
+    right: 60px;
+    bottom: 36px;
+    width: 260px;
+    max-height: 420px;
+    background: var(--bark);
+    border: 1px solid var(--leaf);
+    border-top: 3px solid #f59e0b;
+    z-index: 1000;
+    padding: 14px;
+    display: none;
+    flex-direction: column;
+    gap: 8px;
+    pointer-events: auto;
+  }
+  #parcel-panel-body {
+    overflow-y: auto;
+    flex: 1;
+    padding-right: 4px;
+  }
+  #parcel-panel-body::-webkit-scrollbar { width: 4px; }
+  #parcel-panel-body::-webkit-scrollbar-track { background: var(--forest); }
+  #parcel-panel-body::-webkit-scrollbar-thumb { background: var(--leaf); border-radius: 2px; }
+  .parcel-panel.open { display: flex; }
+  .parcel-panel-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .parcel-panel h3 {
+    font-family: 'Syne', sans-serif;
+    font-size: 0.8rem;
+    font-weight: 800;
+    color: #f59e0b;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+  .parcel-panel-close {
+    background: none;
+    border: none;
+    color: var(--leaf);
+    font-size: 1rem;
+    cursor: pointer;
+    line-height: 1;
+    padding: 0 2px;
+  }
+  .parcel-panel-close:hover { color: var(--lime); }
+  .parcel-row {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    border-bottom: 1px solid #2d5a3d44;
+    padding-bottom: 6px;
+  }
+  .parcel-row:last-child { border-bottom: none; padding-bottom: 0; }
+  .parcel-label {
+    font-size: 0.65rem;
+    color: var(--leaf);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  .parcel-value {
+    font-size: 0.8rem;
+    color: var(--cream);
+    word-break: break-word;
+  }
+  .parcel-loading {
+    font-size: 0.8rem;
+    color: var(--leaf);
+    font-style: italic;
+  }
+  .parcel-cursor { cursor: crosshair; }
   .layer-panel h3 {
     font-family: 'Syne', sans-serif;
     font-size: 0.8rem;
@@ -920,6 +995,15 @@
 
 <div id="map"></div>
 
+<!-- Parcel info panel -->
+<div class="parcel-panel" id="parcel-panel">
+  <div class="parcel-panel-header">
+    <h3>📋 Parcel Info</h3>
+    <button class="parcel-panel-close" id="parcel-panel-close" title="Close">✕</button>
+  </div>
+  <div id="parcel-panel-body"><span class="parcel-loading">Click a parcel…</span></div>
+</div>
+
 <div class="status-bar">
   <div>Features: <span id="feat-count">0</span></div>
   <div id="acres-display" style="display:none">Stand Area: <span id="acres-val" style="color:var(--lime)">—</span> ac</div>
@@ -1149,6 +1233,7 @@
 <!-- Libraries -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.js"></script>
+<script src="https://unpkg.com/esri-leaflet@3.0.12/dist/esri-leaflet.js"></script>
 
 <script>
 // ── Map setup ──────────────────────────────────────────────────────────────
@@ -1183,16 +1268,16 @@ const hybrid = L.layerGroup([
 
 hybrid.addTo(map);
 
-// ── NC OneMap Parcels WMS ──────────────────────────────────────────────────
-const ncParcels = L.tileLayer.wms('https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/WMSServer', {
-  layers: '0',
-  format: 'image/png',
-  transparent: true,
-  version: '1.3.0',
-  attribution: '© NC OneMap',
-  opacity: 0.6
+// ── NC OneMap Parcels (esri-leaflet dynamic layer) ────────────────────────
+// esri-leaflet handles ArcGIS token auth automatically for public-but-secured
+// services. Layer 0 = centroids, Layer 1 = parcel polygons.
+// The service enforces Min Scale 1:200000, visible at zoom 14+.
+const ncParcels = L.esri.dynamicMapLayer({
+  url: 'https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer',
+  layers: [1],
+  opacity: 1.0,
+  attribution: '© NC OneMap'
 });
-
 const layerControl = L.control.layers({
   'Streets (OSM)': osm,
   'Satellite': satellite,
@@ -1205,6 +1290,96 @@ const layerControl = L.control.layers({
 map.on('mousemove', e => {
   document.getElementById('coords-display').textContent =
     `Lat: ${e.latlng.lat.toFixed(5)}  Lng: ${e.latlng.lng.toFixed(5)}`;
+});
+
+// ── NC Parcels zoom warning ────────────────────────────────────────────────
+map.on('overlayadd', e => {
+  if (e.name === 'NC Parcels (OneMap)' && map.getZoom() < 14) {
+    const msg = document.createElement('div');
+    msg.style.cssText = 'position:absolute;bottom:60px;left:50%;transform:translateX(-50%);' +
+      'background:#1a3a2a;color:#f59e0b;padding:8px 16px;border-radius:6px;font-size:12px;' +
+      'z-index:1000;pointer-events:none;border:1px solid #f59e0b;white-space:nowrap;';
+    msg.textContent = '⚠ Zoom in to level 14+ to see parcels';
+    document.getElementById('map').appendChild(msg);
+    setTimeout(() => msg.remove(), 4000);
+  }
+});
+
+// ── Parcel identify on click ───────────────────────────────────────────────
+const parcelPanel = document.getElementById('parcel-panel');
+const parcelBody  = document.getElementById('parcel-panel-body');
+document.getElementById('parcel-panel-close').addEventListener('click', function() {
+  parcelPanel.classList.remove('open');
+  if (parcelHighlight) { map.removeLayer(parcelHighlight); parcelHighlight = null; }
+});
+
+let parcelHighlight = null;
+
+const PARCEL_FIELDS = [
+  ['ownname',    'Owner'],
+  ['mailadd',    'Mailing Address'],
+  ['mcity',      'Mail City'],
+  ['mstate',     'Mail State'],
+  ['mzip',       'Mail Zip'],
+  ['siteadd',    'Site Address'],
+  ['scity',      'Site City'],
+  ['parno',      'Parcel #'],
+  ['nparno',     'Alt Parcel #'],
+  ['gisacres',   'Acres (GIS)'],
+  ['saledate',   'Sale Date'],
+  ['saledatetx', 'Sale Date (Text)'],
+  ['landval',    'Land Value'],
+  ['improvval',  'Improved Value'],
+  ['parval',     'Parcel Value'],
+  ['parusedesc', 'Land Use'],
+  ['cntyname',   'County'],
+  ['subdivisio', 'Subdivision'],
+];
+
+map.on('click', function(e) {
+  if (!map.hasLayer(ncParcels)) return;
+  if (map.getZoom() < 14) return;
+
+  parcelPanel.classList.add('open');
+  parcelBody.innerHTML = '<span class="parcel-loading">Identifying parcel…</span>';
+
+  if (parcelHighlight) { map.removeLayer(parcelHighlight); parcelHighlight = null; }
+
+  ncParcels.identify()
+    .on(map)
+    .at(e.latlng)
+    .layers('all:1')
+    .tolerance(5)
+    .returnGeometry(true)
+    .run(function(err, result) {
+      if (err || !result || !result.features || result.features.length === 0) {
+        parcelBody.innerHTML = '<span class="parcel-loading">No parcel found here.</span>';
+        return;
+      }
+
+      var props = result.features[0].properties;
+      var geom  = result.features[0].geometry;
+
+      if (geom) {
+        parcelHighlight = L.geoJSON({ type: 'Feature', geometry: geom }, {
+          style: { color: '#f59e0b', weight: 2.5, fillOpacity: 0.18, fillColor: '#f59e0b' }
+        }).addTo(map);
+      }
+
+      var html = '';
+      for (var i = 0; i < PARCEL_FIELDS.length; i++) {
+        var field = PARCEL_FIELDS[i][0];
+        var label = PARCEL_FIELDS[i][1];
+        var val = props[field];
+        if (val === null || val === undefined || val === '' || val === 0 || val === 'Null' || val === 'null') continue;
+        if (field === 'gisacres') val = parseFloat(val).toFixed(2);
+        if (field === 'landval' || field === 'improvval' || field === 'parval')
+          val = '$' + Number(val).toLocaleString();
+        html += '<div class="parcel-row"><span class="parcel-label">' + label + '</span><span class="parcel-value">' + val + '</span></div>';
+      }
+
+      parcelBody.innerHTML = html || '<span class="parcel-loading">No attributes returned.</span>';
+    });
 });
 
 // ── Draw layer ─────────────────────────────────────────────────────────────

@@ -132,6 +132,83 @@
     z-index: 1;
   }
 
+  /* ── NC Parcels panel ────────────────────────────────────────────────── */
+  .parcel-panel {
+    position: absolute;
+    bottom: calc(60px + var(--safe-bottom));
+    right: 12px;
+    width: 260px;
+    max-height: 400px;
+    background: var(--bg-card);
+    border: 1px solid var(--border-bright);
+    border-top: 3px solid var(--orange);
+    border-radius: 0 0 8px 8px;
+    z-index: 1000;
+    display: none;
+    flex-direction: column;
+    pointer-events: auto;
+    font-family: 'JetBrains Mono', monospace;
+  }
+  .parcel-panel.open { display: flex; }
+  .parcel-panel-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 12px 8px;
+    border-bottom: 1px solid var(--border);
+    flex-shrink: 0;
+  }
+  .parcel-panel h3 {
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: var(--orange);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+  .parcel-panel-close {
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    font-size: 1rem;
+    cursor: pointer;
+    line-height: 1;
+    padding: 0 2px;
+  }
+  .parcel-panel-close:hover { color: var(--accent); }
+  #parcel-panel-body {
+    overflow-y: auto;
+    flex: 1;
+    padding: 8px 12px;
+  }
+  #parcel-panel-body::-webkit-scrollbar { width: 4px; }
+  #parcel-panel-body::-webkit-scrollbar-track { background: var(--bg-deep); }
+  #parcel-panel-body::-webkit-scrollbar-thumb { background: var(--border-bright); border-radius: 2px; }
+  .parcel-row {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+    padding: 5px 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .parcel-row:last-child { border-bottom: none; }
+  .parcel-label {
+    font-size: 0.6rem;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  .parcel-value {
+    font-size: 0.75rem;
+    color: var(--text-primary);
+    word-break: break-word;
+  }
+  .parcel-loading {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    font-style: italic;
+    padding: 4px 0;
+  }
+
   /* Hide leaflet draw toolbar, we use our own UI */
   .leaflet-draw-toolbar { display: none !important; }
   .leaflet-draw-actions { display: none !important; }
@@ -1086,6 +1163,9 @@
       <button class="icon-btn" id="btn-account" onclick="openPanel('account')" title="Account">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
       </button>
+      <button class="icon-btn" id="btn-parcels" onclick="toggleParcels()" title="Toggle NC Parcels">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+      </button>
       <button class="icon-btn" id="btn-basemap" onclick="cycleBasemap()" title="Switch basemap">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
       </button>
@@ -1408,6 +1488,7 @@
 <!-- Libraries -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/esri-leaflet@3.0.12/dist/esri-leaflet.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/proj4js/2.9.0/proj4.js"></script>
 
@@ -1886,6 +1967,109 @@ function cycleBasemap() {
   basemaps[basemapOrder[currentBasemap]].addTo(map);
   toast(basemapOrder[currentBasemap].charAt(0).toUpperCase() + basemapOrder[currentBasemap].slice(1));
 }
+
+// ── NC OneMap Parcels ────────────────────────────────────────────────────
+// Deferred init — runs after all scripts have loaded
+window.addEventListener('load', function() {
+  if (!window.L || !window.L.esri) {
+    console.warn('esri-leaflet not loaded');
+    document.getElementById('btn-parcels').style.display = 'none';
+    return;
+  }
+
+  var ncParcels = L.esri.dynamicMapLayer({
+    url: 'https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer',
+    layers: [1],
+    opacity: 1.0,
+    attribution: '© NC OneMap'
+  });
+  var parcelsOn = false;
+  var parcelHighlight = null;
+
+  var PARCEL_FIELDS = [
+    ['ownname',    'Owner'],
+    ['mailadd',    'Mailing Address'],
+    ['mcity',      'Mail City'],
+    ['mstate',     'State'],
+    ['mzip',       'Zip'],
+    ['siteadd',    'Site Address'],
+    ['scity',      'Site City'],
+    ['parno',      'Parcel #'],
+    ['nparno',     'Alt Parcel #'],
+    ['gisacres',   'Acres (GIS)'],
+    ['saledatetx', 'Sale Date'],
+    ['landval',    'Land Value'],
+    ['improvval',  'Improved Value'],
+    ['parval',     'Parcel Value'],
+    ['parusedesc', 'Land Use'],
+    ['cntyname',   'County'],
+    ['subdivisio', 'Subdivision'],
+  ];
+
+  window.toggleParcels = function() {
+    parcelsOn = !parcelsOn;
+    var btn = document.getElementById('btn-parcels');
+    if (parcelsOn) {
+      ncParcels.addTo(map);
+      btn.classList.add('active');
+      if (map.getZoom() < 14) toast('Zoom in to see parcels');
+    } else {
+      map.removeLayer(ncParcels);
+      btn.classList.remove('active');
+      closeParcelsPanel();
+    }
+  };
+
+  function closeParcelsPanel() {
+    document.getElementById('parcel-panel').classList.remove('open');
+    if (parcelHighlight) { map.removeLayer(parcelHighlight); parcelHighlight = null; }
+  }
+
+  document.getElementById('parcel-panel-close').addEventListener('click', closeParcelsPanel);
+
+  map.on('click', function(e) {
+    if (!parcelsOn) return;
+    if (map.getZoom() < 14) { toast('Zoom in to see parcels'); return; }
+
+    var panel = document.getElementById('parcel-panel');
+    var body  = document.getElementById('parcel-panel-body');
+    panel.classList.add('open');
+    body.innerHTML = '<span class="parcel-loading">Identifying…</span>';
+    if (parcelHighlight) { map.removeLayer(parcelHighlight); parcelHighlight = null; }
+
+    ncParcels.identify()
+      .on(map)
+      .at(e.latlng)
+      .layers('all:1')
+      .tolerance(5)
+      .returnGeometry(true)
+      .run(function(err, result) {
+        if (err || !result || !result.features || result.features.length === 0) {
+          body.innerHTML = '<span class="parcel-loading">No parcel found here.</span>';
+          return;
+        }
+        var props = result.features[0].properties;
+        var geom  = result.features[0].geometry;
+        if (geom) {
+          parcelHighlight = L.geoJSON({ type: 'Feature', geometry: geom }, {
+            style: { color: '#f39c12', weight: 2.5, fillOpacity: 0.12, fillColor: '#f39c12' }
+          }).addTo(map);
+        }
+        var html = '';
+        for (var i = 0; i < PARCEL_FIELDS.length; i++) {
+          var field = PARCEL_FIELDS[i][0];
+          var label = PARCEL_FIELDS[i][1];
+          var val = props[field];
+          if (val === null || val === undefined || val === '' || val === 0 || val === 'Null' || val === 'null') continue;
+          if (field === 'gisacres') val = parseFloat(val).toFixed(2);
+          if (field === 'landval' || field === 'improvval' || field === 'parval')
+            val = '$' + Number(val).toLocaleString();
+          html += '<div class="parcel-row"><span class="parcel-label">' + label + '</span><span class="parcel-value">' + val + '</span></div>';
+        }
+        body.innerHTML = html || '<span class="parcel-loading">No attributes returned.</span>';
+      });
+  });
+});
 
 // ── Toast notification ──
 function toast(msg) {
@@ -3406,4 +3590,13 @@ document.addEventListener('visibilitychange', () => {
 
 </script>
 </body>
-</html>
+</html><!-- NC Parcels info panel -->
+<div class="parcel-panel" id="parcel-panel">
+  <div class="parcel-panel-header">
+    <h3>&#x1F4CB; Parcel Info</h3>
+    <button class="parcel-panel-close" id="parcel-panel-close">&#x2715;</button>
+  </div>
+  <div id="parcel-panel-body"><span class="parcel-loading">Click a parcel to identify...</span></div>
+</div>
+
+
