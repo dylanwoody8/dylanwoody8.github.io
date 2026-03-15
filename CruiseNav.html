@@ -643,6 +643,309 @@
     opacity: 0.5;
   }
 
+  /* ═══ REPORT PANEL ═══ */
+  .report-card {
+    background: var(--bg-deep);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px;
+    margin-bottom: 10px;
+  }
+  .report-card-title {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-weight: 800;
+    font-size: 0.8rem;
+    color: var(--orange);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 10px;
+    padding-bottom: 6px;
+    border-bottom: 1px solid var(--border);
+  }
+  .report-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 5px 0;
+    border-bottom: 1px solid rgba(45,90,39,0.3);
+    font-size: 0.78rem;
+    color: var(--text-secondary);
+  }
+  .report-row:last-child { border-bottom: none; }
+  .report-row .rval {
+    font-family: 'JetBrains Mono', monospace;
+    color: var(--accent);
+    font-size: 0.78rem;
+    font-weight: 600;
+  }
+  .report-species-hdr {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-weight: 800;
+    font-size: 1rem;
+    color: var(--accent);
+    margin: 16px 0 8px;
+    padding-bottom: 4px;
+    border-bottom: 2px solid var(--accent-dim);
+    letter-spacing: 0.5px;
+  }
+  .report-empty {
+    text-align: center;
+    padding: 30px 20px;
+    color: var(--text-muted);
+    font-size: 0.75rem;
+    line-height: 1.8;
+  }
+  .report-empty-icon { font-size: 2rem; margin-bottom: 8px; opacity: 0.4; }
+
+  /* ═══ TALLY MODAL ═══ */
+  .tally-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.75);
+    z-index: 3000;
+    display: none;
+    align-items: flex-end;
+  }
+  .tally-overlay.open { display: flex; }
+  .tally-modal {
+    background: var(--bg-main);
+    border-top: 2px solid var(--accent);
+    width: 100%;
+    max-height: 92dvh;
+    display: flex;
+    flex-direction: column;
+    border-radius: 16px 16px 0 0;
+    overflow: hidden;
+  }
+  .tally-header {
+    padding: 14px 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid var(--border);
+    flex-shrink: 0;
+  }
+  .tally-title {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-weight: 800;
+    font-size: 1.1rem;
+    color: var(--accent);
+  }
+  .tally-close {
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    font-size: 24px;
+    cursor: pointer;
+    padding: 4px;
+  }
+  .tally-body {
+    flex: 1;
+    overflow-y: auto;
+    padding: 14px 16px;
+    padding-bottom: calc(14px + var(--safe-bottom));
+  }
+  .tally-live-stats {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 10px;
+    margin-bottom: 14px;
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 8px;
+  }
+  .tally-stat { text-align: center; }
+  .tally-stat-val {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-weight: 800;
+    font-size: 1.3rem;
+    color: var(--accent);
+    display: block;
+  }
+  .tally-stat-lbl {
+    font-size: 0.58rem;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-weight: 600;
+  }
+  .tally-section-title {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-weight: 800;
+    font-size: 0.8rem;
+    color: var(--orange);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 10px;
+    padding-bottom: 6px;
+    border-bottom: 1px solid var(--border);
+  }
+  .product-toggle {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin-bottom: 14px;
+  }
+  .product-btn {
+    background: var(--bg-deep);
+    border: 2px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 4px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.12s;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--text-secondary);
+  }
+  .product-btn:active { transform: scale(0.97); }
+  .product-btn.sel-saw { border-color: var(--accent); color: var(--accent); background: rgba(106,191,75,0.1); }
+  .product-btn.sel-pulp { border-color: var(--blue); color: var(--blue); background: rgba(52,152,219,0.1); }
+  .dbh-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 6px;
+    margin-bottom: 14px;
+  }
+  .dbh-btn {
+    background: var(--bg-deep);
+    border: 2px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 4px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.12s;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-weight: 800;
+    font-size: 1rem;
+    color: var(--text-secondary);
+    line-height: 1;
+  }
+  .dbh-btn:active, .dbh-btn.sel { border-color: var(--accent); color: var(--accent); background: rgba(106,191,75,0.1); }
+  .logs-row {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    margin-bottom: 14px;
+  }
+  .log-btn {
+    background: var(--bg-deep);
+    border: 2px solid var(--border);
+    border-radius: 8px;
+    padding: 8px 12px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: all 0.12s;
+    white-space: nowrap;
+  }
+  .log-btn.sel { border-color: var(--orange); color: var(--orange); background: rgba(243,156,18,0.1); }
+  .ht-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 6px;
+    margin-bottom: 10px;
+  }
+  .ht-btn {
+    background: var(--bg-deep);
+    border: 2px solid var(--border);
+    border-radius: 8px;
+    padding: 8px 4px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.12s;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    line-height: 1;
+  }
+  .ht-btn.sel { border-color: var(--blue); color: var(--blue); background: rgba(52,152,219,0.1); }
+  .ht-note {
+    font-size: 0.62rem;
+    color: var(--text-muted);
+    margin-bottom: 14px;
+    letter-spacing: 0.5px;
+  }
+  .tally-add-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin-bottom: 16px;
+  }
+  .tally-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 14px;
+  }
+  .tally-table th {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.6rem;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    padding: 6px 4px;
+    border-bottom: 1px solid var(--border);
+    text-align: center;
+  }
+  .tally-table th:first-child { text-align: left; }
+  .tally-table td {
+    padding: 6px 4px;
+    border-bottom: 1px solid rgba(45,90,39,0.3);
+    text-align: center;
+    vertical-align: middle;
+    font-size: 0.75rem;
+    color: var(--text-primary);
+  }
+  .tally-table td:first-child {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.72rem;
+    color: var(--orange);
+    text-align: left;
+  }
+  .tally-del {
+    background: none;
+    border: none;
+    color: var(--red);
+    font-size: 16px;
+    cursor: pointer;
+    padding: 0 6px;
+    line-height: 1;
+  }
+  .tally-del:active { opacity: 0.6; }
+
+  /* ═══ CRUISE SETUP IN JOB CREATION ═══ */
+  .cruise-setup-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 14px;
+  }
+  .species-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-bottom: 14px;
+  }
+  .species-chip {
+    background: var(--bg-deep);
+    border: 2px solid var(--border);
+    border-radius: 8px;
+    padding: 8px 12px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: all 0.12s;
+  }
+  .species-chip.sel { border-color: var(--accent); color: var(--accent); background: rgba(106,191,75,0.1); }
+
   /* Desktop tweaks */
   @media (min-width: 769px) {
     .topbar { height: 52px; padding: 0 20px; }
@@ -1115,6 +1418,32 @@
   .icon-btn.logged-in { border-color: var(--accent); }
   .icon-btn.logged-in svg { stroke: var(--accent); }
 
+  /* Sync button states */
+  .icon-btn.sync-pending {
+    border-color: var(--orange);
+    background: var(--orange-bg);
+    animation: sync-pulse 2s ease infinite;
+  }
+  .icon-btn.sync-pending svg { stroke: var(--orange); }
+  @keyframes sync-pulse {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(243,156,18,0.4); }
+    50% { box-shadow: 0 0 0 6px rgba(243,156,18,0); }
+  }
+  .icon-btn.sync-active svg { animation: sync-spin 0.8s linear infinite; }
+  @keyframes sync-spin { to { transform: rotate(360deg); } }
+  .icon-btn.sync-done { border-color: var(--accent); }
+  .icon-btn.sync-done svg { stroke: var(--accent); }
+  .sync-badge {
+    position: absolute;
+    top: -3px;
+    right: -3px;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: var(--orange);
+    border: 2px solid var(--bg-deep);
+  }
+
   /* ═══ JOBS LIST ═══ */
   .job-item {
     display: flex;
@@ -1437,6 +1766,10 @@
       <button class="icon-btn" id="btn-cloud-topbar" onclick="openCloudPanel()" title="Cloud sync">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z"/></svg>
       </button>
+      <button class="icon-btn" id="btn-sync" onclick="manualCloudSync()" title="Sync now" style="display:none;position:relative">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23,4 23,10 17,10"/><polyline points="1,20 1,14 7,14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+        <div class="sync-badge" id="sync-badge" style="display:none"></div>
+      </button>
       <button class="icon-btn" id="btn-layers" onclick="toggleLayersWidget()" title="Layers">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
       </button>
@@ -1566,6 +1899,10 @@
       <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><circle cx="4" cy="6" r="1" fill="currentColor"/><circle cx="4" cy="12" r="1" fill="currentColor"/><circle cx="4" cy="18" r="1" fill="currentColor"/></svg>
       List
     </button>
+    <button class="nav-btn" id="nav-btn-report" onclick="openPanel('report')">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14,2 14,8 20,8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+      Report
+    </button>
     <button class="nav-btn" id="nav-btn-jobs" onclick="openPanel('jobs')">
       <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
       Jobs
@@ -1648,6 +1985,10 @@
       <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><circle cx="5" cy="5" r="1.5" fill="currentColor"/><circle cx="12" cy="5" r="1.5" fill="currentColor"/><circle cx="5" cy="12" r="1.5" fill="currentColor"/><circle cx="12" cy="12" r="1.5" fill="currentColor"/></svg>
       <div class="settings-card-label">Cruise Grid</div>
     </div>
+    <div class="settings-card" onclick="closePanel(); openPanel('cruisesetup')">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+      <div class="settings-card-label">Cruise Setup</div>
+    </div>
   </div>
   <button class="btn btn-secondary" onclick="closePanel(); importShapefile()">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7,10 12,5 17,10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
@@ -1670,6 +2011,80 @@
     Cloud Sync & Sharing
   </button>
   <button class="btn btn-danger" onclick="clearEverything()">Clear All Data</button>
+</div>
+
+<!-- Cruise Setup Panel -->
+<div class="panel" id="panel-cruisesetup">
+  <div class="panel-handle"></div>
+  <div class="panel-title">Cruise Setup</div>
+  <div class="field-group">
+    <div class="field-label">Basal Area Factor (BAF)</div>
+    <select class="field-input" id="setup-baf" onchange="updateJobBAF(this.value)">
+      <option value="5">5</option>
+      <option value="10" selected>10</option>
+      <option value="20">20</option>
+      <option value="40">40</option>
+    </select>
+  </div>
+  <div class="field-group">
+    <div class="field-label">Log Rule (Sawtimber)</div>
+    <select class="field-input" id="setup-logrule" onchange="updateJobLogRuleFromSetup(this.value)">
+      <option value="scribner">Scribner</option>
+      <option value="international">International 1/4"</option>
+      <option value="doyle">Doyle</option>
+    </select>
+  </div>
+  <div class="field-group">
+    <div class="field-label">Species (tap to toggle)</div>
+    <div class="species-grid" id="setup-species-grid" style="max-height:45vh;overflow-y:auto;padding-right:4px"></div>
+    <div style="margin-top:10px">
+      <button class="btn btn-secondary" style="font-size:0.65rem;padding:8px 12px;margin:0" onclick="toggleSpeciesRef()">Species Code Reference</button>
+      <div id="species-ref" style="display:none;margin-top:8px;background:var(--bg-deep);border:1px solid var(--border);border-radius:8px;padding:10px 12px;max-height:40vh;overflow-y:auto;font-family:'JetBrains Mono',monospace;font-size:0.68rem;line-height:1.9;color:var(--text-secondary)"></div>
+    </div>
+  </div>
+  <button class="btn btn-primary" onclick="closePanel(); toast('Cruise setup saved')">Done</button>
+</div>
+
+<!-- Report Panel -->
+<div class="panel" id="panel-report" style="max-height:90vh">
+  <div class="panel-handle"></div>
+  <div class="panel-title">Cruise Report</div>
+  <div style="display:flex;gap:8px;margin-bottom:10px;align-items:flex-end;">
+    <div style="flex:1">
+      <div class="field-label">BAF</div>
+      <select class="field-input" id="report-baf" style="padding:8px 10px;font-size:0.8rem" onchange="updateReportBAF(this.value); generateCruiseReport()">
+        <option value="5">5</option>
+        <option value="10">10</option>
+        <option value="20">20</option>
+        <option value="40">40</option>
+      </select>
+    </div>
+    <div style="flex:1">
+      <div class="field-label">Log Rule</div>
+      <select class="field-input" id="report-logrule" style="padding:8px 10px;font-size:0.8rem" onchange="updateReportLogRule(this.value); generateCruiseReport()">
+        <option value="scribner">Scribner</option>
+        <option value="international">International 1/4"</option>
+        <option value="doyle">Doyle</option>
+      </select>
+    </div>
+    <div style="flex:1">
+      <div class="field-label">Acres</div>
+      <input class="field-input" id="report-acres" type="number" step="0.1" min="0" placeholder="Auto" style="padding:8px 10px;font-size:0.8rem" onchange="generateCruiseReport()">
+    </div>
+  </div>
+  <div style="display:flex;gap:8px;margin-bottom:14px;">
+    <button class="btn btn-secondary" style="flex:1;margin:0;font-size:0.7rem;padding:10px" onclick="generateCruiseReport()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><polyline points="23,4 23,10 17,10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+      Refresh
+    </button>
+    <button class="btn btn-secondary" style="flex:1;margin:0;font-size:0.7rem;padding:10px;border-color:var(--blue);color:var(--blue)" onclick="exportCruiseCSV()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7,10 12,15 17,10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+      Export CSV
+    </button>
+  </div>
+  <div id="report-content" style="max-height:60vh;overflow-y:auto;">
+    <div class="report-empty"><div class="report-empty-icon">📊</div>Complete some plots to generate a report.</div>
+  </div>
 </div>
 
 <!-- Jobs Panel -->
@@ -1939,6 +2354,515 @@ async function firebaseSignOut() {
   toast('Signed out');
 }
 
+// ══════════════════════════════════════════════════════════════════════════════
+// TIMBER CRUISING VOLUME TABLES & TALLY SYSTEM
+// ══════════════════════════════════════════════════════════════════════════════
+
+// ── Sawtimber Tree Scale Tables ──
+// Source: Reference Handbook for Foresters (USDA Forest Service, NA-FR-15)
+// Columns: number of 16-ft logs. Scribner: 1,1.5,2,2.5,3,3.5,4
+// International & Doyle: 0.5,1,1.5,2,2.5,3,3.5,4
+
+const SCRIBNER = {
+  12:[47,61,75,85,95,100,106],  14:[69,92,114,130,146,156,166],
+  16:[95,127,159,185,211,229,247],  18:[123,166,209,244,280,306,331],
+  20:[157,214,270,317,364,398,432],  22:[194,266,338,398,458,504,549],
+  24:[234,322,409,484,558,611,665],  26:[281,388,494,585,676,745,814],
+  28:[327,452,578,686,795,877,959],  30:[382,530,678,806,933,1028,1124],
+  32:[440,612,784,936,1089,1206,1322],  34:[498,695,892,1066,1239,1373,1507],
+  36:[563,789,1015,1216,1416,1572,1728],  38:[629,882,1135,1366,1596,1769,1942],
+  40:[703,988,1274,1532,1791,1993,2195]
+};
+const SCRIBNER_LOGS = [1,1.5,2,2.5,3,3.5,4];
+
+const INTERNATIONAL = {
+  12:[30,60,80,100,120,0,0,0],  14:[40,80,110,140,160,180,0,0],
+  16:[60,100,150,180,210,250,280,310],  18:[70,140,190,240,280,320,360,400],
+  20:[90,170,240,300,350,400,450,500],  22:[110,210,290,360,430,490,560,610],
+  24:[130,250,350,430,510,590,660,740],  26:[160,300,410,510,600,700,790,880],
+  28:[190,350,480,600,700,810,920,1020],  30:[220,410,550,690,810,930,1060,1180],
+  32:[260,470,640,790,940,1080,1220,1360],  34:[290,530,730,900,1060,1220,1380,1540],
+  36:[330,600,820,1010,1200,1380,1560,1740],  38:[370,670,910,1130,1340,1540,1740,1940],
+  40:[420,740,1010,1250,1480,1700,1920,2160],  42:[460,820,1100,1360,1610,1870,2120,2360]
+};
+const INTERNATIONAL_LOGS = [0.5,1,1.5,2,2.5,3,3.5,4];
+
+const DOYLE = {
+  12:[20,30,40,50,60,0,0,0],  14:[30,50,70,80,90,100,0,0],
+  16:[40,70,100,120,140,160,180,190],  18:[60,100,130,160,200,220,240,260],
+  20:[80,130,180,220,260,300,320,360],  22:[100,170,230,280,340,380,420,460],
+  24:[130,220,290,360,430,490,540,600],  26:[160,260,360,440,520,590,660,740],
+  28:[190,320,430,520,620,710,800,880],  30:[230,380,510,630,740,840,940,1040],
+  32:[270,440,590,730,860,990,1120,1220],  34:[300,510,680,850,1000,1140,1300,1440],
+  36:[350,580,780,970,1140,1310,1480,1640],  38:[390,660,880,1100,1290,1480,1680,1860],
+  40:[430,740,990,1230,1450,1660,1880,2080],  42:[470,830,1100,1370,1620,1860,2100,2320]
+};
+const DOYLE_LOGS = [0.5,1,1.5,2,2.5,3,3.5,4];
+
+// ── Pulpwood Cord Table (standing trees) ──
+// Source: Reference Handbook for Foresters, p.7
+// Columns: number of 8-ft sticks (1..7)
+const PULP_CORDS = {
+  5: [.010,.018,0,0,0,0,0],
+  6: [.018,.030,.043,0,0,0,0],
+  7: [.025,.039,.056,.074,0,0,0],
+  8: [.032,.050,.070,.092,.116,0,0],
+  9: [.040,.061,.085,.112,.140,.168,0],
+  10:[.049,.074,.101,.132,.167,.200,.239],
+  11:[.059,.087,.119,.155,.195,.233,.280],
+  12:[.070,.100,.138,.180,.225,.271,.324],
+  14:[.095,.134,.179,.233,.291,.351,.419],
+  16:[.120,.168,.222,.290,.361,.437,.521],
+  18:[.146,.208,.270,.350,.439,.531,.634],
+  20:[.186,.246,.320,.416,.522,.632,.755],
+  22:[.220,.294,.374,.494,.612,.739,.883]
+};
+const PULP_STICKS = [1,2,3,4,5,6,7];
+
+// ── Weight table: tons per standard cord by species ──
+// Source: Reference Handbook for Foresters, p.15
+const TONS_PER_CORD = {
+  // Pines
+  'LP': 2.4, 'LL': 2.4, 'SP': 2.4, 'VP': 2.4,  // Loblolly, longleaf, shortleaf, Virginia
+  'WP': 1.6, 'RP': 1.9,                           // White pine, red pine
+  // Oaks
+  'WO': 2.8, 'CO': 2.8, 'PO': 2.8,               // White oak, chestnut oak, post oak
+  'RO': 2.9, 'SO': 2.9, 'BO': 2.9, 'NO': 2.9,    // Red oak, scarlet, black, N red oak
+  'WL': 2.9,                                       // Water oak / willow oak
+  // Hickories
+  'HK': 2.9, 'MH': 2.9, 'PH': 2.9, 'SB': 2.9,   // Hickory, mockernut, pignut, shagbark
+  // Maples
+  'SM': 2.7, 'RM': 2.2,                           // Sugar maple, red maple
+  // Other hardwoods
+  'YP': 1.7, 'TU': 1.7,                           // Yellow poplar / tuliptree
+  'GU': 2.3, 'BG': 2.3,                           // Sweetgum, blackgum
+  'WA': 2.2, 'GA': 2.2,                           // White ash, green ash
+  'BC': 2.0,                                       // Black cherry
+  'AM': 2.5,                                       // American elm
+  'SY': 2.4,                                       // Sycamore
+  'BW': 2.6,                                       // Black walnut
+  'BE': 2.5,                                       // Beech
+  'BL': 2.6,                                       // Black locust
+  'CW': 2.2,                                       // Cottonwood
+  'BIR': 2.6,                                      // Birch (yellow)
+  'HM': 2.3,                                       // Hemlock
+  'RC': 1.7, 'WC': 1.3,                           // Red cedar, white cedar
+  'DW': 2.3,                                       // Dogwood
+  'HH': 2.3,                                       // Hackberry
+  'MS': 2.3,                                       // Sassafras
+  'PW': 1.9,                                       // Persimmon
+  'HW': 2.5,                                       // Hardwood mix
+  'SF': 2.0,                                       // Softwood mix
+  'OTH': 2.3,
+  '_default': 2.3
+};
+
+function getTonsPerCord(sppCode) {
+  return TONS_PER_CORD[sppCode] || TONS_PER_CORD['_default'];
+}
+
+// ── Convert total tree height (ft) to number of 8-ft sticks ──
+function heightToSticks(heightFt) {
+  if (!heightFt || heightFt <= 0) return 1;
+  const sticks = Math.floor(heightFt / 8);
+  return Math.max(1, Math.min(sticks, 7));
+}
+
+// Available DBH classes for tally buttons
+const DBH_CLASSES = [6,7,8,9,10,12,14,16,18,20,22,24,26,28,30,32,34,36,38,40];
+
+// Available log rule options
+const LOG_RULES = {
+  scribner: { name: 'Scribner', table: SCRIBNER, steps: SCRIBNER_LOGS, unit: 'BF' },
+  international: { name: 'International 1/4"', table: INTERNATIONAL, steps: INTERNATIONAL_LOGS, unit: 'BF' },
+  doyle: { name: 'Doyle', table: DOYLE, steps: DOYLE_LOGS, unit: 'BF' }
+};
+
+// ── Full species list organized by group ──
+const DEFAULT_SPECIES = [
+  // Pines
+  {code:'LP',label:'Loblolly Pine',group:'Pine'},
+  {code:'SP',label:'Shortleaf Pine',group:'Pine'},
+  {code:'LL',label:'Longleaf Pine',group:'Pine'},
+  {code:'VP',label:'Virginia Pine',group:'Pine'},
+  {code:'WP',label:'White Pine',group:'Pine'},
+  {code:'RP',label:'Red Pine',group:'Pine'},
+  // Other softwoods
+  {code:'RC',label:'Eastern Red Cedar',group:'Softwood'},
+  {code:'HM',label:'Hemlock',group:'Softwood'},
+  {code:'SF',label:'Softwood Mix',group:'Softwood'},
+  // Oaks - Red group
+  {code:'RO',label:'Red Oak (misc)',group:'Oak'},
+  {code:'NO',label:'Northern Red Oak',group:'Oak'},
+  {code:'SO',label:'Scarlet Oak',group:'Oak'},
+  {code:'BO',label:'Black Oak',group:'Oak'},
+  {code:'WL',label:'Water / Willow Oak',group:'Oak'},
+  // Oaks - White group
+  {code:'WO',label:'White Oak',group:'Oak'},
+  {code:'CO',label:'Chestnut Oak',group:'Oak'},
+  {code:'PO',label:'Post Oak',group:'Oak'},
+  // Hickories
+  {code:'HK',label:'Hickory (misc)',group:'Hardwood'},
+  {code:'MH',label:'Mockernut Hickory',group:'Hardwood'},
+  {code:'PH',label:'Pignut Hickory',group:'Hardwood'},
+  {code:'SB',label:'Shagbark Hickory',group:'Hardwood'},
+  // Maples
+  {code:'RM',label:'Red Maple',group:'Hardwood'},
+  {code:'SM',label:'Sugar Maple',group:'Hardwood'},
+  // Poplar / Tulip
+  {code:'YP',label:'Yellow Poplar',group:'Hardwood'},
+  // Gums
+  {code:'GU',label:'Sweetgum',group:'Hardwood'},
+  {code:'BG',label:'Blackgum / Tupelo',group:'Hardwood'},
+  // Ash
+  {code:'WA',label:'White Ash',group:'Hardwood'},
+  {code:'GA',label:'Green Ash',group:'Hardwood'},
+  // Other hardwoods
+  {code:'BC',label:'Black Cherry',group:'Hardwood'},
+  {code:'BW',label:'Black Walnut',group:'Hardwood'},
+  {code:'AM',label:'American Elm',group:'Hardwood'},
+  {code:'BE',label:'Beech',group:'Hardwood'},
+  {code:'SY',label:'Sycamore',group:'Hardwood'},
+  {code:'BL',label:'Black Locust',group:'Hardwood'},
+  {code:'CW',label:'Cottonwood',group:'Hardwood'},
+  {code:'BIR',label:'Birch',group:'Hardwood'},
+  {code:'DW',label:'Dogwood',group:'Hardwood'},
+  {code:'HH',label:'Hackberry',group:'Hardwood'},
+  {code:'MS',label:'Sassafras',group:'Hardwood'},
+  {code:'PW',label:'Persimmon',group:'Hardwood'},
+  // Catch-all
+  {code:'HW',label:'Hardwood Mix',group:'Mix'},
+  {code:'OTH',label:'Other',group:'Mix'}
+];
+
+// ── Volume lookup: sawtimber (any rule) ──
+function sawtimberVol(dbh, logs, rule) {
+  rule = rule || 'scribner';
+  const r = LOG_RULES[rule] || LOG_RULES.scribner;
+  // Round DBH to nearest even inch for table lookup
+  let d = Math.round(dbh / 2) * 2;
+  if (d < 12) d = 12;
+  if (d > 42) d = 42;
+  const row = r.table[d];
+  if (!row) return 0;
+  const idx = r.steps.indexOf(parseFloat(logs));
+  if (idx < 0) {
+    // Find nearest log step
+    let best = 0, bestDiff = Math.abs(r.steps[0] - logs);
+    for (let i = 1; i < r.steps.length; i++) {
+      const diff = Math.abs(r.steps[i] - logs);
+      if (diff < bestDiff) { bestDiff = diff; best = i; }
+    }
+    return row[best] || 0;
+  }
+  return row[idx] || 0;
+}
+
+// Backward compat wrapper
+function scribnerVol(dbh, logs) { return sawtimberVol(dbh, logs, 'scribner'); }
+
+// ── Pulpwood: cords from DBH + total height (ft), converted to sticks internally ──
+function pulpwoodCords(dbh, heightFt) {
+  const d = Math.round(dbh);
+  const sticks = heightToSticks(heightFt);
+  // Find the right row (table has 5..22, some gaps)
+  const keys = Object.keys(PULP_CORDS).map(Number).sort((a,b) => a - b);
+  let rowKey = keys[0];
+  for (const k of keys) {
+    if (k <= d) rowKey = k;
+    else break;
+  }
+  const row = PULP_CORDS[rowKey];
+  if (!row) return 0;
+  const sIdx = Math.max(0, Math.min(sticks - 1, row.length - 1));
+  return row[sIdx] || 0;
+}
+
+// Legacy wrapper (returns tons using species-avg cord weight)
+function pulpwoodTons(dbh, heightFt, spp) {
+  return pulpwoodCords(dbh, heightFt || 30) * getTonsPerCord(spp || 'OTH');
+}
+
+function calcTPA(baf, dbh) { return baf / (0.005454 * dbh * dbh); }
+
+// ── Get available log steps for the current rule ──
+function getLogSteps(rule) {
+  const r = LOG_RULES[rule || 'scribner'] || LOG_RULES.scribner;
+  return r.steps;
+}
+
+// ── Get active log rule for current job ──
+function getJobLogRule() {
+  const job = allJobs.find(j => j.id === activeJobId);
+  return (job && job.logRule) || 'scribner';
+}
+
+// ── Tally State ──
+let tallyPlotId = null;         // currently open plot ID
+let tallyTrees = [];            // trees being edited in modal
+let tallyLastTree = null;       // last added tree for repeat
+let tallySelProduct = 'sawtimber';
+let tallySelDBH = 14;
+let tallySelLogs = 2;
+let tallySelHeight = 50;
+
+// ── Get cruise config for active job ──
+function getJobCruiseConfig() {
+  const job = allJobs.find(j => j.id === activeJobId);
+  return {
+    baf: (job && job.baf) || 10,
+    species: (job && job.species) || DEFAULT_SPECIES.filter(s => ['LP','SP','RO','WO','YP','HK','GU','HW'].includes(s.code))
+  };
+}
+
+// ── Open tally modal for a plot ──
+function openTallyModal(plot) {
+  tallyPlotId = plot.id;
+  const trees = plot.trees || [];
+  tallyTrees = JSON.parse(JSON.stringify(trees));
+  document.getElementById('tally-title').textContent = 'Plot ' + plot.id;
+
+  const config = getJobCruiseConfig();
+  const sel = document.getElementById('tally-species');
+  sel.innerHTML = '';
+  config.species.forEach(sp => {
+    const o = document.createElement('option');
+    o.value = sp.code;
+    o.textContent = sp.code + ' - ' + (sp.label || sp.code);
+    sel.appendChild(o);
+  });
+
+  tallySelProduct = 'sawtimber';
+  tallySelDBH = 14;
+  tallySelLogs = 2;
+  tallySelHeight = 50;
+  document.getElementById('tally-btn-saw').className = 'product-btn sel-saw';
+  document.getElementById('tally-btn-pulp').className = 'product-btn';
+  document.getElementById('tally-logs-section').style.display = 'block';
+  document.getElementById('tally-height-section').style.display = 'none';
+  document.getElementById('tally-vol-lbl').textContent = 'BF/Ac';
+
+  tallyBuildDBH();
+  tallyBuildLogs();
+  tallyRenderTable();
+  tallyUpdateStats();
+
+  map.closePopup();
+  document.getElementById('tally-overlay').classList.add('open');
+}
+
+function closeTallyModal() {
+  document.getElementById('tally-overlay').classList.remove('open');
+  tallyPlotId = null;
+}
+
+function tallyPickProduct(p) {
+  tallySelProduct = p;
+  document.getElementById('tally-btn-saw').className = 'product-btn' + (p === 'sawtimber' ? ' sel-saw' : '');
+  document.getElementById('tally-btn-pulp').className = 'product-btn' + (p === 'pulpwood' ? ' sel-pulp' : '');
+  document.getElementById('tally-logs-section').style.display = p === 'pulpwood' ? 'none' : 'block';
+  document.getElementById('tally-height-section').style.display = p === 'pulpwood' ? 'block' : 'none';
+  document.getElementById('tally-vol-lbl').textContent = p === 'pulpwood' ? 'Cords/Ac' : 'BF/Ac';
+  tallySelDBH = p === 'pulpwood' ? 8 : 14;
+  if (p === 'pulpwood' && (tallySelHeight < 20 || tallySelHeight > 65)) tallySelHeight = 40;
+  tallyBuildDBH();
+  if (p === 'sawtimber') tallyBuildLogs();
+  if (p === 'pulpwood') tallyBuildSticks();
+  tallyUpdateStats();
+}
+
+function tallyBuildDBH() {
+  document.getElementById('tally-dbh-grid').innerHTML = DBH_CLASSES.map(d =>
+    '<div class="dbh-btn' + (d === tallySelDBH ? ' sel' : '') + '" data-dbh="' + d + '" onclick="tallyPickDBH(' + d + ')">' + d + '"</div>'
+  ).join('');
+}
+
+function tallyPickDBH(d) {
+  tallySelDBH = d;
+  document.querySelectorAll('#tally-dbh-grid .dbh-btn').forEach(b => b.classList.toggle('sel', parseInt(b.dataset.dbh) === d));
+  if (tallySelProduct === 'pulpwood') tallyBuildHeight();
+}
+
+function tallyBuildLogs() {
+  const rule = getJobLogRule();
+  const steps = getLogSteps(rule);
+  // Reset selLogs if not in the new steps
+  if (!steps.includes(tallySelLogs)) tallySelLogs = steps[Math.min(1, steps.length - 1)];
+  document.getElementById('tally-logs-row').innerHTML = steps.map(l =>
+    '<div class="log-btn' + (l === tallySelLogs ? ' sel' : '') + '" data-log="' + l + '" onclick="tallyPickLogs(' + l + ')">' + l + '</div>'
+  ).join('');
+}
+
+function tallyPickLogs(l) {
+  tallySelLogs = l;
+  document.querySelectorAll('#tally-logs-row .log-btn').forEach(b => b.classList.toggle('sel', parseFloat(b.dataset.log) === l));
+}
+
+function tallyBuildSticks() {
+  // Show total height options in feet, convert to sticks internally
+  const heights = [20,25,30,35,40,45,50,55,60,65];
+  if (!heights.includes(tallySelHeight)) tallySelHeight = 40;
+  document.getElementById('tally-ht-grid').innerHTML = heights.map(h =>
+    '<div class="ht-btn' + (h === tallySelHeight ? ' sel' : '') + '" onclick="tallyPickHeight(' + h + ')">' + h + "'" + '</div>'
+  ).join('');
+  document.getElementById('tally-ht-note').textContent = '';
+}
+
+function tallyPickHeight(h) {
+  tallySelHeight = h;
+  document.querySelectorAll('#tally-ht-grid .ht-btn').forEach(b => b.classList.toggle('sel', parseInt(b.textContent) === h));
+  tallyUpdateStats();
+}
+
+function tallyAddTree() {
+  const spp = document.getElementById('tally-species').value;
+  const isPulp = tallySelProduct === 'pulpwood';
+  const tree = {
+    spp: spp,
+    dbh: tallySelDBH,
+    logs: isPulp ? 0 : tallySelLogs,
+    product: tallySelProduct,
+    height: isPulp ? tallySelHeight : 0
+  };
+  tallyTrees.push(tree);
+  tallyLastTree = { ...tree };
+  tallyRenderTable();
+  tallyUpdateStats();
+  const label = isPulp
+    ? spp + ' ' + tallySelDBH + '" ' + tallySelHeight + "' Pulp"
+    : spp + ' ' + tallySelDBH + '" ' + tallySelLogs + ' log';
+  toast(label);
+  vibrate([30]);
+}
+
+function tallyRepeatTree() {
+  if (!tallyLastTree) { toast('No previous tree'); return; }
+  tallyTrees.push({ ...tallyLastTree });
+  tallyRenderTable();
+  tallyUpdateStats();
+  toast('Repeated');
+  vibrate([20]);
+}
+
+function tallyRemoveTree(i) {
+  tallyTrees.splice(i, 1);
+  tallyRenderTable();
+  tallyUpdateStats();
+}
+
+function tallyRenderTable() {
+  const baf = getJobCruiseConfig().baf;
+  const rule = getJobLogRule();
+  document.getElementById('tally-count').textContent = tallyTrees.length;
+  const tbody = document.getElementById('tally-tbody');
+  if (!tallyTrees.length) {
+    tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:var(--text-muted);padding:16px;font-size:0.72rem">Select product + DBH then tap Add Tree</td></tr>';
+    return;
+  }
+  tbody.innerHTML = tallyTrees.map((t, i) => {
+    const tpa = calcTPA(baf, t.dbh);
+    const isPulp = t.product === 'pulpwood';
+    let volDisplay, volUnit;
+    if (isPulp) {
+      const cords = pulpwoodCords(t.dbh, t.height || 30) * tpa;
+      volDisplay = cords.toFixed(3);
+      volUnit = 'CD';
+    } else {
+      volDisplay = Math.round(sawtimberVol(t.dbh, t.logs, rule) * tpa);
+      volUnit = 'BF';
+    }
+    const prodLabel = isPulp ? '<span style="color:var(--blue)">PULP</span>' : '<span style="color:var(--accent)">SAW</span>';
+    const logsCell = isPulp ? (t.height || '') + "'" : t.logs;
+    return '<tr>' +
+      '<td>' + t.spp + '</td>' +
+      '<td>' + t.dbh + '"</td>' +
+      '<td>' + prodLabel + '</td>' +
+      '<td>' + logsCell + '</td>' +
+      '<td>' + baf + '</td>' +
+      '<td>' + volDisplay + '<span style="font-size:0.55rem;color:var(--text-muted)"> ' + volUnit + '</span></td>' +
+      '<td><button class="tally-del" onclick="tallyRemoveTree(' + i + ')">&#x2715;</button></td>' +
+    '</tr>';
+  }).join('');
+}
+
+function tallyUpdateStats() {
+  const baf = getJobCruiseConfig().baf;
+  const rule = getJobLogRule();
+  let ba = 0, tpa = 0, sawVol = 0, pulpCords = 0, hasPulp = false, hasSaw = false;
+  tallyTrees.forEach(t => {
+    const tp = calcTPA(baf, t.dbh);
+    ba += baf;
+    tpa += tp;
+    if (t.product === 'pulpwood') { pulpCords += pulpwoodCords(t.dbh, t.height || 30) * tp; hasPulp = true; }
+    else { sawVol += sawtimberVol(t.dbh, t.logs, rule) * tp; hasSaw = true; }
+  });
+  document.getElementById('tally-ba').textContent = ba;
+  document.getElementById('tally-tpa').textContent = Math.round(tpa);
+  if (tallySelProduct === 'pulpwood' || (!hasSaw && hasPulp)) {
+    document.getElementById('tally-vol').textContent = pulpCords.toFixed(2);
+    document.getElementById('tally-vol-lbl').textContent = 'Cords/Ac';
+  } else {
+    document.getElementById('tally-vol').textContent = Math.round(sawVol);
+    document.getElementById('tally-vol-lbl').textContent = 'BF/Ac';
+  }
+}
+
+function tallySavePlot() {
+  if (tallyPlotId == null) return;
+  const plot = plotMarkers.find(p => p.id === tallyPlotId);
+  if (!plot) return;
+  plot.trees = JSON.parse(JSON.stringify(tallyTrees));
+  plot.completed = true;
+  updatePlotMarkerStyle(plot);
+  updateStats();
+  saveSession();
+  closeTallyModal();
+  toast('Plot ' + plot.id + ' saved: ' + tallyTrees.length + ' trees');
+  vibrate([50, 30, 50]);
+  // Mark sync as pending if we have a cloud cruise
+  checkSyncNeeded();
+}
+
+function tallySaveAndNav() {
+  tallySavePlot();
+  // Navigate to next pending
+  setTimeout(() => {
+    const next = plotMarkers.find(p => !p.completed);
+    if (next) {
+      navigateToPlot(next.id);
+    } else {
+      toast('All plots completed!');
+    }
+  }, 300);
+}
+
+function tallyNoTally() {
+  if (tallyPlotId == null) return;
+  const plot = plotMarkers.find(p => p.id === tallyPlotId);
+  if (!plot) return;
+  plot.trees = [];
+  plot.completed = true;
+  plot.noTally = true;
+  updatePlotMarkerStyle(plot);
+  updateStats();
+  saveSession();
+  closeTallyModal();
+  toast('Plot ' + plot.id + ': No tally');
+  vibrate([30]);
+  checkSyncNeeded();
+  // Auto-navigate to next
+  const next = plotMarkers.find(p => !p.completed);
+  if (next) {
+    setTimeout(() => navigateToPlot(next.id), 500);
+  }
+}
+
+function tallyClearTrees() {
+  tallyTrees = [];
+  tallyRenderTable();
+  tallyUpdateStats();
+}
+
 // ── Generate share code ──
 function generateShareCode() {
   const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
@@ -1965,20 +2889,33 @@ async function saveCruiseToCloud() {
       ownerEmail: fb_user.email,
       shareCode: generateShareCode(),
       sharedWith: [],
+      baf: (activeJob && activeJob.baf) || 10,
+      logRule: (activeJob && activeJob.logRule) || 'scribner',
+      species: (activeJob && activeJob.species) || [],
       createdAt: firebase.firestore.FieldValue.serverTimestamp(),
       updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
-      dataJson: JSON.stringify({
-        plots: plotMarkers.map(p => ({ id: p.id, lat: p.lat, lng: p.lng, completed: p.completed })),
-        polygons: allPolygons.map(p => {
-          const lls = p.layer.getLatLngs()[0];
-          return { name: p.name, coords: lls.map(ll => [ll.lat, ll.lng]) };
-        }),
-        distUnit: distUnit,
-        basemap: currentBasemap
-      })
+      // Polygons/boundaries stored on main doc (shared by all)
+      polygonsJson: JSON.stringify(allPolygons.map(p => {
+        const lls = p.layer.getLatLngs()[0];
+        return { name: p.name, coords: lls.map(ll => [ll.lat, ll.lng]) };
+      })),
+      // All plot locations stored on main doc (shared by all)
+      plotsJson: JSON.stringify(plotMarkers.map(p => ({ id: p.id, lat: p.lat, lng: p.lng }))),
+      distUnit: distUnit,
+      basemap: currentBasemap
     };
 
     const docRef = await fb_db.collection('cruises').add(cruiseData);
+
+    // Save this user's plot tree data to sub-collection
+    await saveUserPlotData(docRef.id);
+
+    window._activeCloudCruiseId = docRef.id;
+    window._activeCloudCruiseOwner = fb_user.uid;
+
+    _lastSyncedPlotHash = getPlotHash();
+    updateSyncButton();
+
     toast('Saved: ' + name);
     closePanel();
   } catch(e) {
@@ -1987,26 +2924,144 @@ async function saveCruiseToCloud() {
   }
 }
 
+// ── Save this user's plot data to sub-collection ──
+async function saveUserPlotData(cruiseId) {
+  if (!fb_user || !cruiseId) return;
+  const myPlots = plotMarkers
+    .filter(p => p.completed)
+    .map(p => ({ id: p.id, lat: p.lat, lng: p.lng, completed: true, trees: p.trees || [], noTally: p.noTally || false }));
+
+  try {
+    await fb_db.collection('cruises').doc(cruiseId)
+      .collection('userData').doc(fb_user.uid).set({
+        uid: fb_user.uid,
+        userName: fb_user.displayName || fb_user.email,
+        userEmail: fb_user.email,
+        plots: JSON.stringify(myPlots),
+        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+      });
+    // Clear pending flag on successful sync
+    setSyncPending(false);
+  } catch(e) {
+    console.error('Save user data error:', e);
+    // Mark as pending since sync failed (likely offline)
+    setSyncPending(true);
+  }
+}
+
+// ── Sync state tracking ──
+let _syncPending = false;
+let _lastSyncedPlotHash = '';
+
+function getPlotHash() {
+  // Simple hash of completed plot data to detect changes
+  const data = plotMarkers
+    .filter(p => p.completed && p.trees && p.trees.length > 0)
+    .map(p => p.id + ':' + p.trees.length)
+    .join(',');
+  return data;
+}
+
+function setSyncPending(pending) {
+  _syncPending = pending;
+  const btn = document.getElementById('btn-sync');
+  const badge = document.getElementById('sync-badge');
+  if (!btn) return;
+
+  if (window._activeCloudCruiseId) {
+    btn.style.display = 'flex';
+    if (pending) {
+      btn.classList.add('sync-pending');
+      btn.classList.remove('sync-done');
+      badge.style.display = 'block';
+    } else {
+      btn.classList.remove('sync-pending');
+      badge.style.display = 'none';
+    }
+  } else {
+    btn.style.display = 'none';
+  }
+}
+
+function checkSyncNeeded() {
+  if (!window._activeCloudCruiseId) return;
+  const hash = getPlotHash();
+  if (hash !== _lastSyncedPlotHash && hash !== '') {
+    setSyncPending(true);
+  }
+}
+
+// Show sync button when a cloud cruise is active
+function updateSyncButton() {
+  const btn = document.getElementById('btn-sync');
+  if (!btn) return;
+  if (window._activeCloudCruiseId && fb_user) {
+    btn.style.display = 'flex';
+  } else {
+    btn.style.display = 'none';
+  }
+}
+
+async function manualCloudSync() {
+  if (!window._activeCloudCruiseId) { toast('No cloud cruise active'); return; }
+  if (!fb_user) { toast('Sign in first'); return; }
+
+  const btn = document.getElementById('btn-sync');
+  btn.classList.add('sync-active');
+  btn.classList.remove('sync-pending');
+  toast('Syncing...');
+
+  try {
+    if (window._activeCloudCruiseOwner === fb_user.uid) {
+      await updateCruiseInCloud(window._activeCloudCruiseId);
+    } else {
+      await saveUserPlotData(window._activeCloudCruiseId);
+    }
+    _lastSyncedPlotHash = getPlotHash();
+    setSyncPending(false);
+    btn.classList.remove('sync-active');
+    btn.classList.add('sync-done');
+    toast('Synced!');
+    vibrate([50, 30, 50]);
+    // Flash green then return to normal
+    setTimeout(() => { btn.classList.remove('sync-done'); }, 2000);
+  } catch(e) {
+    btn.classList.remove('sync-active');
+    setSyncPending(true);
+    toast('Sync failed. Will retry.');
+    console.error('Manual sync error:', e);
+  }
+}
+
+// ── Auto-retry sync when coming back online ──
+window.addEventListener('online', function() {
+  if (_syncPending && window._activeCloudCruiseId && fb_user) {
+    toast('Back online. Syncing...');
+    setTimeout(() => manualCloudSync(), 1500);
+  }
+});
+
 // ── Update existing cruise in Firestore ──
 async function updateCruiseInCloud(cruiseId) {
   if (!fb_user) return;
   try {
+    // Update shared cruise metadata (polygons, plot locations, settings)
     await fb_db.collection('cruises').doc(cruiseId).update({
       updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
-      dataJson: JSON.stringify({
-        plots: plotMarkers.map(p => ({ id: p.id, lat: p.lat, lng: p.lng, completed: p.completed })),
-        polygons: allPolygons.map(p => {
-          const lls = p.layer.getLatLngs()[0];
-          return { name: p.name, coords: lls.map(ll => [ll.lat, ll.lng]) };
-        }),
-        distUnit: distUnit,
-        basemap: currentBasemap
-      })
+      polygonsJson: JSON.stringify(allPolygons.map(p => {
+        const lls = p.layer.getLatLngs()[0];
+        return { name: p.name, coords: lls.map(ll => [ll.lat, ll.lng]) };
+      })),
+      plotsJson: JSON.stringify(plotMarkers.map(p => ({ id: p.id, lat: p.lat, lng: p.lng }))),
+      distUnit: distUnit,
+      basemap: currentBasemap
     });
-    toast('Cloud cruise updated');
+
+    // Save this user's plot tree data
+    await saveUserPlotData(cruiseId);
+
   } catch(e) {
     console.error('Update error:', e);
-    toast('Update failed');
   }
 }
 
@@ -2096,51 +3151,109 @@ async function loadCruiseFromCloud(cruiseId) {
     plotMarkers = [];
     stopNavigation();
 
-    const data = d.dataJson ? JSON.parse(d.dataJson) : (d.data || {});
+    // Detect new multi-user format vs legacy
+    const hasNewFormat = d.polygonsJson || d.plotsJson;
 
-    // Restore basemap
-    if (data.basemap != null && data.basemap !== currentBasemap) {
+    // ── Restore basemap + distance unit ──
+    const basemapVal = hasNewFormat ? d.basemap : ((d.dataJson ? JSON.parse(d.dataJson) : {}).basemap);
+    const distVal = hasNewFormat ? d.distUnit : ((d.dataJson ? JSON.parse(d.dataJson) : {}).distUnit);
+    if (basemapVal != null && basemapVal !== currentBasemap) {
       map.removeLayer(basemaps[basemapOrder[currentBasemap]]);
-      currentBasemap = data.basemap;
+      currentBasemap = basemapVal;
       basemaps[basemapOrder[currentBasemap]].addTo(map);
     }
+    if (distVal) { distUnit = distVal; document.getElementById('unit-toggle').textContent = distUnit; }
 
-    // Restore distance unit
-    if (data.distUnit) {
-      distUnit = data.distUnit;
-      document.getElementById('unit-toggle').textContent = distUnit;
-    }
+    if (hasNewFormat) {
+      // ── New multi-user format ──
 
-    // Restore polygons
-    if (data.polygons && data.polygons.length) {
-      data.polygons.forEach(pd => {
-        const latlngs = pd.coords.map(c => L.latLng(c[0], c[1]));
-        const layer = L.polygon(latlngs, { color: '#e53935', fillOpacity: 0, opacity: 1, fill: false, weight: 4 });
-        tractLayer.addLayer(layer);
-        if (!tractBoundary) tractBoundary = layer;
-        allPolygons.push({ layer: layer, name: pd.name });
+      // Restore polygons from main doc
+      if (d.polygonsJson) {
+        JSON.parse(d.polygonsJson).forEach(pd => {
+          const latlngs = pd.coords.map(c => L.latLng(c[0], c[1]));
+          const layer = L.polygon(latlngs, { color: '#e53935', fillOpacity: 0, opacity: 1, fill: false, weight: 4 });
+          tractLayer.addLayer(layer);
+          if (!tractBoundary) tractBoundary = layer;
+          allPolygons.push({ layer: layer, name: pd.name });
+        });
+      }
+
+      // Restore all plot locations from main doc
+      if (d.plotsJson) {
+        JSON.parse(d.plotsJson).forEach(pd => addPlot(pd.id, pd.lat, pd.lng));
+      }
+
+      // Load all users' tree data from sub-collection and merge
+      const userSnap = await fb_db.collection('cruises').doc(cruiseId).collection('userData').get();
+      const mergedPlots = {}; // plotId -> { trees, cruiser }
+      const contributors = [];
+
+      userSnap.forEach(udoc => {
+        const ud = udoc.data();
+        contributors.push(ud.userName || ud.userEmail || udoc.id);
+        const userPlots = JSON.parse(ud.plots || '[]');
+        userPlots.forEach(up => {
+          if (up.completed) {
+            mergedPlots[up.id] = {
+              trees: up.trees || [],
+              noTally: up.noTally || false,
+              cruiser: ud.userName || ud.userEmail || udoc.id
+            };
+          }
+        });
       });
-    }
 
-    // Restore plots
-    if (data.plots && data.plots.length) {
-      data.plots.forEach(pd => {
-        addPlot(pd.id, pd.lat, pd.lng);
-        if (pd.completed) {
-          const plot = plotMarkers.find(p => p.id === pd.id);
-          if (plot) { plot.completed = true; updatePlotMarkerStyle(plot); }
+      // Apply merged tree data to plot markers
+      Object.entries(mergedPlots).forEach(([plotId, data]) => {
+        const plot = plotMarkers.find(p => p.id === parseInt(plotId));
+        if (plot) {
+          plot.trees = JSON.parse(JSON.stringify(data.trees));
+          plot.completed = true;
+          plot.noTally = data.noTally || false;
+          plot.cruiser = data.cruiser;
+          updatePlotMarkerStyle(plot);
         }
       });
+
+      window._cloudContributors = contributors;
+
+      // Sync cruise settings to local job
+      const job = allJobs.find(j => j.id === activeJobId);
+      if (job) {
+        if (d.baf) job.baf = d.baf;
+        if (d.logRule) job.logRule = d.logRule;
+        if (d.species && d.species.length) job.species = d.species;
+      }
+
+    } else {
+      // ── Legacy single-user format ──
+      const data = d.dataJson ? JSON.parse(d.dataJson) : (d.data || {});
+      if (data.polygons && data.polygons.length) {
+        data.polygons.forEach(pd => {
+          const latlngs = pd.coords.map(c => L.latLng(c[0], c[1]));
+          const layer = L.polygon(latlngs, { color: '#e53935', fillOpacity: 0, opacity: 1, fill: false, weight: 4 });
+          tractLayer.addLayer(layer);
+          if (!tractBoundary) tractBoundary = layer;
+          allPolygons.push({ layer: layer, name: pd.name });
+        });
+      }
+      if (data.plots && data.plots.length) {
+        data.plots.forEach(pd => {
+          addPlot(pd.id, pd.lat, pd.lng);
+          const plot = plotMarkers.find(p => p.id === pd.id);
+          if (plot) {
+            if (pd.trees && pd.trees.length) plot.trees = JSON.parse(JSON.stringify(pd.trees));
+            if (pd.completed) { plot.completed = true; updatePlotMarkerStyle(plot); }
+          }
+        });
+      }
+      window._cloudContributors = [d.ownerName || 'Owner'];
     }
 
     if (allPolygons.length) {
-      try {
-        const group = L.featureGroup(allPolygons.map(p => p.layer));
-        map.fitBounds(group.getBounds().pad(0.1));
-      } catch(e) {}
+      try { map.fitBounds(L.featureGroup(allPolygons.map(p => p.layer)).getBounds().pad(0.1)); } catch(e) {}
     }
 
-    // Store the active cloud cruise ID for re-saving
     window._activeCloudCruiseId = cruiseId;
     window._activeCloudCruiseOwner = d.ownerId;
 
@@ -2149,7 +3262,14 @@ async function loadCruiseFromCloud(cruiseId) {
     updateEmptyHint();
     refreshPolyChecklist();
     closePanel();
-    toast('Loaded: ' + d.name);
+
+    // Set up sync button and record baseline
+    _lastSyncedPlotHash = getPlotHash();
+    updateSyncButton();
+    setSyncPending(false);
+
+    const cc = (window._cloudContributors || []).length;
+    toast('Loaded: ' + d.name + (cc > 1 ? ' (' + cc + ' cruisers)' : ''));
     saveSession();
   } catch(e) {
     console.error(e);
@@ -3141,11 +4261,372 @@ function toast(msg) {
 
 // ── Panel management ──
 let currentPanel = null;
+// ── Cruise Setup Panel ──
+function initCruiseSetupPanel() {
+  const job = allJobs.find(j => j.id === activeJobId);
+  if (!job) { toast('Create a job first'); return; }
+
+  // Set BAF selector
+  const bafSel = document.getElementById('setup-baf');
+  bafSel.value = job.baf || 10;
+
+  // Set log rule selector
+  const ruleSel = document.getElementById('setup-logrule');
+  ruleSel.value = job.logRule || 'scribner';
+
+  // Build species chips grouped by category
+  const activeSpecies = job.species || DEFAULT_SPECIES.filter(s => ['LP','SP','RO','WO','YP','HK','GU','HW'].includes(s.code));
+  const activeCodes = activeSpecies.map(s => s.code);
+  const grid = document.getElementById('setup-species-grid');
+
+  const groups = {};
+  DEFAULT_SPECIES.forEach(sp => {
+    const g = sp.group || 'Other';
+    if (!groups[g]) groups[g] = [];
+    groups[g].push(sp);
+  });
+
+  let html = '';
+  const groupOrder = ['Pine','Softwood','Oak','Hardwood','Mix'];
+  groupOrder.forEach(g => {
+    if (!groups[g]) return;
+    html += '<div style="width:100%;font-size:0.6rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px;font-weight:700;margin:8px 0 4px;font-family:JetBrains Mono,monospace">' + g + '</div>';
+    groups[g].forEach(sp => {
+      html += '<div class="species-chip' + (activeCodes.includes(sp.code) ? ' sel' : '') + '" data-code="' + sp.code + '" onclick="toggleSpeciesChip(this)">' + sp.code + '</div>';
+    });
+  });
+  grid.innerHTML = html;
+}
+
+function toggleSpeciesChip(el) {
+  el.classList.toggle('sel');
+  updateJobSpecies();
+}
+
+function updateJobSpecies() {
+  const job = allJobs.find(j => j.id === activeJobId);
+  if (!job) return;
+  const selected = Array.from(document.querySelectorAll('#setup-species-grid .species-chip.sel')).map(el => {
+    const code = el.dataset.code;
+    const full = DEFAULT_SPECIES.find(s => s.code === code);
+    return full || { code: code, label: code };
+  });
+  if (selected.length === 0) { toast('Select at least one species'); return; }
+  job.species = selected;
+  job.updatedAt = Date.now();
+  saveSession();
+}
+
+function updateJobBAF(val) {
+  const job = allJobs.find(j => j.id === activeJobId);
+  if (!job) return;
+  job.baf = parseInt(val) || 10;
+  job.updatedAt = Date.now();
+  saveSession();
+}
+
+function updateJobLogRuleFromSetup(val) {
+  const job = allJobs.find(j => j.id === activeJobId);
+  if (!job) return;
+  job.logRule = val;
+  job.updatedAt = Date.now();
+  saveSession();
+}
+
+function toggleSpeciesRef() {
+  const el = document.getElementById('species-ref');
+  if (el.style.display === 'none') {
+    const groups = {};
+    DEFAULT_SPECIES.forEach(sp => {
+      const g = sp.group || 'Other';
+      if (!groups[g]) groups[g] = [];
+      groups[g].push(sp);
+    });
+    let html = '';
+    ['Pine','Softwood','Oak','Hardwood','Mix'].forEach(g => {
+      if (!groups[g]) return;
+      html += '<div style="color:var(--orange);font-weight:700;margin:6px 0 2px;font-size:0.62rem;letter-spacing:1px;text-transform:uppercase">' + g + '</div>';
+      groups[g].forEach(sp => {
+        html += '<div><span style="color:var(--accent);font-weight:700;display:inline-block;width:32px">' + sp.code + '</span> ' + sp.label + '</div>';
+      });
+    });
+    el.innerHTML = html;
+    el.style.display = 'block';
+  } else {
+    el.style.display = 'none';
+  }
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// CRUISE REPORT
+// ══════════════════════════════════════════════════════════════════════════════
+
+function generateCruiseReport() {
+  const el = document.getElementById('report-content');
+  const job = allJobs.find(j => j.id === activeJobId);
+  if (!job) {
+    el.innerHTML = '<div class="report-empty"><div class="report-empty-icon">📊</div>No active job. Create one first.</div>';
+    return;
+  }
+
+  // Use BAF from report panel selector
+  const baf = parseInt(document.getElementById('report-baf').value) || 10;
+  // All completed plots count toward the divisor (including no-tally plots)
+  const allDonePlots = plotMarkers.filter(p => p.completed);
+  const n = allDonePlots.length;
+  const noTallyCount = allDonePlots.filter(p => p.noTally || !p.trees || p.trees.length === 0).length;
+
+  if (!n) {
+    el.innerHTML = '<div class="report-empty"><div class="report-empty-icon">📊</div>Complete some plots to generate a report.</div>';
+    return;
+  }
+
+  // Use manual acres if entered, otherwise calculate from polygons
+  const manualAcres = parseFloat(document.getElementById('report-acres').value);
+  let totalAcres = 0;
+  if (manualAcres > 0) {
+    totalAcres = manualAcres;
+  } else {
+    allPolygons.forEach(p => { try { totalAcres += calcAcres(p.layer); } catch(e) {} });
+  }
+
+  // Accumulate by species + product
+  const rule = document.getElementById('report-logrule').value || 'scribner';
+  const ruleName = (LOG_RULES[rule] || LOG_RULES.scribner).name;
+  const sd = {};
+  let totalTreeCount = 0;
+  allDonePlots.forEach(plot => {
+    (plot.trees || []).forEach(t => {
+      totalTreeCount++;
+      const key = t.spp + '|' + (t.product || 'sawtimber');
+      if (!sd[key]) sd[key] = { spp: t.spp, product: t.product || 'sawtimber', baT: 0, tpaT: 0, volT: 0, count: 0 };
+      const tp = calcTPA(baf, t.dbh);
+      sd[key].baT += baf;
+      sd[key].tpaT += tp;
+      sd[key].count++;
+      if ((t.product || 'sawtimber') === 'pulpwood') {
+        const cords = pulpwoodCords(t.dbh, t.height || 30) * tp;
+        sd[key].volT += cords;
+        // Track tons separately using species weight
+        if (!sd[key].tonsT) sd[key].tonsT = 0;
+        sd[key].tonsT += cords * getTonsPerCord(t.spp);
+      }
+      else sd[key].volT += sawtimberVol(t.dbh, t.logs, rule) * tp;
+    });
+  });
+
+  let totSawBA = 0, totSawTPA = 0, totSawVol = 0;
+  let totPulpBA = 0, totPulpTPA = 0, totPulpVol = 0, totPulpTons = 0;
+  Object.values(sd).forEach(d => {
+    d.baAc = d.baT / n;
+    d.tpaAc = d.tpaT / n;
+    d.volAc = d.volT / n;
+    if (d.product === 'pulpwood') {
+      totPulpBA += d.baAc; totPulpTPA += d.tpaAc; totPulpVol += d.volAc;
+      d.tonsAc = (d.tonsT || 0) / n;
+      totPulpTons += d.tonsAc;
+    }
+    else { totSawBA += d.baAc; totSawTPA += d.tpaAc; totSawVol += d.volAc; }
+  });
+
+  // Grid spacing from panel inputs
+  const spX = parseFloat(document.getElementById('grid-spacing-x').value) || 5;
+  const spY = parseFloat(document.getElementById('grid-spacing-y').value) || 5;
+
+  // Gather cruiser names from plot data
+  const cruiserNames = new Set();
+  allDonePlots.forEach(p => { if (p.cruiser) cruiserNames.add(p.cruiser); });
+  const contributors = window._cloudContributors || [];
+  const cruiserList = cruiserNames.size > 0 ? [...cruiserNames] : (contributors.length > 0 ? contributors : []);
+
+  let html = '<div class="report-card">' +
+    '<div class="report-card-title">Cruise Summary</div>' +
+    '<div class="report-row"><span>Job</span><span class="rval">' + job.name + '</span></div>' +
+    '<div class="report-row"><span>BAF</span><span class="rval">' + baf + '</span></div>' +
+    '<div class="report-row"><span>Log Rule</span><span class="rval">' + ruleName + '</span></div>' +
+    '<div class="report-row"><span>Grid</span><span class="rval">' + spX + ' x ' + spY + ' chains</span></div>' +
+    '<div class="report-row"><span>Plots</span><span class="rval">' + n + ' / ' + plotMarkers.length + ' done</span></div>' +
+    (noTallyCount > 0 ? '<div class="report-row"><span>No Tally Plots</span><span class="rval">' + noTallyCount + '</span></div>' : '') +
+    '<div class="report-row"><span>Trees Tallied</span><span class="rval">' + totalTreeCount + '</span></div>' +
+    '<div class="report-row"><span>Acres</span><span class="rval">' + (totalAcres > 0 ? totalAcres.toFixed(1) : 'N/A') + '</span></div>' +
+    (cruiserList.length > 0 ? '<div class="report-row"><span>Cruisers</span><span class="rval">' + cruiserList.join(', ') + '</span></div>' : '') +
+    '<div class="report-row"><span>Date</span><span class="rval">' + new Date().toLocaleDateString() + '</span></div>' +
+  '</div>';
+
+  // Sawtimber summary
+  if (totSawTPA > 0) {
+    html += '<div class="report-card">' +
+      '<div class="report-card-title">Sawtimber, All Species (' + ruleName + ')</div>' +
+      '<div class="report-row"><span>BA / Acre</span><span class="rval">' + totSawBA.toFixed(1) + ' sq ft</span></div>' +
+      '<div class="report-row"><span>Trees / Acre</span><span class="rval">' + totSawTPA.toFixed(1) + '</span></div>' +
+      '<div class="report-row"><span>Volume / Acre</span><span class="rval">' + Math.round(totSawVol).toLocaleString() + ' BF</span></div>' +
+      (totalAcres > 0 ? '<div class="report-row"><span>Total Volume</span><span class="rval">' + Math.round(totSawVol * totalAcres).toLocaleString() + ' BF</span></div>' : '') +
+      (totalAcres > 0 ? '<div class="report-row"><span>Total MBF</span><span class="rval">' + (totSawVol * totalAcres / 1000).toFixed(1) + ' MBF</span></div>' : '') +
+    '</div>';
+  }
+
+  // Pulpwood summary
+  if (totPulpTPA > 0) {
+    html += '<div class="report-card">' +
+      '<div class="report-card-title">Pulpwood, All Species</div>' +
+      '<div class="report-row"><span>BA / Acre</span><span class="rval">' + totPulpBA.toFixed(1) + ' sq ft</span></div>' +
+      '<div class="report-row"><span>Trees / Acre</span><span class="rval">' + totPulpTPA.toFixed(1) + '</span></div>' +
+      '<div class="report-row"><span>Cords / Acre</span><span class="rval">' + totPulpVol.toFixed(2) + ' CD</span></div>' +
+      '<div class="report-row"><span>Tons / Acre</span><span class="rval">' + totPulpTons.toFixed(2) + ' GT</span></div>' +
+      (totalAcres > 0 ? '<div class="report-row"><span>Total Cords</span><span class="rval">' + (totPulpVol * totalAcres).toFixed(1) + ' CD</span></div>' : '') +
+      (totalAcres > 0 ? '<div class="report-row"><span>Total Tons</span><span class="rval">' + (totPulpTons * totalAcres).toFixed(1) + ' GT</span></div>' : '') +
+    '</div>';
+  }
+
+  // Combined BA summary
+  const totalBA = totSawBA + totPulpBA;
+  const totalTPA = totSawTPA + totPulpTPA;
+  if (totalBA > 0) {
+    html += '<div class="report-card">' +
+      '<div class="report-card-title">Combined Stand Summary</div>' +
+      '<div class="report-row"><span>Total BA / Acre</span><span class="rval">' + totalBA.toFixed(1) + ' sq ft</span></div>' +
+      '<div class="report-row"><span>Total TPA</span><span class="rval">' + totalTPA.toFixed(1) + '</span></div>' +
+    '</div>';
+  }
+
+  // Per-species breakdown
+  const speciesList = [...new Set(Object.values(sd).map(d => d.spp))];
+  speciesList.forEach(spp => {
+    const sawKey = spp + '|sawtimber', pulpKey = spp + '|pulpwood';
+    const saw = sd[sawKey], pulp = sd[pulpKey];
+    const fullName = DEFAULT_SPECIES.find(s => s.code === spp);
+    html += '<div class="report-species-hdr">' + spp + (fullName ? ' (' + fullName.label + ')' : '') + '</div>';
+
+    if (saw) {
+      html += '<div class="report-card">' +
+        '<div class="report-card-title">Sawtimber (' + ruleName + ')</div>' +
+        '<div class="report-row"><span>Trees Tallied</span><span class="rval">' + saw.count + '</span></div>' +
+        '<div class="report-row"><span>BA / Acre</span><span class="rval">' + saw.baAc.toFixed(1) + ' sq ft</span></div>' +
+        '<div class="report-row"><span>Trees / Acre</span><span class="rval">' + saw.tpaAc.toFixed(1) + '</span></div>' +
+        '<div class="report-row"><span>Volume / Acre</span><span class="rval">' + Math.round(saw.volAc).toLocaleString() + ' BF</span></div>' +
+        (totalAcres > 0 ? '<div class="report-row"><span>Total Volume</span><span class="rval">' + Math.round(saw.volAc * totalAcres).toLocaleString() + ' BF</span></div>' : '') +
+        (totalAcres > 0 ? '<div class="report-row"><span>MBF</span><span class="rval">' + (saw.volAc * totalAcres / 1000).toFixed(1) + '</span></div>' : '') +
+      '</div>';
+    }
+
+    if (pulp) {
+      html += '<div class="report-card">' +
+        '<div class="report-card-title">Pulpwood</div>' +
+        '<div class="report-row"><span>Trees Tallied</span><span class="rval">' + pulp.count + '</span></div>' +
+        '<div class="report-row"><span>BA / Acre</span><span class="rval">' + pulp.baAc.toFixed(1) + ' sq ft</span></div>' +
+        '<div class="report-row"><span>Trees / Acre</span><span class="rval">' + pulp.tpaAc.toFixed(1) + '</span></div>' +
+        '<div class="report-row"><span>Cords / Acre</span><span class="rval">' + pulp.volAc.toFixed(3) + ' CD</span></div>' +
+        '<div class="report-row"><span>Tons / Acre</span><span class="rval">' + (pulp.tonsAc || 0).toFixed(2) + ' GT</span></div>' +
+        (totalAcres > 0 ? '<div class="report-row"><span>Total Cords</span><span class="rval">' + (pulp.volAc * totalAcres).toFixed(1) + ' CD</span></div>' : '') +
+        (totalAcres > 0 ? '<div class="report-row"><span>Total Tons</span><span class="rval">' + ((pulp.tonsAc || 0) * totalAcres).toFixed(1) + ' GT</span></div>' : '') +
+      '</div>';
+    }
+  });
+
+  el.innerHTML = html;
+}
+
+// ── CSV Export ──
+function exportCruiseCSV() {
+  const baf = parseInt(document.getElementById('report-baf').value) || 10;
+  const allDone = plotMarkers.filter(p => p.completed);
+  if (!allDone.length) { toast('No data to export'); return; }
+
+  const manualAcres = parseFloat(document.getElementById('report-acres').value);
+  let totalAcres = 0;
+  if (manualAcres > 0) {
+    totalAcres = manualAcres;
+  } else {
+    allPolygons.forEach(p => { try { totalAcres += calcAcres(p.layer); } catch(e) {} });
+  }
+
+  const rows = [['Plot','Species','Product','DBH_in','Logs','Height_ft','BAF','TPA','Cords_per_Acre','Tons_per_Acre','BF_per_Acre','Volume_Unit','Lat','Lng']];
+  const rule = document.getElementById('report-logrule').value || 'scribner';
+  allDone.forEach(p => {
+    if (p.noTally || !p.trees || p.trees.length === 0) {
+      // No tally row so the plot is visible in the CSV
+      rows.push([p.id, 'NO TALLY', '', '', '', '', baf, '', '', '', '', '', p.lat.toFixed(6), p.lng.toFixed(6)]);
+      return;
+    }
+    (p.trees || []).forEach(t => {
+      const tpa = calcTPA(baf, t.dbh);
+      const isPulp = (t.product || 'sawtimber') === 'pulpwood';
+      if (isPulp) {
+        const cords = pulpwoodCords(t.dbh, t.height || 30) * tpa;
+        const tons = cords * getTonsPerCord(t.spp);
+        rows.push([p.id, t.spp, 'pulpwood', t.dbh, '', t.height || '', baf, tpa.toFixed(2), cords.toFixed(3), tons.toFixed(2), '', 'CD/GT', p.lat.toFixed(6), p.lng.toFixed(6)]);
+      } else {
+        const bf = sawtimberVol(t.dbh, t.logs, rule) * tpa;
+        rows.push([p.id, t.spp, 'sawtimber', t.dbh, t.logs, '', baf, tpa.toFixed(2), '', '', bf.toFixed(1), 'BF', p.lat.toFixed(6), p.lng.toFixed(6)]);
+      }
+    });
+  });
+
+  // Add summary rows
+  rows.push([]);
+  rows.push(['--- SUMMARY ---']);
+  rows.push(['Total Acres', totalAcres > 0 ? totalAcres.toFixed(1) : 'N/A']);
+  rows.push(['Plots Completed', allDone.length + ' / ' + plotMarkers.length]);
+  rows.push(['BAF', baf]);
+  rows.push(['Log Rule', (LOG_RULES[rule] || LOG_RULES.scribner).name]);
+
+  const blob = new Blob([rows.map(r => r.join(',')).join('\n')], { type: 'text/csv' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  const job = allJobs.find(j => j.id === activeJobId);
+  const safeName = job ? job.name.replace(/[^a-zA-Z0-9_-]/g, '_') : 'cruise';
+  a.download = safeName + '_cruise_data.csv';
+  a.click();
+  toast('CSV exported!');
+}
+
+// ── Report panel init ──
+function initReportPanel() {
+  const job = allJobs.find(j => j.id === activeJobId);
+  const bafSel = document.getElementById('report-baf');
+  bafSel.value = (job && job.baf) || 10;
+
+  // Sync log rule
+  const ruleSel = document.getElementById('report-logrule');
+  ruleSel.value = (job && job.logRule) || 'scribner';
+
+  // Pre-fill acres from polygons if not manually set
+  const acresInput = document.getElementById('report-acres');
+  if (!acresInput.value) {
+    let totalAc = 0;
+    allPolygons.forEach(p => { try { totalAc += calcAcres(p.layer); } catch(e) {} });
+    if (totalAc > 0) acresInput.placeholder = totalAc.toFixed(1) + ' (auto)';
+  }
+
+  generateCruiseReport();
+}
+
+function updateReportBAF(val) {
+  // Also update the job's BAF so tally modal stays in sync
+  const job = allJobs.find(j => j.id === activeJobId);
+  if (job) {
+    job.baf = parseInt(val) || 10;
+    job.updatedAt = Date.now();
+    saveSession();
+  }
+}
+
+function updateReportLogRule(val) {
+  const job = allJobs.find(j => j.id === activeJobId);
+  if (job) {
+    job.logRule = val;
+    job.updatedAt = Date.now();
+    saveSession();
+  }
+}
+
 function openPanel(name) {
   closePanel();
   if (name === 'plotlist') refreshPlotList();
   if (name === 'grid') refreshPolyChecklist();
   if (name === 'jobs') refreshJobsList();
+  if (name === 'cruisesetup') initCruiseSetupPanel();
+  if (name === 'report') initReportPanel();
   document.getElementById('panel-overlay').classList.add('open');
   document.getElementById('panel-' + name).classList.add('open');
   currentPanel = name;
@@ -3494,7 +4975,7 @@ function addPlot(id, lat, lng) {
   });
 
   const marker = L.marker([lat, lng], { icon, draggable: false }).addTo(plotLayer);
-  const plot = { id, lat, lng, completed: false, marker };
+  const plot = { id, lat, lng, completed: false, marker, trees: [] };
   plotMarkers.push(plot);
 
   marker.on('click', () => openPlotPopup(plot));
@@ -3503,10 +4984,10 @@ function addPlot(id, lat, lng) {
 }
 
 function openPlotPopup(plot) {
-  const statusLabel = plot.completed ? 'Completed' : 'Pending';
-  const statusColor = plot.completed ? 'var(--accent)' : 'var(--orange)';
-  const toggleLabel = plot.completed ? 'Mark Pending' : 'Mark Complete';
-  const toggleClass = plot.completed ? 'popup-btn-pending' : 'popup-btn-complete';
+  const treeCount = (plot.trees && plot.trees.length) || 0;
+  const noTallyLabel = plot.noTally ? 'No Tally' : '';
+  const statusLabel = plot.noTally ? 'No Tally (0 trees)' : (plot.completed ? 'Done (' + treeCount + ' trees)' : 'Pending');
+  const statusColor = plot.noTally ? 'var(--text-muted)' : (plot.completed ? 'var(--accent)' : 'var(--orange)');
 
   const content = '<div class="plot-popup">' +
     '<div class="plot-popup-title">Plot ' + plot.id + '</div>' +
@@ -3517,14 +4998,39 @@ function openPlotPopup(plot) {
       (myLocation ? '<br>Distance: ' + formatDist(getDistance(myLocation.lat, myLocation.lng, plot.lat, plot.lng)) : '') +
     '</div>' +
     '<div class="plot-popup-actions">' +
-      '<button class="popup-btn ' + toggleClass + '" onclick="togglePlotStatus(' + plot.id + ')"> ' + toggleLabel + '</button>' +
+      '<button class="popup-btn popup-btn-complete" onclick="map.closePopup(); openTallyModal(plotMarkers.find(p=>p.id===' + plot.id + '))">Tally</button>' +
+      '<button class="popup-btn popup-btn-pending" onclick="markNoTally(' + plot.id + ')">No Tally</button>' +
       '<button class="popup-btn popup-btn-nav" onclick="navigateToPlot(' + plot.id + ')">Nav</button>' +
     '</div>' +
-    '<div style="margin-top:6px"><button class="popup-btn popup-btn-delete" style="width:100%" onclick="deletePlot(' + plot.id + ')">Delete Plot</button></div>' +
+    '<div style="margin-top:6px;display:flex;gap:6px">' +
+      '<button class="popup-btn ' + (plot.completed ? 'popup-btn-pending' : 'popup-btn-complete') + '" style="flex:1" onclick="togglePlotStatus(' + plot.id + ')">' + (plot.completed ? 'Mark Pending' : 'Mark Complete') + '</button>' +
+      '<button class="popup-btn popup-btn-delete" style="flex:0 0 auto;padding:10px 14px" onclick="deletePlot(' + plot.id + ')">Del</button>' +
+    '</div>' +
   '</div>';
 
   plot.marker.unbindPopup();
   plot.marker.bindPopup(content, { maxWidth: 260, closeButton: true }).openPopup();
+}
+
+function markNoTally(id) {
+  const plot = plotMarkers.find(p => p.id === id);
+  if (!plot) return;
+  plot.trees = [];
+  plot.completed = true;
+  plot.noTally = true;
+  updatePlotMarkerStyle(plot);
+  map.closePopup();
+  updateStats();
+  saveSession();
+  checkSyncNeeded();
+  toast('Plot ' + id + ': No tally (0 trees)');
+  vibrate([30]);
+
+  // Auto-navigate to next pending
+  const next = plotMarkers.find(p => !p.completed);
+  if (next) {
+    setTimeout(() => navigateToPlot(next.id), 500);
+  }
 }
 
 function togglePlotStatus(id) {
@@ -3792,7 +5298,7 @@ function updateNavigation() {
   if (dist < 10 && !arrivedAtPlot[plot.id]) {
     arrivedAtPlot[plot.id] = true;
     vibrate([100, 50, 100, 50, 200]);
-    toast('Arrived at Plot ' + plot.id + '!');
+    toast('Arrived at Plot ' + plot.id + '! Tap marker to tally.');
   } else if (dist >= 20) {
     arrivedAtPlot[plot.id] = false;
   }
@@ -3822,7 +5328,7 @@ function refreshPlotList() {
       '<div class="plot-dot ' + statusClass + '">' + plot.id + '</div>' +
       '<div class="plot-list-info">' +
         '<div class="plot-list-name">Plot ' + plot.id + '</div>' +
-        '<div class="plot-list-meta">' + (plot.completed ? 'Completed' : (isNav ? 'Navigating...' : 'Pending')) + '</div>' +
+        '<div class="plot-list-meta">' + (plot.noTally ? 'No Tally' + (plot.cruiser ? ' · ' + plot.cruiser : '') : (plot.completed ? (plot.trees ? plot.trees.length : 0) + ' trees' + (plot.cruiser ? ' · ' + plot.cruiser : '') : (isNav ? 'Navigating...' : 'Pending'))) + '</div>' +
       '</div>' +
       (dist != null ? '<div class="plot-list-dist">' + formatDist(dist) + '</div>' : '') +
     '</div>';
@@ -4303,16 +5809,30 @@ async function saveSession() {
     }, 'session');
     await new Promise((res, rej) => { tx2.oncomplete = res; tx2.onerror = rej; });
 
-    // Auto-sync to cloud if we have an active cloud cruise and user is owner
-    if (window._activeCloudCruiseId && fb_user && window._activeCloudCruiseOwner === fb_user.uid) {
-      updateCruiseInCloud(window._activeCloudCruiseId).catch(() => {});
+    // Auto-sync to cloud if we have an active cloud cruise
+    if (window._activeCloudCruiseId && fb_user) {
+      try {
+        if (window._activeCloudCruiseOwner === fb_user.uid) {
+          await updateCruiseInCloud(window._activeCloudCruiseId);
+        } else {
+          await saveUserPlotData(window._activeCloudCruiseId);
+        }
+        _lastSyncedPlotHash = getPlotHash();
+      } catch(syncErr) {
+        // Sync failed (likely offline), mark pending
+        setSyncPending(true);
+      }
     }
   } catch(e) { console.warn('Save error:', e); }
 }
 
 function getCurrentJobData() {
   return {
-    plots: plotMarkers.map(p => ({ id: p.id, lat: p.lat, lng: p.lng, completed: p.completed })),
+    plots: plotMarkers.map(p => ({
+      id: p.id, lat: p.lat, lng: p.lng, completed: p.completed,
+      trees: p.trees || [],
+      noTally: p.noTally || false
+    })),
     polygons: allPolygons.map(p => {
       const lls = p.layer.getLatLngs()[0];
       return { name: p.name, coords: lls.map(ll => [ll.lat, ll.lng]) };
@@ -4424,9 +5944,11 @@ function loadJob(jobId, skipSave) {
   if (job.plots && job.plots.length) {
     job.plots.forEach(pd => {
       addPlot(pd.id, pd.lat, pd.lng);
-      if (pd.completed) {
-        const plot = plotMarkers.find(p => p.id === pd.id);
-        if (plot) { plot.completed = true; updatePlotMarkerStyle(plot); }
+      const plot = plotMarkers.find(p => p.id === pd.id);
+      if (plot) {
+        if (pd.trees && pd.trees.length) plot.trees = JSON.parse(JSON.stringify(pd.trees));
+        if (pd.noTally) plot.noTally = true;
+        if (pd.completed) { plot.completed = true; updatePlotMarkerStyle(plot); }
       }
     });
   }
@@ -4477,6 +5999,8 @@ async function createNewJob() {
     name: name.trim(),
     plots: [],
     polygons: [],
+    baf: 10,
+    species: DEFAULT_SPECIES.slice(0, 3),
     createdAt: Date.now(),
     updatedAt: Date.now()
   };
@@ -4614,6 +6138,8 @@ async function ensureActiveJob() {
     name: name.trim(),
     plots: [],
     polygons: [],
+    baf: 10,
+    species: DEFAULT_SPECIES.slice(0, 3),
     createdAt: Date.now(),
     updatedAt: Date.now()
   };
@@ -4708,6 +6234,66 @@ document.addEventListener('visibilitychange', () => {
 })();
 
 </script>
+<!-- Tally Modal (Data Entry) -->
+<div class="tally-overlay" id="tally-overlay" onclick="if(event.target===this)closeTallyModal()">
+  <div class="tally-modal">
+    <div class="tally-header">
+      <div class="tally-title" id="tally-title">Plot #1</div>
+      <button class="tally-close" onclick="closeTallyModal()">&#x2715;</button>
+    </div>
+    <div class="tally-body">
+      <div class="tally-live-stats">
+        <div class="tally-stat"><span class="tally-stat-val" id="tally-ba">0</span><span class="tally-stat-lbl">BA/Acre</span></div>
+        <div class="tally-stat"><span class="tally-stat-val" id="tally-tpa">0</span><span class="tally-stat-lbl">TPA</span></div>
+        <div class="tally-stat"><span class="tally-stat-val" id="tally-vol">0</span><span class="tally-stat-lbl" id="tally-vol-lbl">BF/Ac</span></div>
+      </div>
+
+      <div class="tally-section-title">Add Tree</div>
+
+      <div class="field-group" style="margin-bottom:12px">
+        <div class="field-label">Species</div>
+        <select class="field-input" id="tally-species"></select>
+      </div>
+
+      <div class="field-label">Product</div>
+      <div class="product-toggle">
+        <div class="product-btn sel-saw" id="tally-btn-saw" onclick="tallyPickProduct('sawtimber')">Sawtimber</div>
+        <div class="product-btn" id="tally-btn-pulp" onclick="tallyPickProduct('pulpwood')">Pulpwood</div>
+      </div>
+
+      <div class="field-label">DBH Class</div>
+      <div class="dbh-grid" id="tally-dbh-grid"></div>
+
+      <div id="tally-logs-section">
+        <div class="field-label">16-ft Merchantable Logs</div>
+        <div class="logs-row" id="tally-logs-row"></div>
+      </div>
+
+      <div id="tally-height-section" style="display:none">
+        <div class="field-label">Total Height (ft)</div>
+        <div class="ht-grid" id="tally-ht-grid"></div>
+        <div class="ht-note" id="tally-ht-note"></div>
+      </div>
+
+      <div class="tally-add-row">
+        <button class="btn btn-primary" onclick="tallyAddTree()" style="font-size:0.75rem;padding:12px">+ Add Tree</button>
+        <button class="btn btn-secondary" onclick="tallyRepeatTree()" style="font-size:0.75rem;padding:12px;border-color:var(--orange);color:var(--orange)">Repeat Last</button>
+      </div>
+
+      <div class="tally-section-title">Tallied: <span id="tally-count" style="color:var(--text-primary)">0</span> trees</div>
+      <table class="tally-table">
+        <thead><tr><th>Spp</th><th>DBH</th><th>Prod</th><th>Logs/Ht</th><th>BA</th><th>Vol/Ac</th><th></th></tr></thead>
+        <tbody id="tally-tbody"></tbody>
+      </table>
+
+      <button class="btn btn-primary" onclick="tallySavePlot()">Save &amp; Close Plot</button>
+      <button class="btn btn-secondary" style="margin-top:6px" onclick="tallySaveAndNav()">Save &amp; Navigate Next</button>
+      <button class="btn btn-secondary" style="margin-top:6px;border-color:var(--text-muted);color:var(--text-muted)" onclick="tallyNoTally()">No Tally (0 Trees)</button>
+      <button class="btn btn-danger" style="margin-top:6px;opacity:0.65" onclick="tallyClearTrees()">Clear All Trees</button>
+    </div>
+  </div>
+</div>
+
 <!-- NC Parcels info panel -->
 <div class="parcel-panel" id="parcel-panel">
   <div class="parcel-panel-header">
