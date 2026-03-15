@@ -87,7 +87,7 @@
   }
   .app-title small {
     font-weight: 500;
-    font-size: 0.6rem;
+    font-size: 0.72rem;
     color: var(--text-muted);
     margin-left: 6px;
     letter-spacing: 1px;
@@ -97,7 +97,7 @@
   .topbar-stats {
     display: flex;
     gap: 12px;
-    font-size: 0.6rem;
+    font-size: 0.72rem;
     color: var(--text-secondary);
     letter-spacing: 0.3px;
   }
@@ -159,7 +159,7 @@
     flex-shrink: 0;
   }
   .parcel-panel h3 {
-    font-size: 0.7rem;
+    font-size: 0.8rem;
     font-weight: 700;
     color: var(--orange);
     text-transform: uppercase;
@@ -192,18 +192,18 @@
   }
   .parcel-row:last-child { border-bottom: none; }
   .parcel-label {
-    font-size: 0.6rem;
+    font-size: 0.72rem;
     color: var(--text-muted);
     text-transform: uppercase;
     letter-spacing: 0.5px;
   }
   .parcel-value {
-    font-size: 0.75rem;
+    font-size: 0.85rem;
     color: var(--text-primary);
     word-break: break-word;
   }
   .parcel-loading {
-    font-size: 0.75rem;
+    font-size: 0.85rem;
     color: var(--text-muted);
     font-style: italic;
     padding: 4px 0;
@@ -226,12 +226,12 @@
   .plot-popup-title {
     font-family: 'Plus Jakarta Sans', sans-serif;
     font-weight: 800;
-    font-size: 0.9rem;
+    font-size: 1.0rem;
     color: var(--accent);
     margin-bottom: 8px;
   }
   .plot-popup-info {
-    font-size: 0.65rem;
+    font-size: 0.75rem;
     color: var(--text-secondary);
     margin-bottom: 10px;
     line-height: 1.6;
@@ -245,7 +245,7 @@
     padding: 10px 8px;
     border-radius: 8px;
     font-family: 'JetBrains Mono', monospace;
-    font-size: 0.6rem;
+    font-size: 0.72rem;
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.5px;
@@ -310,7 +310,7 @@
     border-top: 2px solid transparent;
     color: var(--text-muted);
     font-family: 'JetBrains Mono', monospace;
-    font-size: 0.5rem;
+    font-size: 0.62rem;
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.5px;
@@ -368,7 +368,7 @@
   .panel-title {
     font-family: 'Plus Jakarta Sans', sans-serif;
     font-weight: 800;
-    font-size: 0.85rem;
+    font-size: 0.95rem;
     color: var(--accent);
     text-transform: uppercase;
     letter-spacing: 1px;
@@ -378,7 +378,7 @@
   /* ═══ FORM ELEMENTS ═══ */
   .field-group { margin-bottom: 14px; }
   .field-label {
-    font-size: 0.55rem;
+    font-size: 0.65rem;
     color: var(--text-muted);
     text-transform: uppercase;
     letter-spacing: 0.8px;
@@ -392,7 +392,7 @@
     border-radius: 8px;
     color: var(--text-primary);
     font-family: 'JetBrains Mono', monospace;
-    font-size: 0.8rem;
+    font-size: 0.9rem;
     padding: 10px 12px;
     transition: border-color 0.15s;
   }
@@ -410,7 +410,7 @@
     padding: 14px 16px;
     border-radius: 10px;
     font-family: 'JetBrains Mono', monospace;
-    font-size: 0.7rem;
+    font-size: 0.8rem;
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.5px;
@@ -456,7 +456,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 0.65rem;
+    font-size: 0.75rem;
     font-weight: 800;
     flex-shrink: 0;
   }
@@ -474,17 +474,17 @@
     min-width: 0;
   }
   .plot-list-name {
-    font-size: 0.7rem;
+    font-size: 0.8rem;
     font-weight: 700;
     color: var(--text-primary);
   }
   .plot-list-meta {
-    font-size: 0.55rem;
+    font-size: 0.65rem;
     color: var(--text-muted);
     margin-top: 2px;
   }
   .plot-list-dist {
-    font-size: 0.6rem;
+    font-size: 0.72rem;
     font-weight: 700;
     color: var(--text-secondary);
     text-align: right;
@@ -537,13 +537,13 @@
     color: var(--blue);
   }
   .nav-hud-label {
-    font-size: 0.5rem;
+    font-size: 0.62rem;
     color: var(--text-muted);
     text-transform: uppercase;
     letter-spacing: 1px;
   }
   .nav-hud-plot {
-    font-size: 0.6rem;
+    font-size: 0.72rem;
     font-weight: 700;
     color: var(--text-secondary);
   }
@@ -560,7 +560,7 @@
     justify-content: center;
     cursor: pointer;
     flex-shrink: 0;
-    font-size: 14px;
+    font-size: 16px;
   }
 
   /* ═══ PROGRESS BAR ═══ */
@@ -590,7 +590,7 @@
     border: 1px solid var(--accent);
     color: var(--accent);
     font-family: 'JetBrains Mono', monospace;
-    font-size: 0.65rem;
+    font-size: 0.75rem;
     font-weight: 700;
     padding: 10px 20px;
     border-radius: 10px;
@@ -606,7 +606,7 @@
   /* ═══ TRACT INFO BAR ═══ */
   .tract-info-bar {
     position: absolute;
-    bottom: 70px;
+    bottom: calc(60px + var(--safe-bottom) + 10px);
     left: 10px;
     right: 10px;
     z-index: 998;
@@ -616,12 +616,12 @@
     padding: 10px 14px;
     display: none;
     gap: 12px;
-    font-size: 0.6rem;
+    font-size: 0.72rem;
   }
   .tract-info-bar.show { display: flex; flex-wrap: wrap; }
   .tract-stat { display: flex; flex-direction: column; align-items: center; }
-  .tract-stat-val { font-weight: 800; font-size: 0.85rem; color: var(--accent); }
-  .tract-stat-label { color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; font-size: 0.48rem; }
+  .tract-stat-val { font-weight: 800; font-size: 0.95rem; color: var(--accent); }
+  .tract-stat-label { color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; font-size: 0.58rem; }
 
   /* ═══ EMPTY STATE ═══ */
   .empty-hint {
@@ -636,7 +636,7 @@
   .empty-hint-icon { font-size: 2.5rem; margin-bottom: 8px; opacity: 0.3; }
   .empty-hint-text {
     font-family: 'Plus Jakarta Sans', sans-serif;
-    font-size: 0.8rem;
+    font-size: 0.9rem;
     font-weight: 600;
     color: var(--text-muted);
     opacity: 0.5;
@@ -661,7 +661,7 @@
     border-radius: 50%;
     font-family: 'JetBrains Mono', monospace;
     font-weight: 800;
-    font-size: 10px;
+    font-size: 12px;
     line-height: 1;
     border: 2.5px solid #fff;
     box-shadow: 0 2px 8px rgba(0,0,0,0.5);
@@ -687,14 +687,46 @@
     50% { box-shadow: 0 2px 8px rgba(0,0,0,0.5), 0 0 0 12px rgba(52,152,219,0); }
   }
 
-  /* Location marker */
+  /* Location marker with compass heading */
   .my-location-marker {
+    width: 36px;
+    height: 36px;
+    position: relative;
+  }
+  .my-location-dot {
+    position: absolute;
+    top: 10px;
+    left: 10px;
     width: 16px;
     height: 16px;
     background: var(--blue);
     border: 3px solid #fff;
     border-radius: 50%;
     box-shadow: 0 0 0 3px rgba(52,152,219,0.3), 0 2px 8px rgba(0,0,0,0.4);
+  }
+  .my-location-cone {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 36px;
+    height: 36px;
+    transition: transform 0.15s ease-out;
+    pointer-events: none;
+  }
+  .my-location-cone.no-heading { display: none; }
+  .my-location-pulse {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: rgba(52,152,219,0.25);
+    animation: loc-pulse 2s ease-out infinite;
+  }
+  @keyframes loc-pulse {
+    0% { transform: scale(1); opacity: 0.5; }
+    100% { transform: scale(3); opacity: 0; }
   }
 
   /* Nav line */
@@ -712,7 +744,7 @@
     border: 1px solid var(--accent);
     border-radius: 10px;
     padding: 8px 16px;
-    font-size: 0.6rem;
+    font-size: 0.72rem;
     color: var(--accent);
     font-weight: 600;
     display: none;
@@ -739,7 +771,7 @@
   }
   .settings-card:active { background: var(--bg-elevated); }
   .settings-card svg { width: 24px; height: 24px; stroke: var(--accent); margin-bottom: 6px; }
-  .settings-card-label { font-size: 0.55rem; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px; }
+  .settings-card-label { font-size: 0.65rem; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px; }
 
   /* Polygon checklist */
   .poly-checklist {
@@ -758,13 +790,13 @@
     background: var(--bg-deep);
     border: 1px solid var(--border);
     border-radius: 8px;
-    font-size: 0.65rem;
+    font-size: 0.75rem;
     color: var(--text-primary);
     cursor: pointer;
   }
   .poly-check input[type=checkbox] { accent-color: var(--accent); width: 16px; height: 16px; cursor: pointer; flex-shrink: 0; }
   .poly-check-empty {
-    font-size: 0.6rem;
+    font-size: 0.72rem;
     color: var(--text-muted);
     font-style: italic;
     padding: 10px 0;
@@ -783,7 +815,7 @@
     border-radius: 6px;
     color: var(--text-secondary);
     font-family: 'JetBrains Mono', monospace;
-    font-size: 0.5rem;
+    font-size: 0.62rem;
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.5px;
@@ -821,7 +853,7 @@
   }
   @keyframes spin { to { transform: rotate(360deg); } }
   .loading-sub {
-    font-size: 0.6rem;
+    font-size: 0.72rem;
     color: var(--text-muted);
     text-transform: uppercase;
     letter-spacing: 1px;
@@ -845,7 +877,7 @@
   }
   .toast-undo.show { display: flex; }
   .toast-undo-text {
-    font-size: 0.6rem;
+    font-size: 0.72rem;
     color: var(--text-primary);
     font-weight: 600;
   }
@@ -856,7 +888,7 @@
     border-radius: 6px;
     color: var(--bg-deep);
     font-family: 'JetBrains Mono', monospace;
-    font-size: 0.6rem;
+    font-size: 0.72rem;
     font-weight: 800;
     text-transform: uppercase;
     cursor: pointer;
@@ -868,7 +900,7 @@
     display: none;
     align-items: center;
     gap: 4px;
-    font-size: 0.45rem;
+    font-size: 0.58rem;
     color: var(--accent);
     text-transform: uppercase;
     letter-spacing: 0.5px;
@@ -891,7 +923,7 @@
     border-radius: 6px;
     color: var(--text-secondary);
     font-family: 'JetBrains Mono', monospace;
-    font-size: 0.5rem;
+    font-size: 0.62rem;
     font-weight: 700;
     cursor: pointer;
     text-transform: uppercase;
@@ -929,7 +961,7 @@
     border: 1px solid var(--accent);
     border-radius: 8px;
     padding: 4px 14px;
-    font-size: 0.6rem;
+    font-size: 0.72rem;
     color: var(--accent);
     font-weight: 700;
     text-transform: uppercase;
@@ -947,7 +979,7 @@
     padding: 14px 8px;
     border-radius: 10px;
     font-family: 'JetBrains Mono', monospace;
-    font-size: 0.65rem;
+    font-size: 0.75rem;
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.5px;
@@ -963,7 +995,7 @@
     background: var(--accent);
     border-color: var(--accent);
     color: var(--bg-deep);
-    font-size: 0.8rem;
+    font-size: 0.9rem;
     box-shadow: 0 4px 16px rgba(106,191,75,0.3);
   }
   .draw-btn-undo {
@@ -1008,7 +1040,7 @@
     text-align: center;
   }
   .confirm-msg {
-    font-size: 0.75rem;
+    font-size: 0.85rem;
     color: var(--text-primary);
     margin-bottom: 18px;
     line-height: 1.5;
@@ -1022,7 +1054,7 @@
     padding: 12px;
     border-radius: 8px;
     font-family: 'JetBrains Mono', monospace;
-    font-size: 0.65rem;
+    font-size: 0.75rem;
     font-weight: 700;
     text-transform: uppercase;
     cursor: pointer;
@@ -1058,7 +1090,7 @@
   .cloud-cruise-icon svg { width: 18px; height: 18px; stroke: var(--accent); }
   .cloud-cruise-info { flex: 1; min-width: 0; }
   .cloud-cruise-name {
-    font-size: 0.7rem;
+    font-size: 0.8rem;
     font-weight: 700;
     color: var(--text-primary);
     white-space: nowrap;
@@ -1066,7 +1098,7 @@
     text-overflow: ellipsis;
   }
   .cloud-cruise-meta {
-    font-size: 0.5rem;
+    font-size: 0.62rem;
     color: var(--text-muted);
     margin-top: 2px;
   }
@@ -1112,7 +1144,7 @@
   .job-item.active-job .job-icon svg { stroke: var(--bg-deep); }
   .job-info { flex: 1; min-width: 0; }
   .job-name {
-    font-size: 0.7rem;
+    font-size: 0.8rem;
     font-weight: 700;
     color: var(--text-primary);
     white-space: nowrap;
@@ -1120,7 +1152,7 @@
     text-overflow: ellipsis;
   }
   .job-meta {
-    font-size: 0.5rem;
+    font-size: 0.62rem;
     color: var(--text-muted);
     margin-top: 2px;
   }
@@ -1132,11 +1164,249 @@
   .job-actions .icon-btn { width: 32px; height: 32px; }
   .job-actions .icon-btn svg { width: 14px; height: 14px; }
   .job-active-badge {
-    font-size: 0.45rem;
+    font-size: 0.58rem;
     font-weight: 800;
     color: var(--accent);
     text-transform: uppercase;
     letter-spacing: 1px;
+  }
+
+  /* ═══ LAYERS FLOATING WIDGET ═══ */
+  .layers-widget {
+    position: absolute;
+    top: 56px;
+    right: 12px;
+    z-index: 1001;
+    background: #fff;
+    border-radius: 10px;
+    padding: 12px 14px;
+    min-width: 180px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.25);
+    display: none;
+    font-family: 'JetBrains Mono', monospace;
+  }
+  .layers-widget.open { display: block; }
+  .layers-widget-title {
+    font-size: 0.65rem;
+    font-weight: 800;
+    color: #333;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 8px;
+  }
+  .layers-widget label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 0;
+    font-size: 0.8rem;
+    color: #333;
+    cursor: pointer;
+  }
+  .layers-widget input[type="radio"],
+  .layers-widget input[type="checkbox"] {
+    accent-color: var(--accent);
+    width: 15px;
+    height: 15px;
+    cursor: pointer;
+    flex-shrink: 0;
+  }
+  .layers-widget hr {
+    border: none;
+    border-top: 1px solid #ddd;
+    margin: 6px 0;
+  }
+
+  /* ═══ JOIN SHARED CRUISE WIDGET ═══ */
+  .join-widget {
+    position: absolute;
+    top: 56px;
+    right: 12px;
+    z-index: 1001;
+    background: #fff;
+    border-radius: 10px;
+    padding: 14px;
+    min-width: 220px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.25);
+    display: none;
+    font-family: 'JetBrains Mono', monospace;
+  }
+  .join-widget.open { display: block; }
+  .join-widget-title {
+    font-size: 0.65rem;
+    font-weight: 800;
+    color: #333;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 10px;
+  }
+  .join-widget-row {
+    display: flex;
+    gap: 8px;
+  }
+  .join-widget-input {
+    flex: 1;
+    background: #f0f0f0;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    color: #222;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.9rem;
+    font-weight: 700;
+    padding: 8px 10px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    text-align: center;
+  }
+  .join-widget-input:focus { outline: none; border-color: var(--accent); }
+  .join-widget-input::placeholder { color: #aaa; letter-spacing: 0; text-transform: none; font-weight: 400; }
+  .join-widget-btn {
+    padding: 8px 14px;
+    background: var(--accent);
+    border: none;
+    border-radius: 6px;
+    color: var(--bg-deep);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.75rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    cursor: pointer;
+    flex-shrink: 0;
+  }
+  .join-widget-btn:active { transform: scale(0.96); }
+  .join-widget-msg {
+    font-size: 0.65rem;
+    color: #888;
+    margin-top: 8px;
+    text-align: center;
+  }
+
+  /* ═══ CLOUD PANEL (Unified) ═══ */
+  .cloud-auth-strip {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 12px;
+    background: var(--bg-deep);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    margin-bottom: 12px;
+  }
+  .cloud-auth-strip img {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    border: 2px solid var(--accent);
+    flex-shrink: 0;
+  }
+  .cloud-auth-strip-info {
+    flex: 1;
+    min-width: 0;
+  }
+  .cloud-auth-strip-name {
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .cloud-auth-strip-email {
+    font-size: 0.62rem;
+    color: var(--text-muted);
+    margin-top: 1px;
+  }
+  .cloud-auth-strip-signout {
+    padding: 5px 10px;
+    background: transparent;
+    border: 1px solid var(--border-bright);
+    border-radius: 6px;
+    color: var(--text-secondary);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.62rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    cursor: pointer;
+    flex-shrink: 0;
+  }
+  .cloud-auth-strip-signout:active { background: var(--bg-elevated); }
+  .cloud-tabs {
+    display: flex;
+    gap: 0;
+    margin-bottom: 12px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    overflow: hidden;
+  }
+  .cloud-tab {
+    flex: 1;
+    padding: 10px 8px;
+    background: var(--bg-deep);
+    border: none;
+    color: var(--text-muted);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.65rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+    cursor: pointer;
+    text-align: center;
+    transition: all 0.15s;
+  }
+  .cloud-tab.active {
+    background: var(--accent-dim);
+    color: var(--accent-glow);
+  }
+  .cloud-tab + .cloud-tab {
+    border-left: 1px solid var(--border);
+  }
+
+  /* ═══ GeoPDF PREVIEW BAR ═══ */
+  .geopdf-preview-bar {
+    position: absolute;
+    bottom: 70px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 1001;
+    background: var(--bg-deep);
+    border: 1px solid var(--blue);
+    border-radius: 10px;
+    padding: 10px 16px;
+    display: none;
+    align-items: center;
+    gap: 10px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+    white-space: nowrap;
+  }
+  .geopdf-preview-bar.open { display: flex; }
+  .geopdf-preview-bar .geopdf-label {
+    font-size: 0.72rem;
+    color: var(--text-secondary);
+    font-weight: 600;
+  }
+  .geopdf-preview-bar button {
+    padding: 8px 14px;
+    border-radius: 6px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.65rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    cursor: pointer;
+    border: 1px solid;
+    flex-shrink: 0;
+  }
+  .geopdf-btn-export {
+    background: var(--blue);
+    border-color: var(--blue);
+    color: #fff;
+  }
+  .geopdf-btn-cancel {
+    background: transparent;
+    border-color: var(--border-bright);
+    color: var(--text-secondary);
+  }
+  @media (max-width: 768px) {
+    .geopdf-preview-bar { left: 8px; right: 8px; transform: none; flex-wrap: wrap; justify-content: center; white-space: normal; text-align: center; }
   }
 </style>
 </head>
@@ -1160,13 +1430,13 @@
     </div>
     <div class="topbar-actions">
       <button class="unit-toggle" id="unit-toggle" onclick="toggleDistUnit()" title="Toggle distance units">ft</button>
-      <button class="icon-btn" id="btn-account" onclick="openPanel('account')" title="Account">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+      <button class="icon-btn" id="btn-join" onclick="toggleJoinWidget()" title="Join shared cruise">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
       </button>
-      <button class="icon-btn" id="btn-parcels" onclick="toggleParcels()" title="Toggle NC Parcels">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+      <button class="icon-btn" id="btn-cloud-topbar" onclick="openCloudPanel()" title="Cloud sync">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z"/></svg>
       </button>
-      <button class="icon-btn" id="btn-basemap" onclick="cycleBasemap()" title="Switch basemap">
+      <button class="icon-btn" id="btn-layers" onclick="toggleLayersWidget()" title="Layers">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
       </button>
       <button class="icon-btn" id="btn-menu" onclick="openPanel('settings')" title="Settings">
@@ -1226,6 +1496,35 @@
       <div class="nav-hud-plot" id="nav-plot-label">--</div>
     </div>
     <button class="nav-hud-close" onclick="stopNavigation()" title="Stop navigation">✕</button>
+  </div>
+
+  <!-- Layers Widget -->
+  <div class="layers-widget" id="layers-widget">
+    <div class="layers-widget-title">Basemap</div>
+    <label><input type="radio" name="basemap-radio" value="2" onchange="selectBasemap(2)"> Streets (OSM)</label>
+    <label><input type="radio" name="basemap-radio" value="1" onchange="selectBasemap(1)"> Satellite</label>
+    <label><input type="radio" name="basemap-radio" value="0" checked onchange="selectBasemap(0)"> Imagery Hybrid</label>
+    <label><input type="radio" name="basemap-radio" value="3" onchange="selectBasemap(3)"> Topo</label>
+    <hr>
+    <div class="layers-widget-title">Overlays</div>
+    <label><input type="checkbox" id="layers-parcels-cb" onchange="toggleParcelsFromWidget(this.checked)"> NC Parcels (OneMap)</label>
+  </div>
+
+  <!-- Join Shared Cruise Widget -->
+  <div class="join-widget" id="join-widget">
+    <div class="join-widget-title">Join Shared Cruise</div>
+    <div class="join-widget-row">
+      <input class="join-widget-input" id="join-widget-input" maxlength="6" placeholder="Code" autocomplete="off">
+      <button class="join-widget-btn" onclick="joinFromWidget()">Join</button>
+    </div>
+    <div class="join-widget-msg" id="join-widget-msg"></div>
+  </div>
+
+  <!-- GeoPDF Export Preview Bar -->
+  <div class="geopdf-preview-bar" id="geopdf-preview-bar">
+    <div class="geopdf-label" id="geopdf-label">Draw a rectangle on the map to define GeoPDF area</div>
+    <button class="geopdf-btn-export" id="geopdf-confirm-btn" onclick="confirmGeoPDFExport()" style="opacity:0.4;pointer-events:none;">Export PDF</button>
+    <button class="geopdf-btn-cancel" onclick="cancelGeoPDFMode()">Cancel</button>
   </div>
 
   <!-- Tract Info Bar -->
@@ -1357,7 +1656,15 @@
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7,10 12,15 17,10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
     Export Project (GeoJSON)
   </button>
-  <button class="btn btn-secondary" onclick="closePanel(); openPanel('account')">
+  <button class="btn btn-secondary" onclick="closePanel(); exportShapefile()">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14,2 14,8 20,8"/></svg>
+    Export Shapefile (.shp)
+  </button>
+  <button class="btn btn-secondary" style="border-color:var(--blue);color:var(--blue);" onclick="closePanel(); startGeoPDFExport()">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14,2 14,8 20,8"/><path d="M12 18v-6"/><path d="M9 15l3 3 3-3"/></svg>
+    Export GeoPDF (Avenza)
+  </button>
+  <button class="btn btn-secondary" onclick="closePanel(); openCloudPanel()">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z"/></svg>
     Cloud Sync & Sharing
   </button>
@@ -1375,7 +1682,7 @@
     </button>
   </div>
   <div id="jobs-list" style="display:flex;flex-direction:column;gap:6px;max-height:55vh;overflow-y:auto;">
-    <div style="text-align:center;padding:20px;color:var(--text-muted);font-size:0.6rem;">No jobs yet. Create one to get started.</div>
+    <div style="text-align:center;padding:20px;color:var(--text-muted);font-size:0.72rem;">No jobs yet. Create one to get started.</div>
   </div>
 </div>
 
@@ -1384,7 +1691,7 @@
   <div class="panel-handle"></div>
   <div class="panel-title">Account</div>
   <div id="auth-signed-out">
-    <div style="text-align:center;padding:16px 0 20px;color:var(--text-secondary);font-size:0.65rem;line-height:1.6;">
+    <div style="text-align:center;padding:16px 0 20px;color:var(--text-secondary);font-size:0.75rem;line-height:1.6;">
       Sign in to save cruises to the cloud, access them on any device, and share with your crew.
     </div>
     <button class="btn btn-primary" onclick="firebaseSignIn()" id="btn-google-signin">
@@ -1396,8 +1703,8 @@
     <div style="display:flex;align-items:center;gap:12px;padding:12px;background:var(--bg-deep);border:1px solid var(--border);border-radius:10px;margin-bottom:16px;">
       <img id="user-avatar" src="" style="width:40px;height:40px;border-radius:50%;border:2px solid var(--accent);" onerror="this.style.display='none'">
       <div>
-        <div id="user-name" style="font-size:0.75rem;font-weight:700;color:var(--text-primary);"></div>
-        <div id="user-email" style="font-size:0.55rem;color:var(--text-muted);margin-top:2px;"></div>
+        <div id="user-name" style="font-size:0.85rem;font-weight:700;color:var(--text-primary);"></div>
+        <div id="user-email" style="font-size:0.65rem;color:var(--text-muted);margin-top:2px;"></div>
       </div>
     </div>
     <button class="btn btn-primary" onclick="openPanel('cloud')">
@@ -1412,16 +1719,41 @@
   </div>
 </div>
 
-<!-- Cloud Cruises Panel -->
+<!-- Cloud Cruises Panel (Unified) -->
 <div class="panel" id="panel-cloud">
   <div class="panel-handle"></div>
-  <div class="panel-title">Cloud Cruises</div>
-  <div style="display:flex;gap:8px;margin-bottom:14px;">
-    <button class="btn btn-secondary" style="flex:1;margin:0;" onclick="loadMyCruises()">My Cruises</button>
-    <button class="btn btn-secondary" style="flex:1;margin:0;" onclick="loadSharedCruises()">Shared With Me</button>
+  <div class="panel-title">Cloud Sync</div>
+  <!-- Signed-out state -->
+  <div id="cloud-signed-out">
+    <div style="text-align:center;padding:16px 0 20px;color:var(--text-secondary);font-size:0.75rem;line-height:1.6;">
+      Sign in to save cruises to the cloud, access them on any device, and share with your crew.
+    </div>
+    <button class="btn btn-primary" onclick="firebaseSignIn()" id="btn-cloud-google-signin">
+      <svg viewBox="0 0 24 24" width="16" height="16" fill="none"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18A10.96 10.96 0 0 0 1 12c0 1.77.42 3.45 1.18 4.93l3.66-2.84z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
+      Sign in with Google
+    </button>
   </div>
-  <div id="cloud-cruise-list" style="display:flex;flex-direction:column;gap:6px;max-height:50vh;overflow-y:auto;">
-    <div style="text-align:center;padding:20px;color:var(--text-muted);font-size:0.6rem;">Tap a button above to load cruises.</div>
+  <!-- Signed-in state -->
+  <div id="cloud-signed-in" style="display:none;">
+    <div class="cloud-auth-strip">
+      <img id="cloud-user-avatar" src="" onerror="this.style.display='none'">
+      <div class="cloud-auth-strip-info">
+        <div class="cloud-auth-strip-name" id="cloud-user-name"></div>
+        <div class="cloud-auth-strip-email" id="cloud-user-email"></div>
+      </div>
+      <button class="cloud-auth-strip-signout" onclick="firebaseSignOut()">Sign Out</button>
+    </div>
+    <button class="btn btn-primary" onclick="saveCruiseToCloud()" style="margin-bottom:12px;">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17,8 12,3 7,8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+      Save Current Cruise
+    </button>
+    <div class="cloud-tabs">
+      <button class="cloud-tab active" id="cloud-tab-mine" onclick="switchCloudTab('mine')">My Cruises</button>
+      <button class="cloud-tab" id="cloud-tab-shared" onclick="switchCloudTab('shared')">Shared With Me</button>
+    </div>
+    <div id="cloud-cruise-list" style="display:flex;flex-direction:column;gap:6px;max-height:50vh;overflow-y:auto;">
+      <div style="text-align:center;padding:20px;color:var(--text-muted);font-size:0.72rem;">Loading...</div>
+    </div>
   </div>
 </div>
 
@@ -1429,22 +1761,22 @@
 <div class="panel" id="panel-share">
   <div class="panel-handle"></div>
   <div class="panel-title">Share Cruise</div>
-  <div id="share-cruise-name" style="font-size:0.75rem;font-weight:700;color:var(--accent);margin-bottom:14px;"></div>
+  <div id="share-cruise-name" style="font-size:0.85rem;font-weight:700;color:var(--accent);margin-bottom:14px;"></div>
   <div class="field-group">
     <div class="field-label">Share Code</div>
     <div style="display:flex;gap:8px;align-items:center;">
-      <input class="field-input" id="share-code-display" readonly style="font-size:0.9rem;font-weight:700;letter-spacing:2px;text-align:center;">
+      <input class="field-input" id="share-code-display" readonly style="font-size:1.0rem;font-weight:700;letter-spacing:2px;text-align:center;">
       <button class="icon-btn" onclick="copyShareCode()" title="Copy code" style="flex-shrink:0;">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
       </button>
     </div>
-    <div style="font-size:0.5rem;color:var(--text-muted);margin-top:6px;">Share this code with others so they can view this cruise.</div>
+    <div style="font-size:0.62rem;color:var(--text-muted);margin-top:6px;">Share this code with others so they can view this cruise.</div>
   </div>
   <div style="border-top:1px solid var(--border);margin:16px 0;"></div>
   <div class="field-group">
     <div class="field-label">Current Shared Users</div>
     <div id="shared-users-list" style="display:flex;flex-direction:column;gap:4px;max-height:120px;overflow-y:auto;">
-      <div style="font-size:0.6rem;color:var(--text-muted);font-style:italic;padding:8px 0;text-align:center;">No shared users yet.</div>
+      <div style="font-size:0.72rem;color:var(--text-muted);font-style:italic;padding:8px 0;text-align:center;">No shared users yet.</div>
     </div>
   </div>
   <div style="border-top:1px solid var(--border);margin:16px 0;"></div>
@@ -1491,6 +1823,10 @@
 <script src="https://cdn.jsdelivr.net/npm/esri-leaflet@3.0.12/dist/esri-leaflet.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/proj4js/2.9.0/proj4.js"></script>
+<!-- pdf-lib for GeoPDF export -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
+<!-- html2canvas fallback for map capture -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 
 <script>
 // ══════════════════════════════════════════════════════════════════════════════
@@ -1554,7 +1890,7 @@ try {
 function updateAuthUI() {
   const signedOut = document.getElementById('auth-signed-out');
   const signedIn = document.getElementById('auth-signed-in');
-  const accountBtn = document.getElementById('btn-account');
+  const cloudBtn = document.getElementById('btn-cloud-topbar');
 
   if (fb_user) {
     signedOut.style.display = 'none';
@@ -1568,12 +1904,14 @@ function updateAuthUI() {
     } else {
       avatar.style.display = 'none';
     }
-    accountBtn.classList.add('logged-in');
+    if (cloudBtn) cloudBtn.classList.add('logged-in');
   } else {
     signedOut.style.display = 'block';
     signedIn.style.display = 'none';
-    accountBtn.classList.remove('logged-in');
+    if (cloudBtn) cloudBtn.classList.remove('logged-in');
   }
+  // Also sync cloud panel if it's open
+  updateCloudPanelUI();
 }
 
 async function firebaseSignIn() {
@@ -1675,18 +2013,18 @@ async function updateCruiseInCloud(cruiseId) {
 async function loadMyCruises() {
   if (!fb_user) { toast('Sign in first'); return; }
   const container = document.getElementById('cloud-cruise-list');
-  container.innerHTML = '<div style="text-align:center;padding:20px;color:var(--text-muted);font-size:0.6rem;">Loading...</div>';
+  container.innerHTML = '<div style="text-align:center;padding:20px;color:var(--text-muted);font-size:0.72rem;">Loading...</div>';
 
   try {
     const snap = await fb_db.collection('cruises').where('ownerId', '==', fb_user.uid).orderBy('updatedAt', 'desc').get();
     if (snap.empty) {
-      container.innerHTML = '<div style="text-align:center;padding:20px;color:var(--text-muted);font-size:0.6rem;">No cruises saved yet.</div>';
+      container.innerHTML = '<div style="text-align:center;padding:20px;color:var(--text-muted);font-size:0.72rem;">No cruises saved yet.</div>';
       return;
     }
     renderCruiseList(snap, container, true);
   } catch(e) {
     console.error(e);
-    container.innerHTML = '<div style="text-align:center;padding:20px;color:var(--red);font-size:0.6rem;">Error loading cruises. Check Firestore indexes.</div>';
+    container.innerHTML = '<div style="text-align:center;padding:20px;color:var(--red);font-size:0.72rem;">Error loading cruises. Check Firestore indexes.</div>';
   }
 }
 
@@ -1694,18 +2032,18 @@ async function loadMyCruises() {
 async function loadSharedCruises() {
   if (!fb_user) { toast('Sign in first'); return; }
   const container = document.getElementById('cloud-cruise-list');
-  container.innerHTML = '<div style="text-align:center;padding:20px;color:var(--text-muted);font-size:0.6rem;">Loading...</div>';
+  container.innerHTML = '<div style="text-align:center;padding:20px;color:var(--text-muted);font-size:0.72rem;">Loading...</div>';
 
   try {
     const snap = await fb_db.collection('cruises').where('sharedWith', 'array-contains', fb_user.email).orderBy('updatedAt', 'desc').get();
     if (snap.empty) {
-      container.innerHTML = '<div style="text-align:center;padding:20px;color:var(--text-muted);font-size:0.6rem;">No cruises shared with you yet.</div>';
+      container.innerHTML = '<div style="text-align:center;padding:20px;color:var(--text-muted);font-size:0.72rem;">No cruises shared with you yet.</div>';
       return;
     }
     renderCruiseList(snap, container, false);
   } catch(e) {
     console.error(e);
-    container.innerHTML = '<div style="text-align:center;padding:20px;color:var(--red);font-size:0.6rem;">Error loading. Check Firestore indexes.</div>';
+    container.innerHTML = '<div style="text-align:center;padding:20px;color:var(--red);font-size:0.72rem;">Error loading. Check Firestore indexes.</div>';
   }
 }
 
@@ -1844,13 +2182,13 @@ async function openSharePanel(cruiseId) {
     const usersList = document.getElementById('shared-users-list');
     if (d.sharedWith && d.sharedWith.length > 0) {
       usersList.innerHTML = d.sharedWith.map(email =>
-        '<div style="display:flex;align-items:center;justify-content:space-between;padding:8px 10px;background:var(--bg-deep);border:1px solid var(--border);border-radius:8px;font-size:0.6rem;color:var(--text-primary);">' +
+        '<div style="display:flex;align-items:center;justify-content:space-between;padding:8px 10px;background:var(--bg-deep);border:1px solid var(--border);border-radius:8px;font-size:0.72rem;color:var(--text-primary);">' +
           '<span>' + email + '</span>' +
           '<button class="icon-btn" onclick="removeSharedUser(\'' + cruiseId + '\', \'' + email + '\')" style="width:24px;height:24px;border-color:var(--red);"><svg viewBox="0 0 24 24" fill="none" stroke="var(--red)" stroke-width="2" width="12" height="12"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>' +
         '</div>'
       ).join('');
     } else {
-      usersList.innerHTML = '<div style="font-size:0.6rem;color:var(--text-muted);font-style:italic;padding:8px 0;text-align:center;">No shared users yet.</div>';
+      usersList.innerHTML = '<div style="font-size:0.72rem;color:var(--text-muted);font-style:italic;padding:8px 0;text-align:center;">No shared users yet.</div>';
     }
 
     openPanel('share');
@@ -1968,12 +2306,140 @@ function cycleBasemap() {
   toast(basemapOrder[currentBasemap].charAt(0).toUpperCase() + basemapOrder[currentBasemap].slice(1));
 }
 
+// ── Layers widget ──
+function selectBasemap(index) {
+  map.removeLayer(basemaps[basemapOrder[currentBasemap]]);
+  currentBasemap = index;
+  basemaps[basemapOrder[currentBasemap]].addTo(map);
+  // Close widget after basemap selection
+  closeLayersWidget();
+  toast(basemapOrder[currentBasemap].charAt(0).toUpperCase() + basemapOrder[currentBasemap].slice(1));
+}
+
+function toggleLayersWidget() {
+  const w = document.getElementById('layers-widget');
+  closeJoinWidget();
+  if (w.classList.contains('open')) {
+    closeLayersWidget();
+  } else {
+    // Sync radio to current basemap
+    const radios = document.querySelectorAll('input[name="basemap-radio"]');
+    radios.forEach(r => { r.checked = parseInt(r.value) === currentBasemap; });
+    w.classList.add('open');
+    document.getElementById('btn-layers').classList.add('active');
+  }
+}
+
+function closeLayersWidget() {
+  document.getElementById('layers-widget').classList.remove('open');
+  document.getElementById('btn-layers').classList.remove('active');
+}
+
+// Called from checkbox inside layers widget
+function toggleParcelsFromWidget(checked) {
+  // parcelsOn state is managed inside the load listener closure,
+  // so we call toggleParcels which flips it. But we need to check
+  // if state matches what the checkbox wants.
+  if (typeof window._parcelsOn === 'undefined') window._parcelsOn = false;
+  if (checked !== window._parcelsOn) {
+    toggleParcels();
+  }
+}
+
+// ── Join shared cruise widget ──
+function toggleJoinWidget() {
+  const w = document.getElementById('join-widget');
+  closeLayersWidget();
+  if (w.classList.contains('open')) {
+    closeJoinWidget();
+  } else {
+    const msg = document.getElementById('join-widget-msg');
+    if (!fb_user) {
+      msg.textContent = 'Sign in first to join a shared cruise.';
+      msg.style.color = '#e74c3c';
+    } else {
+      msg.textContent = '';
+    }
+    document.getElementById('join-widget-input').value = '';
+    w.classList.add('open');
+    document.getElementById('btn-join').classList.add('active');
+  }
+}
+
+function closeJoinWidget() {
+  document.getElementById('join-widget').classList.remove('open');
+  document.getElementById('btn-join').classList.remove('active');
+}
+
+async function joinFromWidget() {
+  if (!fb_user) {
+    document.getElementById('join-widget-msg').textContent = 'Sign in first.';
+    document.getElementById('join-widget-msg').style.color = '#e74c3c';
+    return;
+  }
+  const code = document.getElementById('join-widget-input').value.trim().toUpperCase();
+  if (!code || code.length < 4) { toast('Enter a valid code'); return; }
+
+  // Set the original share panel input and call the shared function
+  document.getElementById('join-code-input').value = code;
+  await joinCruiseByCode();
+  closeJoinWidget();
+}
+
+// Close widgets on map click
+map.on('click', function() {
+  closeLayersWidget();
+  closeJoinWidget();
+});
+
+// ── Cloud panel (direct open) ──
+function openCloudPanel() {
+  openPanel('cloud');
+  updateCloudPanelUI();
+  // Auto-load My Cruises tab if signed in
+  if (fb_user) {
+    switchCloudTab('mine');
+  }
+}
+
+function updateCloudPanelUI() {
+  const signedOut = document.getElementById('cloud-signed-out');
+  const signedIn = document.getElementById('cloud-signed-in');
+  if (fb_user) {
+    signedOut.style.display = 'none';
+    signedIn.style.display = 'block';
+    document.getElementById('cloud-user-name').textContent = fb_user.displayName || 'User';
+    document.getElementById('cloud-user-email').textContent = fb_user.email || '';
+    const avatar = document.getElementById('cloud-user-avatar');
+    if (fb_user.photoURL) {
+      avatar.src = fb_user.photoURL;
+      avatar.style.display = 'block';
+    } else {
+      avatar.style.display = 'none';
+    }
+  } else {
+    signedOut.style.display = 'block';
+    signedIn.style.display = 'none';
+  }
+}
+
+let _activeCloudTab = 'mine';
+function switchCloudTab(tab) {
+  _activeCloudTab = tab;
+  document.getElementById('cloud-tab-mine').classList.toggle('active', tab === 'mine');
+  document.getElementById('cloud-tab-shared').classList.toggle('active', tab === 'shared');
+  if (tab === 'mine') {
+    loadMyCruises();
+  } else {
+    loadSharedCruises();
+  }
+}
+
 // ── NC OneMap Parcels ────────────────────────────────────────────────────
 // Deferred init — runs after all scripts have loaded
 window.addEventListener('load', function() {
   if (!window.L || !window.L.esri) {
     console.warn('esri-leaflet not loaded');
-    document.getElementById('btn-parcels').style.display = 'none';
     return;
   }
 
@@ -2008,14 +2474,14 @@ window.addEventListener('load', function() {
 
   window.toggleParcels = function() {
     parcelsOn = !parcelsOn;
-    var btn = document.getElementById('btn-parcels');
+    window._parcelsOn = parcelsOn;
+    var cb = document.getElementById('layers-parcels-cb');
+    if (cb) cb.checked = parcelsOn;
     if (parcelsOn) {
       ncParcels.addTo(map);
-      btn.classList.add('active');
       if (map.getZoom() < 14) toast('Zoom in to see parcels');
     } else {
       map.removeLayer(ncParcels);
-      btn.classList.remove('active');
       closeParcelsPanel();
     }
   };
@@ -2071,6 +2537,582 @@ window.addEventListener('load', function() {
   });
 });
 
+// ══════════════════════════════════════════════════════════════════════════════
+// SHAPEFILE EXPORT
+// ══════════════════════════════════════════════════════════════════════════════
+
+function exportShapefile() {
+  if (allPolygons.length === 0 && plotMarkers.length === 0) {
+    toast('Nothing to export');
+    return;
+  }
+
+  const zip = new JSZip();
+  const prjContent = 'GEOGCS["GCS_WGS_1984",DATUM["D_WGS_1984",SPHEROID["WGS_1984",6378137.0,298.257223563]],PRIMEM["Greenwich",0.0],UNIT["Degree",0.0174532925199433]]';
+
+  // Export boundaries as polygons
+  if (allPolygons.length) {
+    const polygons = [];
+    allPolygons.forEach(p => {
+      const lls = p.layer.getLatLngs()[0];
+      const ring = lls.map(ll => [ll.lng, ll.lat]);
+      ring.push(ring[0]); // close the ring
+      polygons.push({ type: 'Polygon', coordinates: [ring] });
+    });
+    zip.file('boundaries.shp', buildPolygonShp(polygons));
+    zip.file('boundaries.shx', buildPolygonShx(polygons));
+    zip.file('boundaries.dbf', buildDbf(polygons.length));
+    zip.file('boundaries.prj', prjContent);
+  }
+
+  // Export cruise plots as points
+  if (plotMarkers.length) {
+    const points = plotMarkers.map(p => ({
+      type: 'Point',
+      coordinates: [p.lng, p.lat],
+      id: p.id
+    }));
+    zip.file('cruise_plots.shp', buildPointShp(points));
+    zip.file('cruise_plots.shx', buildPointShx(points));
+    zip.file('cruise_plots.dbf', buildCruiseDbf(plotMarkers));
+    zip.file('cruise_plots.prj', prjContent);
+  }
+
+  zip.generateAsync({ type: 'blob' }).then(blob => {
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    const activeJob = allJobs.find(j => j.id === activeJobId);
+    const safeName = activeJob ? activeJob.name.replace(/[^a-zA-Z0-9_-]/g, '_') : 'cruisenav';
+    a.download = safeName + '_export.zip';
+    a.click();
+    toast('Shapefile exported!');
+  });
+}
+
+// ── Shapefile binary writers ──────────────────────────────────────────────
+
+function writeInt32BE(view, offset, val) { view.setInt32(offset, val, false); }
+function writeInt32LE(view, offset, val) { view.setInt32(offset, val, true); }
+function writeDouble(view, offset, val)  { view.setFloat64(offset, val, true); }
+
+function calcBbox(coords) {
+  let minX=Infinity, minY=Infinity, maxX=-Infinity, maxY=-Infinity;
+  coords.forEach(([x,y]) => { if(x<minX)minX=x; if(y<minY)minY=y; if(x>maxX)maxX=x; if(y>maxY)maxY=y; });
+  return [minX, minY, maxX, maxY];
+}
+
+function buildFileHeader(fileLength, shapeType, bbox) {
+  const buf = new ArrayBuffer(100);
+  const view = new DataView(buf);
+  writeInt32BE(view, 0, 9994);
+  writeInt32BE(view, 24, fileLength);
+  writeInt32LE(view, 28, 1000);
+  writeInt32LE(view, 32, shapeType);
+  writeDouble(view, 36, bbox[0]);
+  writeDouble(view, 44, bbox[1]);
+  writeDouble(view, 52, bbox[2]);
+  writeDouble(view, 60, bbox[3]);
+  return buf;
+}
+
+function buildPointShp(points) {
+  const recordSize = 8 + 4 + 16;
+  const fileLen = 100 + points.length * recordSize;
+  const allCoords = points.map(p => p.coordinates);
+  const bbox = calcBbox(allCoords);
+  const buf = new ArrayBuffer(fileLen);
+  const view = new DataView(buf);
+  const hdr = new DataView(buildFileHeader(fileLen / 2, 1, bbox));
+  for (let i = 0; i < 100; i++) view.setUint8(i, hdr.getUint8(i));
+  let offset = 100;
+  points.forEach((pt, i) => {
+    writeInt32BE(view, offset, i + 1);
+    writeInt32BE(view, offset + 4, (4 + 16) / 2);
+    writeInt32LE(view, offset + 8, 1);
+    writeDouble(view, offset + 12, pt.coordinates[0]);
+    writeDouble(view, offset + 20, pt.coordinates[1]);
+    offset += recordSize;
+  });
+  return buf;
+}
+
+function buildPointShx(points) {
+  const fileLen = 100 + points.length * 8;
+  const allCoords = points.map(p => p.coordinates);
+  const bbox = calcBbox(allCoords);
+  const buf = new ArrayBuffer(fileLen);
+  const view = new DataView(buf);
+  const hdr = new DataView(buildFileHeader(fileLen / 2, 1, bbox));
+  for (let i = 0; i < 100; i++) view.setUint8(i, hdr.getUint8(i));
+  let offset = 100;
+  const recordSize = 8 + 4 + 16;
+  points.forEach((_, i) => {
+    writeInt32BE(view, offset, (100 + i * recordSize) / 2);
+    writeInt32BE(view, offset + 4, (4 + 16) / 2);
+    offset += 8;
+  });
+  return buf;
+}
+
+function buildPolygonShp(polygons) {
+  const parts = polygons.map(poly => {
+    const pts = poly.coordinates[0];
+    const contentLen = 4 + 32 + 4 + 4 + 4 * 1 + pts.length * 16;
+    return { pts, contentLen };
+  });
+  const fileLen = 100 + parts.reduce((s, p) => s + 8 + p.contentLen, 0);
+  const allPts = polygons.flatMap(p => p.coordinates[0]);
+  const bbox = calcBbox(allPts);
+  const buf = new ArrayBuffer(fileLen);
+  const view = new DataView(buf);
+  const hdr = new DataView(buildFileHeader(fileLen / 2, 5, bbox));
+  for (let i = 0; i < 100; i++) view.setUint8(i, hdr.getUint8(i));
+  let offset = 100;
+  parts.forEach((p, i) => {
+    const lb = calcBbox(p.pts);
+    writeInt32BE(view, offset, i + 1);
+    writeInt32BE(view, offset + 4, p.contentLen / 2);
+    offset += 8;
+    writeInt32LE(view, offset, 5);
+    writeDouble(view, offset + 4, lb[0]);
+    writeDouble(view, offset + 12, lb[1]);
+    writeDouble(view, offset + 20, lb[2]);
+    writeDouble(view, offset + 28, lb[3]);
+    writeInt32LE(view, offset + 36, 1);
+    writeInt32LE(view, offset + 40, p.pts.length);
+    writeInt32LE(view, offset + 44, 0);
+    offset += 48;
+    p.pts.forEach(([x, y]) => {
+      writeDouble(view, offset, x);
+      writeDouble(view, offset + 8, y);
+      offset += 16;
+    });
+  });
+  return buf;
+}
+
+function buildPolygonShx(polygons) {
+  const fileLen = 100 + polygons.length * 8;
+  const allPts = polygons.flatMap(p => p.coordinates[0]);
+  const bbox = calcBbox(allPts);
+  const buf = new ArrayBuffer(fileLen);
+  const view = new DataView(buf);
+  const hdr = new DataView(buildFileHeader(fileLen / 2, 5, bbox));
+  for (let i = 0; i < 100; i++) view.setUint8(i, hdr.getUint8(i));
+  let offset = 100;
+  let recordOffset = 100;
+  polygons.forEach(poly => {
+    const contentLen = 4 + 32 + 4 + 4 + 4 + poly.coordinates[0].length * 16;
+    writeInt32BE(view, offset, recordOffset / 2);
+    writeInt32BE(view, offset + 4, contentLen / 2);
+    recordOffset += 8 + contentLen;
+    offset += 8;
+  });
+  return buf;
+}
+
+function buildCruiseDbf(points) {
+  // Two fields: PLOT_ID (N10) and STATUS (C10)
+  const numFields = 2;
+  const headerSize = 32 + numFields * 32 + 1;
+  const recordSize = 1 + 10 + 10;
+  const totalSize = headerSize + points.length * recordSize;
+  const buf = new ArrayBuffer(totalSize);
+  const view = new DataView(buf);
+  const bytes = new Uint8Array(buf);
+  const enc = new TextEncoder();
+
+  bytes[0] = 3;
+  const now = new Date();
+  bytes[1] = now.getFullYear() - 1900;
+  bytes[2] = now.getMonth() + 1;
+  bytes[3] = now.getDate();
+  view.setInt32(4, points.length, true);
+  view.setInt16(8, headerSize, true);
+  view.setInt16(10, recordSize, true);
+
+  // Field 1: PLOT_ID
+  const f1 = enc.encode('PLOT_ID   ');
+  for (let i = 0; i < 10; i++) bytes[32 + i] = f1[i];
+  bytes[32 + 11] = 78; // 'N'
+  bytes[32 + 16] = 10;
+  bytes[32 + 17] = 0;
+
+  // Field 2: STATUS
+  const f2 = enc.encode('STATUS    ');
+  for (let i = 0; i < 10; i++) bytes[64 + i] = f2[i];
+  bytes[64 + 11] = 67; // 'C'
+  bytes[64 + 16] = 10;
+  bytes[64 + 17] = 0;
+
+  bytes[headerSize - 1] = 0x0D; // terminator
+
+  let offset = headerSize;
+  points.forEach(p => {
+    bytes[offset] = 0x20;
+    const idStr = String(p.id).padStart(10, ' ');
+    const idB = enc.encode(idStr);
+    for (let j = 0; j < 10; j++) bytes[offset + 1 + j] = idB[j];
+    const statusStr = (p.completed ? 'COMPLETE' : 'PENDING').padEnd(10, ' ');
+    const stB = enc.encode(statusStr);
+    for (let j = 0; j < 10; j++) bytes[offset + 11 + j] = stB[j];
+    offset += recordSize;
+  });
+  return buf;
+}
+
+function buildDbf(count) {
+  const headerSize = 32 + 32 + 1;
+  const recordSize = 1 + 10;
+  const totalSize = headerSize + count * recordSize;
+  const buf = new ArrayBuffer(totalSize);
+  const view = new DataView(buf);
+  const bytes = new Uint8Array(buf);
+  bytes[0] = 3;
+  const now = new Date();
+  bytes[1] = now.getFullYear() - 1900;
+  bytes[2] = now.getMonth() + 1;
+  bytes[3] = now.getDate();
+  view.setInt32(4, count, true);
+  view.setInt16(8, headerSize, true);
+  view.setInt16(10, recordSize, true);
+  const enc = new TextEncoder();
+  const fName = enc.encode('FID       ');
+  for (let i = 0; i < 10; i++) bytes[32 + i] = fName[i];
+  bytes[32 + 11] = 78;
+  bytes[32 + 16] = 10;
+  bytes[32 + 17] = 0;
+  bytes[32 + 32] = 0x0D;
+  let offset = headerSize;
+  for (let i = 0; i < count; i++) {
+    bytes[offset] = 0x20;
+    const fidStr = String(i + 1).padStart(10, ' ');
+    const fidBytes = enc.encode(fidStr);
+    for (let j = 0; j < 10; j++) bytes[offset + 1 + j] = fidBytes[j];
+    offset += recordSize;
+  }
+  return buf;
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// GeoPDF EXPORT
+// ══════════════════════════════════════════════════════════════════════════════
+
+let geoPDFMode = false;
+let geoPDFRect = null;
+let geoPDFBounds = null;
+let geoPDFDrawHandler = null;
+
+function startGeoPDFExport() {
+  if (allPolygons.length === 0 && plotMarkers.length === 0) {
+    toast('Nothing on map to export');
+    return;
+  }
+  geoPDFMode = true;
+  document.getElementById('geopdf-preview-bar').classList.add('open');
+  document.getElementById('geopdf-confirm-btn').style.opacity = '0.4';
+  document.getElementById('geopdf-confirm-btn').style.pointerEvents = 'none';
+  document.getElementById('geopdf-label').textContent = 'Draw a rectangle on the map to define GeoPDF area';
+  toast('Draw a rectangle on the map');
+
+  geoPDFDrawHandler = new L.Draw.Rectangle(map, {
+    shapeOptions: { color: '#3498db', weight: 2, fillOpacity: 0.1, fillColor: '#3498db', dashArray: '6,6' }
+  });
+  geoPDFDrawHandler.enable();
+
+  map.once(L.Draw.Event.CREATED, onGeoPDFRectCreated);
+}
+
+function onGeoPDFRectCreated(e) {
+  if (geoPDFRect) map.removeLayer(geoPDFRect);
+  geoPDFRect = e.layer;
+  geoPDFRect.setStyle({ color: '#3498db', weight: 2, fillOpacity: 0.08, dashArray: '6,6' });
+  geoPDFRect.addTo(map);
+  geoPDFBounds = geoPDFRect.getBounds();
+  document.getElementById('geopdf-confirm-btn').style.opacity = '1';
+  document.getElementById('geopdf-confirm-btn').style.pointerEvents = 'auto';
+  document.getElementById('geopdf-label').textContent = 'Box drawn. Adjust zoom, then export or tap map to re-draw.';
+  map.on('click', geoPDFRedrawHandler);
+}
+
+function geoPDFRedrawHandler() {
+  if (!geoPDFMode) return;
+  if (geoPDFRect) map.removeLayer(geoPDFRect);
+  geoPDFRect = null;
+  geoPDFBounds = null;
+  document.getElementById('geopdf-confirm-btn').style.opacity = '0.4';
+  document.getElementById('geopdf-confirm-btn').style.pointerEvents = 'none';
+  document.getElementById('geopdf-label').textContent = 'Draw a rectangle on the map to define GeoPDF area';
+  map.off('click', geoPDFRedrawHandler);
+  geoPDFDrawHandler = new L.Draw.Rectangle(map, {
+    shapeOptions: { color: '#3498db', weight: 2, fillOpacity: 0.1, fillColor: '#3498db', dashArray: '6,6' }
+  });
+  geoPDFDrawHandler.enable();
+  map.once(L.Draw.Event.CREATED, onGeoPDFRectCreated);
+}
+
+function cancelGeoPDFMode() {
+  geoPDFMode = false;
+  if (geoPDFDrawHandler) { geoPDFDrawHandler.disable(); geoPDFDrawHandler = null; }
+  if (geoPDFRect) { map.removeLayer(geoPDFRect); geoPDFRect = null; }
+  geoPDFBounds = null;
+  map.off('click', geoPDFRedrawHandler);
+  document.getElementById('geopdf-preview-bar').classList.remove('open');
+}
+
+async function confirmGeoPDFExport() {
+  if (!geoPDFBounds) { toast('Draw a box first'); return; }
+  const label = document.getElementById('geopdf-label');
+  label.textContent = 'Capturing map...';
+
+  if (geoPDFRect) geoPDFRect.setStyle({ opacity: 0, fillOpacity: 0 });
+
+  try {
+    const mapEl = document.getElementById('map');
+    const mapW = mapEl.offsetWidth;
+    const mapH = mapEl.offsetHeight;
+
+    const sw = geoPDFBounds.getSouthWest();
+    const ne = geoPDFBounds.getNorthEast();
+    const swPx = map.latLngToContainerPoint(sw);
+    const nePx = map.latLngToContainerPoint(ne);
+    const cropX = Math.min(swPx.x, nePx.x);
+    const cropY = Math.min(swPx.y, nePx.y);
+    const cropW = Math.abs(nePx.x - swPx.x);
+    const cropH = Math.abs(nePx.y - swPx.y);
+
+    if (cropW < 20 || cropH < 20) throw new Error('Box is too small');
+    if (cropX < 0 || cropY < 0 || cropX + cropW > mapW || cropY + cropH > mapH) {
+      throw new Error('Zoom out so the entire box is visible');
+    }
+
+    const west = sw.lng, east = ne.lng, south = sw.lat, north = ne.lat;
+
+    // Build canvas by fetching visible tiles
+    const scale = 2;
+    const canvas = document.createElement('canvas');
+    canvas.width = Math.round(cropW * scale);
+    canvas.height = Math.round(cropH * scale);
+    const ctx = canvas.getContext('2d');
+    ctx.scale(scale, scale);
+
+    const tilePane = mapEl.querySelector('.leaflet-tile-pane');
+    const tileImgs = tilePane ? Array.from(tilePane.querySelectorAll('img.leaflet-tile')) : [];
+    label.textContent = 'Loading ' + tileImgs.length + ' tiles...';
+
+    const tilePromises = tileImgs.map(tile => {
+      return new Promise(resolve => {
+        if (!tile.src || !tile.complete || tile.naturalWidth === 0) { resolve(null); return; }
+        let tileX = 0, tileY = 0;
+        const tileW = tile.offsetWidth || 256;
+        const tileH = tile.offsetHeight || 256;
+        let el = tile;
+        while (el && el !== mapEl) {
+          const style = window.getComputedStyle(el);
+          const t = style.transform;
+          if (t && t !== 'none') {
+            const m = t.match(/matrix\(([^)]+)\)/);
+            if (m) {
+              const v = m[1].split(',').map(s => parseFloat(s.trim()));
+              tileX += v[4] || 0;
+              tileY += v[5] || 0;
+            }
+          }
+          if (el.style.left) tileX += parseInt(el.style.left) || 0;
+          if (el.style.top) tileY += parseInt(el.style.top) || 0;
+          el = el.parentElement;
+        }
+        const drawX = tileX - cropX;
+        const drawY = tileY - cropY;
+        if (drawX + tileW <= 0 || drawY + tileH <= 0 || drawX >= cropW || drawY >= cropH) { resolve(null); return; }
+        const img = new Image();
+        img.crossOrigin = 'anonymous';
+        img.onload = () => resolve({ img, x: drawX, y: drawY, w: tileW, h: tileH });
+        img.onerror = () => resolve({ img: tile, x: drawX, y: drawY, w: tileW, h: tileH, fallback: true });
+        img.src = tile.src;
+      });
+    });
+
+    const tiles = (await Promise.all(tilePromises)).filter(Boolean);
+    label.textContent = 'Drawing ' + tiles.length + ' tiles + vectors...';
+
+    let tainted = false;
+    for (const t of tiles) {
+      try { ctx.drawImage(t.img, t.x, t.y, t.w, t.h); }
+      catch(e) { if (t.fallback) continue; tainted = true; }
+    }
+
+    // Draw vector layers onto canvas
+    function llToPx(lat, lng) {
+      const pt = map.latLngToContainerPoint(L.latLng(lat, lng));
+      return [pt.x - cropX, pt.y - cropY];
+    }
+
+    function drawPoly(ring, style) {
+      if (!ring || ring.length < 3) return;
+      ctx.beginPath();
+      const [x0,y0] = llToPx(ring[0][1], ring[0][0]);
+      ctx.moveTo(x0, y0);
+      for (let i=1; i<ring.length; i++) { const [x,y]=llToPx(ring[i][1],ring[i][0]); ctx.lineTo(x,y); }
+      ctx.closePath();
+      ctx.strokeStyle = style.color || '#e53935';
+      ctx.lineWidth = (style.weight || 4) + 0.5;
+      ctx.stroke();
+    }
+
+    // Draw boundaries
+    allPolygons.forEach(p => {
+      const lls = p.layer.getLatLngs()[0];
+      const ring = lls.map(ll => [ll.lng, ll.lat]);
+      ring.push(ring[0]);
+      drawPoly(ring, { color: '#e53935', weight: 4 });
+    });
+
+    // Draw cruise plots
+    if (plotMarkers.length) {
+      plotMarkers.forEach(p => {
+        const [x, y] = llToPx(p.lat, p.lng);
+        const r = 5;
+        ctx.beginPath();
+        ctx.arc(x, y, r, 0, Math.PI * 2);
+        ctx.fillStyle = p.completed ? '#6abf4b' : '#f39c12';
+        ctx.fill();
+        ctx.strokeStyle = '#fff';
+        ctx.lineWidth = 2;
+        ctx.stroke();
+      });
+      // Labels
+      ctx.font = 'bold 9px "JetBrains Mono", monospace';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'bottom';
+      plotMarkers.forEach(p => {
+        const [x, y] = llToPx(p.lat, p.lng);
+        ctx.strokeStyle = 'rgba(0,0,0,0.7)';
+        ctx.lineWidth = 3;
+        ctx.strokeText(String(p.id), x, y - 7);
+        ctx.fillStyle = '#fff';
+        ctx.fillText(String(p.id), x, y - 7);
+      });
+    }
+
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+
+    // Get PNG data
+    let pngDataUrl;
+    try {
+      pngDataUrl = canvas.toDataURL('image/png');
+    } catch(e) {
+      // CORS tainted, fallback to html2canvas
+      label.textContent = 'Fallback capture...';
+      const svgPane = document.querySelector('.leaflet-overlay-pane');
+      const markerPane = document.querySelector('.leaflet-marker-pane');
+      if (svgPane) svgPane.style.display = 'none';
+      if (markerPane) markerPane.style.display = 'none';
+
+      const fallbackCanvas = await html2canvas(mapEl, { useCORS: true, allowTaint: true, scale: scale, logging: false });
+
+      if (svgPane) svgPane.style.display = '';
+      if (markerPane) markerPane.style.display = '';
+
+      const fc = document.createElement('canvas');
+      fc.width = Math.round(cropW * scale);
+      fc.height = Math.round(cropH * scale);
+      const fctx = fc.getContext('2d');
+      fctx.drawImage(fallbackCanvas, Math.round(cropX * scale), Math.round(cropY * scale), fc.width, fc.height, 0, 0, fc.width, fc.height);
+
+      // Redraw vectors on fallback canvas
+      fctx.scale(scale, scale);
+      allPolygons.forEach(p => {
+        const lls = p.layer.getLatLngs()[0];
+        const ring = lls.map(ll => [ll.lng, ll.lat]); ring.push(ring[0]);
+        drawPoly(ring, { color: '#e53935', weight: 4 });
+      });
+      if (plotMarkers.length) {
+        plotMarkers.forEach(p => {
+          const [x, y] = llToPx(p.lat, p.lng);
+          fctx.beginPath(); fctx.arc(x, y, 5, 0, Math.PI * 2);
+          fctx.fillStyle = p.completed ? '#6abf4b' : '#f39c12'; fctx.fill();
+          fctx.strokeStyle = '#fff'; fctx.lineWidth = 2; fctx.stroke();
+        });
+        fctx.font = 'bold 9px "JetBrains Mono", monospace';
+        fctx.textAlign = 'center'; fctx.textBaseline = 'bottom';
+        plotMarkers.forEach(p => {
+          const [x, y] = llToPx(p.lat, p.lng);
+          fctx.strokeStyle = 'rgba(0,0,0,0.7)'; fctx.lineWidth = 3; fctx.strokeText(String(p.id), x, y - 7);
+          fctx.fillStyle = '#fff'; fctx.fillText(String(p.id), x, y - 7);
+        });
+      }
+      try { pngDataUrl = fc.toDataURL('image/png'); }
+      catch(e2) { throw new Error('Export failed (CORS). Switch to OSM basemap and retry.'); }
+    }
+
+    const pngBytes = Uint8Array.from(atob(pngDataUrl.split(',')[1]), c => c.charCodeAt(0));
+
+    // Build PDF with georeferencing
+    const { PDFDocument, PDFName, PDFString, PDFNumber } = PDFLib;
+    const pdfDoc = await PDFDocument.create();
+    const pageW = 612, pageH = 792, titleBarH = 20, margin = 18;
+    const printW = pageW - margin * 2, printH = pageH - titleBarH - margin * 2;
+    const boxAspect = cropW / cropH;
+    let imgW, imgH;
+    if (printW / printH > boxAspect) { imgH = printH; imgW = imgH * boxAspect; }
+    else { imgW = printW; imgH = imgW / boxAspect; }
+    const imgX = margin + (printW - imgW) / 2, imgY = titleBarH + margin + (printH - imgH) / 2;
+
+    const page = pdfDoc.addPage([pageW, pageH]);
+    page.drawRectangle({ x: 0, y: 0, width: pageW, height: pageH, color: PDFLib.rgb(0.05, 0.1, 0.05) });
+    const pngImage = await pdfDoc.embedPng(pngBytes);
+    page.drawImage(pngImage, { x: imgX, y: imgY, width: imgW, height: imgH });
+    page.drawRectangle({ x: imgX, y: imgY, width: imgW, height: imgH, borderColor: PDFLib.rgb(0.416, 0.749, 0.294), borderWidth: 0.5, color: PDFLib.rgb(0, 0, 0), opacity: 0 });
+
+    // LGIDict for georeferencing (Avenza Maps compatible)
+    const gsx = (east - west) / imgW, gsy = (north - south) / imgH;
+    const pdfCtx = pdfDoc.context;
+    const projDict = pdfCtx.obj({ Type: PDFName.of('Projection'), ProjectionType: PDFString.of('Geographic'), Datum: PDFString.of('WGS 1984') });
+    const ctm = pdfCtx.obj([PDFNumber.of(gsx), PDFNumber.of(0), PDFNumber.of(0), PDFNumber.of(gsy), PDFNumber.of(west - gsx * imgX), PDFNumber.of(south - gsy * imgY)]);
+    const neat = pdfCtx.obj([PDFNumber.of(imgX), PDFNumber.of(imgY), PDFNumber.of(imgX + imgW), PDFNumber.of(imgY), PDFNumber.of(imgX + imgW), PDFNumber.of(imgY + imgH), PDFNumber.of(imgX), PDFNumber.of(imgY + imgH)]);
+    const rp = (a, b, c, d) => pdfCtx.obj([PDFNumber.of(a), PDFNumber.of(b), PDFNumber.of(c), PDFNumber.of(d)]);
+    const reg = pdfCtx.obj([rp(imgX, imgY, west, south), rp(imgX + imgW, imgY, east, south), rp(imgX + imgW, imgY + imgH, east, north), rp(imgX, imgY + imgH, west, north)]);
+    const lgi = pdfCtx.obj({ Type: PDFName.of('LGIDict'), Version: PDFString.of('2.1'), CTM: ctm, Projection: projDict, Neatline: neat, Registration: reg });
+    page.node.set(PDFName.of('LGIDict'), pdfCtx.obj([lgi]));
+
+    // Title bar
+    page.drawRectangle({ x: 0, y: 0, width: pageW, height: titleBarH, color: PDFLib.rgb(0.05, 0.12, 0.05) });
+    const hb = await pdfDoc.embedFont(PDFLib.StandardFonts.HelveticaBold);
+    const h = await pdfDoc.embedFont(PDFLib.StandardFonts.Helvetica);
+    page.drawText('CruiseNav GeoPDF', { x: 8, y: 6, size: 7, font: hb, color: PDFLib.rgb(0.416, 0.749, 0.294) });
+    page.drawText('WGS 84 | ' + south.toFixed(5) + ', ' + west.toFixed(5) + ' to ' + north.toFixed(5) + ', ' + east.toFixed(5), { x: 150, y: 6, size: 6, font: h, color: PDFLib.rgb(0.6, 0.75, 0.6) });
+
+    const activeJob = allJobs.find(j => j.id === activeJobId);
+    if (activeJob) {
+      page.drawText(activeJob.name, { x: pageW - 150, y: 6, size: 6, font: h, color: PDFLib.rgb(0.6, 0.75, 0.6) });
+    }
+
+    const pdfBytes = await pdfDoc.save();
+    const blob = new Blob([pdfBytes], { type: 'application/pdf' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    const safeName = activeJob ? activeJob.name.replace(/[^a-zA-Z0-9_-]/g, '_') : 'cruisenav';
+    a.download = safeName + '_geopdf.pdf';
+    a.click();
+
+    cancelGeoPDFMode();
+    toast('GeoPDF exported! Open in Avenza Maps.');
+  } catch (err) {
+    console.error('GeoPDF export failed:', err);
+    toast('Export failed: ' + err.message);
+    if (geoPDFRect) geoPDFRect.setStyle({ opacity: 1, fillOpacity: 0.08 });
+  }
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// DESKTOP vs MOBILE DRAW MODE
+// ══════════════════════════════════════════════════════════════════════════════
+// On desktop (no touch), use native Leaflet.draw click-to-place polygon drawing.
+// On mobile (touch), use the crosshair/drop-point approach.
+
+const isTouchDevice = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
+
 // ── Toast notification ──
 function toast(msg) {
   const el = document.getElementById('toast');
@@ -2111,10 +3153,27 @@ function startDrawBoundary() {
     ensureActiveJob().then(ok => { if (ok) startDrawBoundary(); });
     return;
   }
+
+  // Desktop: use native Leaflet.draw polygon handler (click to place vertices)
+  if (!isTouchDevice) {
+    isDrawing = true;
+    document.getElementById('nav-btn-boundary').classList.add('active');
+    document.getElementById('draw-hint').textContent = 'Click to place vertices. Double-click or click first point to finish.';
+    document.getElementById('draw-hint').classList.add('show');
+
+    currentDrawer = new L.Draw.Polygon(map, {
+      shapeOptions: { color: '#e53935', fillOpacity: 0, opacity: 1, fill: false, weight: 4 }
+    });
+    currentDrawer.enable();
+    return;
+  }
+
+  // Mobile: crosshair/drop-point mode
   isDrawing = true;
   drawPoints = [];
   drawVertexMarkers = [];
   document.getElementById('nav-btn-boundary').classList.add('active');
+  document.getElementById('draw-hint').textContent = 'Pan map to position crosshair, then tap Drop Point.';
   document.getElementById('draw-hint').classList.add('show');
   document.getElementById('crosshair').classList.add('active');
   document.getElementById('draw-controls').classList.add('active');
@@ -2334,16 +3393,31 @@ function startLocating() {
 
   // Heading from device orientation
   if (window.DeviceOrientationEvent) {
-    window.addEventListener('deviceorientationabsolute', onHeading, true);
-    window.addEventListener('deviceorientation', onHeading, true);
+    // iOS 13+ requires explicit permission for compass
+    if (typeof DeviceOrientationEvent.requestPermission === 'function') {
+      DeviceOrientationEvent.requestPermission().then(state => {
+        if (state === 'granted') {
+          window.addEventListener('deviceorientationabsolute', onHeading, true);
+          window.addEventListener('deviceorientation', onHeading, true);
+        }
+      }).catch(() => {});
+    } else {
+      window.addEventListener('deviceorientationabsolute', onHeading, true);
+      window.addEventListener('deviceorientation', onHeading, true);
+    }
   }
 }
 
 function onHeading(e) {
+  let newHeading = null;
   if (e.absolute && e.alpha != null) {
-    deviceHeading = 360 - e.alpha;
+    newHeading = 360 - e.alpha;
   } else if (e.webkitCompassHeading != null) {
-    deviceHeading = e.webkitCompassHeading;
+    newHeading = e.webkitCompassHeading;
+  }
+  if (newHeading != null) {
+    deviceHeading = newHeading;
+    updateLocationHeading();
   }
 }
 
@@ -2364,10 +3438,31 @@ function stopLocating() {
 function updateLocationMarker() {
   if (!myLocation) return;
   if (!myLocationMarker) {
-    const icon = L.divIcon({ className: 'my-location-marker', iconSize: [16, 16], iconAnchor: [8, 8] });
+    const icon = L.divIcon({
+      className: 'my-location-marker',
+      iconSize: [36, 36],
+      iconAnchor: [18, 18],
+      html: '<div class="my-location-pulse"></div>' +
+            '<svg class="my-location-cone no-heading" id="loc-cone" viewBox="0 0 36 36">' +
+              '<path d="M18 2 L26 16 Q18 12 10 16 Z" fill="rgba(52,152,219,0.35)" stroke="none"/>' +
+            '</svg>' +
+            '<div class="my-location-dot"></div>'
+    });
     myLocationMarker = L.marker([myLocation.lat, myLocation.lng], { icon, zIndexOffset: 1000 }).addTo(map);
+    updateLocationHeading();
   } else {
     myLocationMarker.setLatLng([myLocation.lat, myLocation.lng]);
+  }
+}
+
+function updateLocationHeading() {
+  const cone = document.getElementById('loc-cone');
+  if (!cone) return;
+  if (deviceHeading != null) {
+    cone.classList.remove('no-heading');
+    cone.style.transform = 'rotate(' + deviceHeading + 'deg)';
+  } else {
+    cone.classList.add('no-heading');
   }
 }
 
@@ -2688,7 +3783,7 @@ function updatePlotDistances() {
 function refreshPlotList() {
   const container = document.getElementById('plot-list-container');
   if (plotMarkers.length === 0) {
-    container.innerHTML = '<div style="text-align:center;padding:20px;color:var(--text-muted);font-size:0.65rem;">No plots yet. Generate a grid or place plots manually.</div>';
+    container.innerHTML = '<div style="text-align:center;padding:20px;color:var(--text-muted);font-size:0.75rem;">No plots yet. Generate a grid or place plots manually.</div>';
     return;
   }
 
@@ -3443,7 +4538,7 @@ async function deleteJob(jobId) {
 function refreshJobsList() {
   const container = document.getElementById('jobs-list');
   if (allJobs.length === 0) {
-    container.innerHTML = '<div style="text-align:center;padding:20px;color:var(--text-muted);font-size:0.6rem;">No jobs yet. Create one to get started.</div>';
+    container.innerHTML = '<div style="text-align:center;padding:20px;color:var(--text-muted);font-size:0.72rem;">No jobs yet. Create one to get started.</div>';
     return;
   }
 
@@ -3589,8 +4684,7 @@ document.addEventListener('visibilitychange', () => {
 })();
 
 </script>
-</body>
-</html><!-- NC Parcels info panel -->
+<!-- NC Parcels info panel -->
 <div class="parcel-panel" id="parcel-panel">
   <div class="parcel-panel-header">
     <h3>&#x1F4CB; Parcel Info</h3>
@@ -3599,4 +4693,5 @@ document.addEventListener('visibilitychange', () => {
   <div id="parcel-panel-body"><span class="parcel-loading">Click a parcel to identify...</span></div>
 </div>
 
-
+</body>
+</html>
