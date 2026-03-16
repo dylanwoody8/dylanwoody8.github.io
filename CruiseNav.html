@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -63,7 +63,7 @@
     height: 100dvh;
   }
 
-  /* ═══ TOP BAR ═══ */
+  /* â•â•â• TOP BAR â•â•â• */
   .topbar {
     display: flex;
     align-items: center;
@@ -126,14 +126,14 @@
   .icon-btn.active { background: var(--accent-dim); border-color: var(--accent); color: var(--accent-glow); }
   .icon-btn svg { width: 18px; height: 18px; }
 
-  /* ═══ MAP ═══ */
+  /* â•â•â• MAP â•â•â• */
   #map {
     flex: 1;
     width: 100%;
     z-index: 1;
   }
 
-  /* ── NC Parcels panel ────────────────────────────────────────────────── */
+  /* â”€â”€ NC Parcels panel â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
   .parcel-panel {
     position: absolute;
     bottom: calc(60px + var(--safe-bottom));
@@ -215,7 +215,7 @@
   .leaflet-draw-actions { display: none !important; }
   .leaflet-draw-actions.leaflet-draw-actions-top { display: flex !important; }
 
-  /* ═══ PLOT INFO POPUP ═══ */
+  /* â•â•â• PLOT INFO POPUP â•â•â• */
   .plot-popup {
     background: var(--bg-deep);
     border: 1px solid var(--border-bright);
@@ -288,7 +288,7 @@
   .leaflet-popup-tip { background: var(--bg-deep) !important; border: 1px solid var(--border-bright) !important; }
   .leaflet-popup-close-button { color: var(--text-muted) !important; font-size: 20px !important; top: 6px !important; right: 8px !important; }
 
-  /* ═══ BOTTOM NAV ═══ */
+  /* â•â•â• BOTTOM NAV â•â•â• */
   .bottom-nav {
     display: flex;
     background: var(--bg-deep);
@@ -328,7 +328,7 @@
   .nav-btn.nav-locate.active { color: #fff; background: rgba(52,152,219,0.15); border-top-color: var(--blue); }
   .nav-btn:active { transform: scale(0.95); }
 
-  /* ═══ PANELS (Slide-up) ═══ */
+  /* â•â•â• PANELS (Slide-up) â•â•â• */
   .panel-overlay {
     position: fixed;
     inset: 0;
@@ -376,7 +376,7 @@
     margin-bottom: 16px;
   }
 
-  /* ═══ FORM ELEMENTS ═══ */
+  /* â•â•â• FORM ELEMENTS â•â•â• */
   .field-group { margin-bottom: 14px; }
   .field-label {
     font-size: 0.65rem;
@@ -426,7 +426,7 @@
   .btn-nav { background: var(--blue); border-color: var(--blue); color: #fff; }
   .btn + .btn { margin-top: 8px; }
 
-  /* ═══ PLOT LIST ═══ */
+  /* â•â•â• PLOT LIST â•â•â• */
   .plot-list {
     display: flex;
     flex-direction: column;
@@ -492,7 +492,7 @@
     white-space: nowrap;
   }
 
-  /* ═══ NAVIGATION HUD ═══ */
+  /* â•â•â• NAVIGATION HUD â•â•â• */
   .nav-hud {
     position: absolute;
     top: 56px;
@@ -564,7 +564,7 @@
     font-size: 16px;
   }
 
-  /* ═══ PROGRESS BAR ═══ */
+  /* â•â•â• PROGRESS BAR â•â•â• */
   .progress-strip {
     position: absolute;
     top: 48px;
@@ -581,7 +581,7 @@
     width: 0%;
   }
 
-  /* ═══ TOAST ═══ */
+  /* â•â•â• TOAST â•â•â• */
   .toast {
     position: fixed;
     bottom: 90px;
@@ -604,7 +604,7 @@
   }
   .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 
-  /* ═══ TRACT INFO BAR ═══ */
+  /* â•â•â• TRACT INFO BAR â•â•â• */
   .tract-info-bar {
     position: absolute;
     bottom: calc(60px + var(--safe-bottom) + 10px);
@@ -624,7 +624,7 @@
   .tract-stat-val { font-weight: 800; font-size: 0.95rem; color: var(--accent); }
   .tract-stat-label { color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; font-size: 0.58rem; }
 
-  /* ═══ EMPTY STATE ═══ */
+  /* â•â•â• EMPTY STATE â•â•â• */
   .empty-hint {
     position: absolute;
     top: 50%;
@@ -643,7 +643,7 @@
     opacity: 0.5;
   }
 
-  /* ═══ REPORT PANEL ═══ */
+  /* â•â•â• REPORT PANEL â•â•â• */
   .report-card {
     background: var(--bg-deep);
     border: 1px solid var(--border);
@@ -696,7 +696,7 @@
   }
   .report-empty-icon { font-size: 2rem; margin-bottom: 8px; opacity: 0.4; }
 
-  /* ═══ TALLY MODAL ═══ */
+  /* â•â•â• TALLY MODAL â•â•â• */
   .tally-overlay {
     position: fixed;
     inset: 0;
@@ -919,7 +919,7 @@
   }
   .tally-del:active { opacity: 0.6; }
 
-  /* ═══ CRUISE SETUP IN JOB CREATION ═══ */
+  /* â•â•â• CRUISE SETUP IN JOB CREATION â•â•â• */
   .cruise-setup-row {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -1037,7 +1037,7 @@
   .nav-line { stroke-dasharray: 8 8; animation: dash-flow 1s linear infinite; }
   @keyframes dash-flow { to { stroke-dashoffset: -16; } }
 
-  /* ═══ TRACT DRAWING HINT ═══ */
+  /* â•â•â• TRACT DRAWING HINT â•â•â• */
   .draw-hint {
     position: absolute;
     top: 56px;
@@ -1234,7 +1234,7 @@
   }
   .unit-toggle:active { background: var(--bg-elevated); }
 
-  /* ═══ CROSSHAIR DRAW MODE ═══ */
+  /* â•â•â• CROSSHAIR DRAW MODE â•â•â• */
   #crosshair {
     position: absolute;
     top: 50%;
@@ -1367,7 +1367,7 @@
   .confirm-yes { background: var(--red); border-color: var(--red); color: #fff; }
   .confirm-no { background: transparent; border-color: var(--border-bright); color: var(--text-secondary); }
 
-  /* ═══ CLOUD CRUISE LIST ═══ */
+  /* â•â•â• CLOUD CRUISE LIST â•â•â• */
   .cloud-cruise-item {
     display: flex;
     align-items: center;
@@ -1444,7 +1444,7 @@
     border: 2px solid var(--bg-deep);
   }
 
-  /* ═══ JOBS LIST ═══ */
+  /* â•â•â• JOBS LIST â•â•â• */
   .job-item {
     display: flex;
     align-items: center;
@@ -1501,7 +1501,7 @@
     letter-spacing: 1px;
   }
 
-  /* ═══ LAYERS FLOATING WIDGET ═══ */
+  /* â•â•â• LAYERS FLOATING WIDGET â•â•â• */
   .layers-widget {
     position: absolute;
     top: 56px;
@@ -1547,7 +1547,7 @@
     margin: 6px 0;
   }
 
-  /* ═══ JOIN SHARED CRUISE WIDGET ═══ */
+  /* â•â•â• JOIN SHARED CRUISE WIDGET â•â•â• */
   .join-widget {
     position: absolute;
     top: 56px;
@@ -1611,7 +1611,7 @@
     text-align: center;
   }
 
-  /* ═══ CLOUD PANEL (Unified) ═══ */
+  /* â•â•â• CLOUD PANEL (Unified) â•â•â• */
   .cloud-auth-strip {
     display: flex;
     align-items: center;
@@ -1691,7 +1691,7 @@
     border-left: 1px solid var(--border);
   }
 
-  /* ═══ GeoPDF PREVIEW BAR ═══ */
+  /* â•â•â• GeoPDF PREVIEW BAR â•â•â• */
   .geopdf-preview-bar {
     position: absolute;
     bottom: 70px;
@@ -1787,7 +1787,7 @@
 
   <!-- Empty State Hint -->
   <div class="empty-hint" id="empty-hint">
-    <div class="empty-hint-icon">🌲</div>
+    <div class="empty-hint-icon">ðŸŒ²</div>
     <div class="empty-hint-text">Tap the Boundary tool to start</div>
   </div>
 
@@ -1808,14 +1808,14 @@
 
   <!-- Draw Controls -->
   <div id="draw-controls">
-    <div class="draw-point-count" id="draw-point-count">0 points — need 3 to finish</div>
+    <div class="draw-point-count" id="draw-point-count">0 points â€” need 3 to finish</div>
     <div class="draw-btn-row">
-      <button class="draw-btn draw-btn-undo" onclick="undoDrawPoint()">↩ Undo</button>
+      <button class="draw-btn draw-btn-undo" onclick="undoDrawPoint()">â†© Undo</button>
       <button class="draw-btn draw-btn-drop" onclick="dropDrawPoint()">+ Drop Point</button>
-      <button class="draw-btn draw-btn-finish" id="draw-finish-btn" onclick="finishDraw()" disabled>✓ Finish</button>
+      <button class="draw-btn draw-btn-finish" id="draw-finish-btn" onclick="finishDraw()" disabled>âœ“ Finish</button>
     </div>
     <div class="draw-btn-row">
-      <button class="draw-btn draw-btn-cancel" onclick="cancelDraw()">✕ Cancel</button>
+      <button class="draw-btn draw-btn-cancel" onclick="cancelDraw()">âœ• Cancel</button>
     </div>
   </div>
 
@@ -1829,7 +1829,7 @@
       <div class="nav-hud-label">to plot</div>
       <div class="nav-hud-plot" id="nav-plot-label">--</div>
     </div>
-    <button class="nav-hud-close" onclick="stopNavigation()" title="Stop navigation">✕</button>
+    <button class="nav-hud-close" onclick="stopNavigation()" title="Stop navigation">âœ•</button>
   </div>
 
   <!-- Layers Widget -->
@@ -1914,7 +1914,7 @@
   </div>
 </div>
 
-<!-- ═══ PANELS ═══ -->
+<!-- â•â•â• PANELS â•â•â• -->
 <div class="panel-overlay" id="panel-overlay" onclick="closePanel()"></div>
 
 <!-- Grid Generation Panel -->
@@ -2083,7 +2083,7 @@
     </button>
   </div>
   <div id="report-content" style="max-height:60vh;overflow-y:auto;">
-    <div class="report-empty"><div class="report-empty-icon">📊</div>Complete some plots to generate a report.</div>
+    <div class="report-empty"><div class="report-empty-icon">ðŸ“Š</div>Complete some plots to generate a report.</div>
   </div>
 </div>
 
@@ -2245,11 +2245,11 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 
 <script>
-// ══════════════════════════════════════════════════════════════════════════════
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 // CruiseNav - Timber Cruise Field App
-// ══════════════════════════════════════════════════════════════════════════════
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 
-// ── State ──
+// â”€â”€ State â”€â”€
 let tractBoundary = null;        // L.Polygon (first drawn/imported)
 let allPolygons = [];            // [{layer: L.Polygon, name: string}] - all available polygons
 let tractLayer = new L.FeatureGroup();
@@ -2264,19 +2264,38 @@ let isEditing = false;
 let navTargetId = null;          // plot id being navigated to
 let navLine = null;
 let currentDrawer = null;
+
+function escapeHtml(value) {
+  return String(value ?? '').replace(/[&<>\"']/g, ch => ({
+    '&': '&amp;',
+    '<': '&lt;',
+    '>': '&gt;',
+    '"': '&quot;',
+    "'": '&#39;'
+  })[ch]);
+}
+
+function escapeJsString(value) {
+  return String(value ?? '')
+    .replace(/\\/g, '\\\\')
+    .replace(/'/g, "\\'")
+    .replace(/\r/g, '\\r')
+    .replace(/\n/g, '\\n')
+    .replace(/<\//g, '<\\/');
+}
 let deviceHeading = null;
 let distUnit = 'ft';            // 'ft' or 'm'
 let wakeLock = null;
 let lastToggle = null;           // {id, previousState} for undo
 let _confirmCb = null;
 
-// ── Jobs System ──
+// â”€â”€ Jobs System â”€â”€
 let allJobs = [];                // [{id, name, plots, polygons, createdAt}]
 let activeJobId = null;          // current job id
 
-// ══════════════════════════════════════════════════════════════════════════════
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 // FIREBASE CONFIG - Replace with your Firebase project config
-// ══════════════════════════════════════════════════════════════════════════════
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 const firebaseConfig = {
   apiKey: "AIzaSyDnais6tuuBjS_HV48qpY-RFzijL9dlmLU",
   authDomain: "cruisenav.firebaseapp.com",
@@ -2354,11 +2373,11 @@ async function firebaseSignOut() {
   toast('Signed out');
 }
 
-// ══════════════════════════════════════════════════════════════════════════════
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 // TIMBER CRUISING VOLUME TABLES & TALLY SYSTEM
-// ══════════════════════════════════════════════════════════════════════════════
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 
-// ── Sawtimber Tree Scale Tables ──
+// â”€â”€ Sawtimber Tree Scale Tables â”€â”€
 // Source: Reference Handbook for Foresters (USDA Forest Service, NA-FR-15)
 // Columns: number of 16-ft logs. Scribner: 1,1.5,2,2.5,3,3.5,4
 // International & Doyle: 0.5,1,1.5,2,2.5,3,3.5,4
@@ -2399,7 +2418,7 @@ const DOYLE = {
 };
 const DOYLE_LOGS = [0.5,1,1.5,2,2.5,3,3.5,4];
 
-// ── Pulpwood Cord Table (standing trees) ──
+// â”€â”€ Pulpwood Cord Table (standing trees) â”€â”€
 // Source: Reference Handbook for Foresters, p.7
 // Columns: number of 8-ft sticks (1..7)
 const PULP_CORDS = {
@@ -2419,7 +2438,7 @@ const PULP_CORDS = {
 };
 const PULP_STICKS = [1,2,3,4,5,6,7];
 
-// ── Weight table: tons per standard cord by species ──
+// â”€â”€ Weight table: tons per standard cord by species â”€â”€
 // Source: Reference Handbook for Foresters, p.15
 const TONS_PER_CORD = {
   // Pines
@@ -2461,7 +2480,7 @@ function getTonsPerCord(sppCode) {
   return TONS_PER_CORD[sppCode] || TONS_PER_CORD['_default'];
 }
 
-// ── Convert total tree height (ft) to number of 8-ft sticks ──
+// â”€â”€ Convert total tree height (ft) to number of 8-ft sticks â”€â”€
 function heightToSticks(heightFt) {
   if (!heightFt || heightFt <= 0) return 1;
   const sticks = Math.floor(heightFt / 8);
@@ -2478,7 +2497,7 @@ const LOG_RULES = {
   doyle: { name: 'Doyle', table: DOYLE, steps: DOYLE_LOGS, unit: 'BF' }
 };
 
-// ── Full species list organized by group ──
+// â”€â”€ Full species list organized by group â”€â”€
 const DEFAULT_SPECIES = [
   // Pines
   {code:'LP',label:'Loblolly Pine',group:'Pine'},
@@ -2535,7 +2554,7 @@ const DEFAULT_SPECIES = [
   {code:'OTH',label:'Other',group:'Mix'}
 ];
 
-// ── Volume lookup: sawtimber (any rule) ──
+// â”€â”€ Volume lookup: sawtimber (any rule) â”€â”€
 function sawtimberVol(dbh, logs, rule) {
   rule = rule || 'scribner';
   const r = LOG_RULES[rule] || LOG_RULES.scribner;
@@ -2561,7 +2580,7 @@ function sawtimberVol(dbh, logs, rule) {
 // Backward compat wrapper
 function scribnerVol(dbh, logs) { return sawtimberVol(dbh, logs, 'scribner'); }
 
-// ── Pulpwood: cords from DBH + total height (ft), converted to sticks internally ──
+// â”€â”€ Pulpwood: cords from DBH + total height (ft), converted to sticks internally â”€â”€
 function pulpwoodCords(dbh, heightFt) {
   const d = Math.round(dbh);
   const sticks = heightToSticks(heightFt);
@@ -2585,19 +2604,19 @@ function pulpwoodTons(dbh, heightFt, spp) {
 
 function calcTPA(baf, dbh) { return baf / (0.005454 * dbh * dbh); }
 
-// ── Get available log steps for the current rule ──
+// â”€â”€ Get available log steps for the current rule â”€â”€
 function getLogSteps(rule) {
   const r = LOG_RULES[rule || 'scribner'] || LOG_RULES.scribner;
   return r.steps;
 }
 
-// ── Get active log rule for current job ──
+// â”€â”€ Get active log rule for current job â”€â”€
 function getJobLogRule() {
   const job = allJobs.find(j => j.id === activeJobId);
   return (job && job.logRule) || 'scribner';
 }
 
-// ── Tally State ──
+// â”€â”€ Tally State â”€â”€
 let tallyPlotId = null;         // currently open plot ID
 let tallyTrees = [];            // trees being edited in modal
 let tallyLastTree = null;       // last added tree for repeat
@@ -2606,7 +2625,7 @@ let tallySelDBH = 14;
 let tallySelLogs = 2;
 let tallySelHeight = 50;
 
-// ── Get cruise config for active job ──
+// â”€â”€ Get cruise config for active job â”€â”€
 function getJobCruiseConfig() {
   const job = allJobs.find(j => j.id === activeJobId);
   return {
@@ -2615,7 +2634,7 @@ function getJobCruiseConfig() {
   };
 }
 
-// ── Open tally modal for a plot ──
+// â”€â”€ Open tally modal for a plot â”€â”€
 function openTallyModal(plot) {
   tallyPlotId = plot.id;
   const trees = plot.trees || [];
@@ -2863,7 +2882,7 @@ function tallyClearTrees() {
   tallyUpdateStats();
 }
 
-// ── Generate share code ──
+// â”€â”€ Generate share code â”€â”€
 function generateShareCode() {
   const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
   let code = '';
@@ -2871,7 +2890,7 @@ function generateShareCode() {
   return code;
 }
 
-// ── Save cruise to Firestore ──
+// â”€â”€ Save cruise to Firestore â”€â”€
 async function saveCruiseToCloud() {
   if (!fb_user) { toast('Sign in first'); return; }
   if (allPolygons.length === 0 && plotMarkers.length === 0) { toast('Nothing to save'); return; }
@@ -2901,6 +2920,10 @@ async function saveCruiseToCloud() {
       })),
       // All plot locations stored on main doc (shared by all)
       plotsJson: JSON.stringify(plotMarkers.map(p => ({ id: p.id, lat: p.lat, lng: p.lng }))),
+      // Summary counts for list display
+      plotCount: plotMarkers.length,
+      polyCount: allPolygons.length,
+      completedCount: plotMarkers.filter(p => p.completed).length,
       distUnit: distUnit,
       basemap: currentBasemap
     };
@@ -2924,7 +2947,7 @@ async function saveCruiseToCloud() {
   }
 }
 
-// ── Save this user's plot data to sub-collection ──
+// â”€â”€ Save this user's plot data to sub-collection â”€â”€
 async function saveUserPlotData(cruiseId) {
   if (!fb_user || !cruiseId) return;
   const myPlots = plotMarkers
@@ -2949,15 +2972,15 @@ async function saveUserPlotData(cruiseId) {
   }
 }
 
-// ── Sync state tracking ──
+// â”€â”€ Sync state tracking â”€â”€
 let _syncPending = false;
 let _lastSyncedPlotHash = '';
 
 function getPlotHash() {
-  // Simple hash of completed plot data to detect changes
+  // Hash of all completed plot data to detect changes (including no-tally plots)
   const data = plotMarkers
-    .filter(p => p.completed && p.trees && p.trees.length > 0)
-    .map(p => p.id + ':' + p.trees.length)
+    .filter(p => p.completed)
+    .map(p => p.id + ':' + (p.trees ? p.trees.length : 0) + ':' + (p.noTally ? '1' : '0'))
     .join(',');
   return data;
 }
@@ -3033,7 +3056,7 @@ async function manualCloudSync() {
   }
 }
 
-// ── Auto-retry sync when coming back online ──
+// â”€â”€ Auto-retry sync when coming back online â”€â”€
 window.addEventListener('online', function() {
   if (_syncPending && window._activeCloudCruiseId && fb_user) {
     toast('Back online. Syncing...');
@@ -3041,7 +3064,7 @@ window.addEventListener('online', function() {
   }
 });
 
-// ── Update existing cruise in Firestore ──
+// â”€â”€ Update existing cruise in Firestore â”€â”€
 async function updateCruiseInCloud(cruiseId) {
   if (!fb_user) return;
   try {
@@ -3053,6 +3076,9 @@ async function updateCruiseInCloud(cruiseId) {
         return { name: p.name, coords: lls.map(ll => [ll.lat, ll.lng]) };
       })),
       plotsJson: JSON.stringify(plotMarkers.map(p => ({ id: p.id, lat: p.lat, lng: p.lng }))),
+      plotCount: plotMarkers.length,
+      polyCount: allPolygons.length,
+      completedCount: plotMarkers.filter(p => p.completed).length,
       distUnit: distUnit,
       basemap: currentBasemap
     });
@@ -3065,7 +3091,7 @@ async function updateCruiseInCloud(cruiseId) {
   }
 }
 
-// ── Load my cruises ──
+// â”€â”€ Load my cruises â”€â”€
 async function loadMyCruises() {
   if (!fb_user) { toast('Sign in first'); return; }
   const container = document.getElementById('cloud-cruise-list');
@@ -3084,7 +3110,7 @@ async function loadMyCruises() {
   }
 }
 
-// ── Load shared cruises ──
+// â”€â”€ Load shared cruises â”€â”€
 async function loadSharedCruises() {
   if (!fb_user) { toast('Sign in first'); return; }
   const container = document.getElementById('cloud-cruise-list');
@@ -3107,30 +3133,42 @@ function renderCruiseList(snap, container, isOwner) {
   let html = '';
   snap.forEach(doc => {
     const d = doc.data();
-    const data = d.dataJson ? JSON.parse(d.dataJson) : (d.data || {});
-    const plotCount = data.plots ? data.plots.length : 0;
-    const polyCount = data.polygons ? data.polygons.length : 0;
-    const done = data.plots ? data.plots.filter(p => p.completed).length : 0;
+    // Support both new multi-user format (polygonsJson/plotsJson) and legacy (dataJson/data)
+    let plotCount = 0, polyCount = 0, done = 0;
+    if (d.plotCount != null || d.plotsJson || d.polygonsJson) {
+      // New format: use summary counts if available, otherwise parse JSON
+      plotCount = d.plotCount != null ? d.plotCount : (d.plotsJson ? JSON.parse(d.plotsJson).length : 0);
+      polyCount = d.polyCount != null ? d.polyCount : (d.polygonsJson ? JSON.parse(d.polygonsJson).length : 0);
+      done = d.completedCount || 0;
+    } else {
+      const data = d.dataJson ? JSON.parse(d.dataJson) : (d.data || {});
+      plotCount = data.plots ? data.plots.length : 0;
+      polyCount = data.polygons ? data.polygons.length : 0;
+      done = data.plots ? data.plots.filter(p => p.completed).length : 0;
+    }
     const date = d.updatedAt ? d.updatedAt.toDate().toLocaleDateString() : 'Unknown';
-    const ownerLabel = isOwner ? '' : ' &middot; by ' + (d.ownerName || 'Unknown');
+    const ownerName = escapeHtml(d.ownerName || 'Unknown');
+    const ownerLabel = isOwner ? '' : ' &middot; by ' + ownerName;
+    const cruiseName = escapeHtml(d.name || 'Untitled Cruise');
+    const cruiseNameJs = escapeJsString(d.name || 'Untitled Cruise');
 
     html += '<div class="cloud-cruise-item" onclick="loadCruiseFromCloud(\'' + doc.id + '\')">' +
       '<div class="cloud-cruise-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg></div>' +
       '<div class="cloud-cruise-info">' +
-        '<div class="cloud-cruise-name">' + d.name + '</div>' +
+        '<div class="cloud-cruise-name">' + cruiseName + '</div>' +
         '<div class="cloud-cruise-meta">' + done + '/' + plotCount + ' plots &middot; ' + polyCount + ' boundaries &middot; ' + date + ownerLabel + '</div>' +
       '</div>' +
       '<div class="cloud-cruise-actions">' +
         (isOwner ? '<button class="icon-btn" onclick="event.stopPropagation(); openSharePanel(\'' + doc.id + '\')" title="Share"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg></button>' : '') +
         (isOwner ? '<button class="icon-btn" onclick="event.stopPropagation(); deleteCruiseFromCloud(\'' + doc.id + '\')" title="Delete" style="border-color:var(--red);"><svg viewBox="0 0 24 24" fill="none" stroke="var(--red)" stroke-width="2"><polyline points="3,6 5,6 21,6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button>' : '') +
-        (!isOwner ? '<button class="icon-btn" onclick="event.stopPropagation(); leaveCruise(\'' + doc.id + '\', \'' + d.name + '\')" title="Leave shared cruise" style="border-color:var(--red);"><svg viewBox="0 0 24 24" fill="none" stroke="var(--red)" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16,17 21,12 16,7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>' : '') +
+        (!isOwner ? '<button class="icon-btn" onclick="event.stopPropagation(); leaveCruise(\'' + doc.id + '\', \'' + cruiseNameJs + '\')" title="Leave shared cruise" style="border-color:var(--red);"><svg viewBox="0 0 24 24" fill="none" stroke="var(--red)" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16,17 21,12 16,7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>' : '') +
       '</div>' +
     '</div>';
   });
   container.innerHTML = html;
 }
 
-// ── Load a cruise from Firestore ──
+// â”€â”€ Load a cruise from Firestore â”€â”€
 async function loadCruiseFromCloud(cruiseId) {
   if (!fb_user) return;
   try {
@@ -3154,7 +3192,7 @@ async function loadCruiseFromCloud(cruiseId) {
     // Detect new multi-user format vs legacy
     const hasNewFormat = d.polygonsJson || d.plotsJson;
 
-    // ── Restore basemap + distance unit ──
+    // â”€â”€ Restore basemap + distance unit â”€â”€
     const basemapVal = hasNewFormat ? d.basemap : ((d.dataJson ? JSON.parse(d.dataJson) : {}).basemap);
     const distVal = hasNewFormat ? d.distUnit : ((d.dataJson ? JSON.parse(d.dataJson) : {}).distUnit);
     if (basemapVal != null && basemapVal !== currentBasemap) {
@@ -3165,7 +3203,7 @@ async function loadCruiseFromCloud(cruiseId) {
     if (distVal) { distUnit = distVal; document.getElementById('unit-toggle').textContent = distUnit; }
 
     if (hasNewFormat) {
-      // ── New multi-user format ──
+      // â”€â”€ New multi-user format â”€â”€
 
       // Restore polygons from main doc
       if (d.polygonsJson) {
@@ -3226,7 +3264,7 @@ async function loadCruiseFromCloud(cruiseId) {
       }
 
     } else {
-      // ── Legacy single-user format ──
+      // â”€â”€ Legacy single-user format â”€â”€
       const data = d.dataJson ? JSON.parse(d.dataJson) : (d.data || {});
       if (data.polygons && data.polygons.length) {
         data.polygons.forEach(pd => {
@@ -3277,7 +3315,7 @@ async function loadCruiseFromCloud(cruiseId) {
   }
 }
 
-// ── Delete cruise ──
+// â”€â”€ Delete cruise â”€â”€
 async function deleteCruiseFromCloud(cruiseId) {
   const ok = await showConfirm('Delete this cruise from the cloud? This cannot be undone.');
   if (!ok) return;
@@ -3290,7 +3328,7 @@ async function deleteCruiseFromCloud(cruiseId) {
   }
 }
 
-// ── Share panel ──
+// â”€â”€ Share panel â”€â”€
 async function openSharePanel(cruiseId) {
   try {
     const doc = await fb_db.collection('cruises').doc(cruiseId).get();
@@ -3303,12 +3341,14 @@ async function openSharePanel(cruiseId) {
 
     const usersList = document.getElementById('shared-users-list');
     if (d.sharedWith && d.sharedWith.length > 0) {
-      usersList.innerHTML = d.sharedWith.map(email =>
-        '<div style="display:flex;align-items:center;justify-content:space-between;padding:8px 10px;background:var(--bg-deep);border:1px solid var(--border);border-radius:8px;font-size:0.72rem;color:var(--text-primary);">' +
-          '<span>' + email + '</span>' +
-          '<button class="icon-btn" onclick="removeSharedUser(\'' + cruiseId + '\', \'' + email + '\')" style="width:24px;height:24px;border-color:var(--red);"><svg viewBox="0 0 24 24" fill="none" stroke="var(--red)" stroke-width="2" width="12" height="12"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>' +
-        '</div>'
-      ).join('');
+      usersList.innerHTML = d.sharedWith.map(email => {
+        const safeEmail = escapeHtml(email);
+        const emailJs = escapeJsString(email);
+        return '<div style="display:flex;align-items:center;justify-content:space-between;padding:8px 10px;background:var(--bg-deep);border:1px solid var(--border);border-radius:8px;font-size:0.72rem;color:var(--text-primary);">' +
+          '<span>' + safeEmail + '</span>' +
+          '<button class="icon-btn" onclick="removeSharedUser(\'' + cruiseId + '\', \'' + emailJs + '\')" style="width:24px;height:24px;border-color:var(--red);"><svg viewBox="0 0 24 24" fill="none" stroke="var(--red)" stroke-width="2" width="12" height="12"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>' +
+        '</div>';
+      }).join('');
     } else {
       usersList.innerHTML = '<div style="font-size:0.72rem;color:var(--text-muted);font-style:italic;padding:8px 0;text-align:center;">No shared users yet.</div>';
     }
@@ -3330,7 +3370,7 @@ function copyShareCode() {
   }
 }
 
-// ── Join cruise by share code ──
+// â”€â”€ Join cruise by share code â”€â”€
 async function joinCruiseByCode() {
   if (!fb_user) { toast('Sign in first'); return; }
   const code = document.getElementById('join-code-input').value.trim().toUpperCase();
@@ -3369,7 +3409,7 @@ async function joinCruiseByCode() {
   }
 }
 
-// ── Remove shared user ──
+// â”€â”€ Remove shared user â”€â”€
 async function removeSharedUser(cruiseId, email) {
   try {
     await fb_db.collection('cruises').doc(cruiseId).update({
@@ -3382,7 +3422,7 @@ async function removeSharedUser(cruiseId, email) {
   }
 }
 
-// ── Leave a shared cruise (remove yourself) ──
+// â”€â”€ Leave a shared cruise (remove yourself) â”€â”€
 async function leaveCruise(cruiseId, cruiseName) {
   if (!fb_user) return;
   if (!confirm('Leave "' + cruiseName + '"? You can rejoin with the share code.')) return;
@@ -3397,7 +3437,7 @@ async function leaveCruise(cruiseId, cruiseName) {
   }
 }
 
-// ── Map setup ──
+// â”€â”€ Map setup â”€â”€
 const map = L.map('map', {
   zoomControl: false,
   attributionControl: false,
@@ -3435,7 +3475,7 @@ const drawControl = new L.Control.Draw({
 });
 map.addControl(drawControl);
 
-// ── Basemap cycling ──
+// â”€â”€ Basemap cycling â”€â”€
 function cycleBasemap() {
   map.removeLayer(basemaps[basemapOrder[currentBasemap]]);
   currentBasemap = (currentBasemap + 1) % basemapOrder.length;
@@ -3443,7 +3483,7 @@ function cycleBasemap() {
   toast(basemapOrder[currentBasemap].charAt(0).toUpperCase() + basemapOrder[currentBasemap].slice(1));
 }
 
-// ── Layers widget ──
+// â”€â”€ Layers widget â”€â”€
 function selectBasemap(index) {
   map.removeLayer(basemaps[basemapOrder[currentBasemap]]);
   currentBasemap = index;
@@ -3483,7 +3523,7 @@ function toggleParcelsFromWidget(checked) {
   }
 }
 
-// ── Join shared cruise widget ──
+// â”€â”€ Join shared cruise widget â”€â”€
 function toggleJoinWidget() {
   const w = document.getElementById('join-widget');
   closeLayersWidget();
@@ -3529,7 +3569,7 @@ map.on('click', function() {
   closeJoinWidget();
 });
 
-// ── Cloud panel (direct open) ──
+// â”€â”€ Cloud panel (direct open) â”€â”€
 function openCloudPanel() {
   openPanel('cloud');
   updateCloudPanelUI();
@@ -3572,8 +3612,8 @@ function switchCloudTab(tab) {
   }
 }
 
-// ── NC OneMap Parcels ────────────────────────────────────────────────────
-// Deferred init — runs after all scripts have loaded
+// â”€â”€ NC OneMap Parcels â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// Deferred init â€” runs after all scripts have loaded
 window.addEventListener('load', function() {
   if (!window.L || !window.L.esri) {
     console.warn('esri-leaflet not loaded');
@@ -3584,7 +3624,7 @@ window.addEventListener('load', function() {
     url: 'https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer',
     layers: [1],
     opacity: 1.0,
-    attribution: '© NC OneMap'
+    attribution: 'Â© NC OneMap'
   });
   var parcelsOn = false;
   var parcelHighlight = null;
@@ -3637,7 +3677,7 @@ window.addEventListener('load', function() {
     var panel = document.getElementById('parcel-panel');
     var body  = document.getElementById('parcel-panel-body');
     panel.classList.add('open');
-    body.innerHTML = '<span class="parcel-loading">Identifying…</span>';
+    body.innerHTML = '<span class="parcel-loading">Identifyingâ€¦</span>';
     if (parcelHighlight) { map.removeLayer(parcelHighlight); parcelHighlight = null; }
 
     ncParcels.identify()
@@ -3674,9 +3714,9 @@ window.addEventListener('load', function() {
   });
 });
 
-// ══════════════════════════════════════════════════════════════════════════════
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 // SHAPEFILE EXPORT
-// ══════════════════════════════════════════════════════════════════════════════
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 
 function exportShapefile() {
   if (allPolygons.length === 0 && plotMarkers.length === 0) {
@@ -3726,7 +3766,7 @@ function exportShapefile() {
   });
 }
 
-// ── Shapefile binary writers ──────────────────────────────────────────────
+// â”€â”€ Shapefile binary writers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 function writeInt32BE(view, offset, val) { view.setInt32(offset, val, false); }
 function writeInt32LE(view, offset, val) { view.setInt32(offset, val, true); }
@@ -3931,9 +3971,9 @@ function buildDbf(count) {
   return buf;
 }
 
-// ══════════════════════════════════════════════════════════════════════════════
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 // GeoPDF EXPORT
-// ══════════════════════════════════════════════════════════════════════════════
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 
 let geoPDFMode = false;
 let geoPDFRect = null;
@@ -4242,15 +4282,15 @@ async function confirmGeoPDFExport() {
   }
 }
 
-// ══════════════════════════════════════════════════════════════════════════════
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 // DESKTOP vs MOBILE DRAW MODE
-// ══════════════════════════════════════════════════════════════════════════════
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 // On desktop (no touch), use native Leaflet.draw click-to-place polygon drawing.
 // On mobile (touch), use the crosshair/drop-point approach.
 
 const isTouchDevice = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
 
-// ── Toast notification ──
+// â”€â”€ Toast notification â”€â”€
 function toast(msg) {
   const el = document.getElementById('toast');
   el.textContent = msg;
@@ -4259,9 +4299,9 @@ function toast(msg) {
   el._t = setTimeout(() => el.classList.remove('show'), 2000);
 }
 
-// ── Panel management ──
+// â”€â”€ Panel management â”€â”€
 let currentPanel = null;
-// ── Cruise Setup Panel ──
+// â”€â”€ Cruise Setup Panel â”€â”€
 function initCruiseSetupPanel() {
   const job = allJobs.find(j => j.id === activeJobId);
   if (!job) { toast('Create a job first'); return; }
@@ -4357,15 +4397,15 @@ function toggleSpeciesRef() {
   }
 }
 
-// ══════════════════════════════════════════════════════════════════════════════
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 // CRUISE REPORT
-// ══════════════════════════════════════════════════════════════════════════════
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 
 function generateCruiseReport() {
   const el = document.getElementById('report-content');
   const job = allJobs.find(j => j.id === activeJobId);
   if (!job) {
-    el.innerHTML = '<div class="report-empty"><div class="report-empty-icon">📊</div>No active job. Create one first.</div>';
+    el.innerHTML = '<div class="report-empty"><div class="report-empty-icon">ðŸ“Š</div>No active job. Create one first.</div>';
     return;
   }
 
@@ -4377,7 +4417,7 @@ function generateCruiseReport() {
   const noTallyCount = allDonePlots.filter(p => p.noTally || !p.trees || p.trees.length === 0).length;
 
   if (!n) {
-    el.innerHTML = '<div class="report-empty"><div class="report-empty-icon">📊</div>Complete some plots to generate a report.</div>';
+    el.innerHTML = '<div class="report-empty"><div class="report-empty-icon">ðŸ“Š</div>Complete some plots to generate a report.</div>';
     return;
   }
 
@@ -4441,7 +4481,7 @@ function generateCruiseReport() {
 
   let html = '<div class="report-card">' +
     '<div class="report-card-title">Cruise Summary</div>' +
-    '<div class="report-row"><span>Job</span><span class="rval">' + job.name + '</span></div>' +
+    '<div class="report-row"><span>Job</span><span class="rval">' + escapeHtml(job.name) + '</span></div>' +
     '<div class="report-row"><span>BAF</span><span class="rval">' + baf + '</span></div>' +
     '<div class="report-row"><span>Log Rule</span><span class="rval">' + ruleName + '</span></div>' +
     '<div class="report-row"><span>Grid</span><span class="rval">' + spX + ' x ' + spY + ' chains</span></div>' +
@@ -4526,7 +4566,7 @@ function generateCruiseReport() {
   el.innerHTML = html;
 }
 
-// ── CSV Export ──
+// â”€â”€ CSV Export â”€â”€
 function exportCruiseCSV() {
   const baf = parseInt(document.getElementById('report-baf').value) || 10;
   const allDone = plotMarkers.filter(p => p.completed);
@@ -4580,7 +4620,7 @@ function exportCruiseCSV() {
   toast('CSV exported!');
 }
 
-// ── Report panel init ──
+// â”€â”€ Report panel init â”€â”€
 function initReportPanel() {
   const job = allJobs.find(j => j.id === activeJobId);
   const bafSel = document.getElementById('report-baf');
@@ -4637,7 +4677,7 @@ function closePanel() {
   currentPanel = null;
 }
 
-// ── Draw boundary (crosshair mode) ──
+// â”€â”€ Draw boundary (crosshair mode) â”€â”€
 let drawPoints = [];
 let drawPreviewLayer = null;
 let drawVertexMarkers = [];
@@ -4730,9 +4770,9 @@ function updateDrawUI() {
   const n = drawPoints.length;
   const countEl = document.getElementById('draw-point-count');
   if (n < 3) {
-    countEl.textContent = n + (n === 1 ? ' point' : ' points') + ' — need ' + (3 - n) + ' more';
+    countEl.textContent = n + (n === 1 ? ' point' : ' points') + ' â€” need ' + (3 - n) + ' more';
   } else {
-    countEl.textContent = n + ' points — ready to finish';
+    countEl.textContent = n + ' points â€” ready to finish';
   }
   const finishBtn = document.getElementById('draw-finish-btn');
   finishBtn.disabled = n < 3;
@@ -4802,7 +4842,7 @@ map.on(L.Draw.Event.CREATED, function(e) {
 
 map.on('draw:drawstop', cancelDraw);
 
-// ── Manual plot placement ──
+// â”€â”€ Manual plot placement â”€â”€
 let placingPlot = false;
 
 function startManualPlot() {
@@ -4831,7 +4871,7 @@ function onManualPlotClick(e) {
   toast('Plot ' + id + ' placed');
 }
 
-// ── Edit mode ──
+// â”€â”€ Edit mode â”€â”€
 function toggleEdit() {
   if (isEditing) {
     // Save edits
@@ -4850,7 +4890,7 @@ function toggleEdit() {
   }
 }
 
-// ── GPS Location ──
+// â”€â”€ GPS Location â”€â”€
 let pendingFlyToLocation = false;
 
 function toggleLocate() {
@@ -4964,7 +5004,7 @@ function updateLocationHeading() {
   }
 }
 
-// ── Plot management ──
+// â”€â”€ Plot management â”€â”€
 function addPlot(id, lat, lng) {
   const size = 28;
   const icon = L.divIcon({
@@ -5091,7 +5131,7 @@ async function clearPlots() {
   toast('All plots cleared');
 }
 
-// ── Polygon checklist for grid ──
+// â”€â”€ Polygon checklist for grid â”€â”€
 function refreshPolyChecklist() {
   const container = document.getElementById('poly-checklist');
   if (allPolygons.length === 0) {
@@ -5109,7 +5149,7 @@ function checkAllPolys(checked) {
   document.querySelectorAll('#poly-checklist input[type=checkbox]').forEach(cb => cb.checked = checked);
 }
 
-// ── Generate cruise grid ──
+// â”€â”€ Generate cruise grid â”€â”€
 function generatePlots() {
   if (!activeJobId) {
     toast('Create a job first');
@@ -5219,7 +5259,7 @@ function pointInPolygon(lat, lng, polygon) {
   return inside;
 }
 
-// ── Navigation ──
+// â”€â”€ Navigation â”€â”€
 function navigateToPlot(id) {
   const plot = plotMarkers.find(p => p.id === id);
   if (!plot) return;
@@ -5309,7 +5349,7 @@ function updatePlotDistances() {
   if (currentPanel === 'plotlist') refreshPlotList();
 }
 
-// ── Plot list ──
+// â”€â”€ Plot list â”€â”€
 function refreshPlotList() {
   const container = document.getElementById('plot-list-container');
   if (plotMarkers.length === 0) {
@@ -5328,7 +5368,7 @@ function refreshPlotList() {
       '<div class="plot-dot ' + statusClass + '">' + plot.id + '</div>' +
       '<div class="plot-list-info">' +
         '<div class="plot-list-name">Plot ' + plot.id + '</div>' +
-        '<div class="plot-list-meta">' + (plot.noTally ? 'No Tally' + (plot.cruiser ? ' · ' + plot.cruiser : '') : (plot.completed ? (plot.trees ? plot.trees.length : 0) + ' trees' + (plot.cruiser ? ' · ' + plot.cruiser : '') : (isNav ? 'Navigating...' : 'Pending'))) + '</div>' +
+        '<div class="plot-list-meta">' + (plot.noTally ? 'No Tally' + (plot.cruiser ? ' Â· ' + plot.cruiser : '') : (plot.completed ? (plot.trees ? plot.trees.length : 0) + ' trees' + (plot.cruiser ? ' Â· ' + plot.cruiser : '') : (isNav ? 'Navigating...' : 'Pending'))) + '</div>' +
       '</div>' +
       (dist != null ? '<div class="plot-list-dist">' + formatDist(dist) + '</div>' : '') +
     '</div>';
@@ -5358,7 +5398,7 @@ function resetAllPlots() {
   toast('All plots reset to pending');
 }
 
-// ── Import/Export ──
+// â”€â”€ Import/Export â”€â”€
 function importShapefile() {
   if (!activeJobId) {
     ensureActiveJob().then(ok => { if (ok) importShapefile(); });
@@ -5472,7 +5512,7 @@ function loadGeoJSON(geojson, name) {
     onEachFeature: (feat, lyr) => {
       const p = feat.properties;
       if (p && Object.keys(p).length) {
-        lyr.bindPopup(Object.entries(p).slice(0, 10).map(([k, v]) => '<b>' + k + ':</b> ' + v).join('<br>'));
+        lyr.bindPopup(Object.entries(p).slice(0, 10).map(([k, v]) => '<b>' + escapeHtml(k) + ':</b> ' + escapeHtml(v)).join('<br>'));
       }
       // Register all polygons
       if (lyr instanceof L.Polygon) {
@@ -5508,7 +5548,7 @@ function loadGeoJSON(geojson, name) {
   saveSession();
 }
 
-// ── Minimal .shp binary reader ──
+// â”€â”€ Minimal .shp binary reader â”€â”€
 function readShpFeatures(buf) {
   const v = new DataView(buf);
   if (v.getInt32(0, false) !== 9994) throw new Error('Not a shapefile');
@@ -5569,7 +5609,7 @@ function readShpFeatures(buf) {
   return features;
 }
 
-// ── Minimal .dbf reader ──
+// â”€â”€ Minimal .dbf reader â”€â”€
 function readDbfRecords(buf) {
   const v = new DataView(buf);
   const b = new Uint8Array(buf);
@@ -5652,7 +5692,7 @@ async function clearEverything() {
   toast('Job cleared');
 }
 
-// ── Calculations ──
+// â”€â”€ Calculations â”€â”€
 function calcAcres(layer) {
   const lls = layer.getLatLngs()[0];
   const R = 6378137;
@@ -5697,7 +5737,7 @@ function formatDist(meters) {
   return (meters / 1000).toFixed(2) + ' km';
 }
 
-// ── Distance unit toggle ──
+// â”€â”€ Distance unit toggle â”€â”€
 function toggleDistUnit() {
   distUnit = distUnit === 'ft' ? 'm' : 'ft';
   document.getElementById('unit-toggle').textContent = distUnit;
@@ -5706,7 +5746,7 @@ function toggleDistUnit() {
   updateNavigation();
 }
 
-// ── Custom confirm dialog (mobile-friendly, no native alert) ──
+// â”€â”€ Custom confirm dialog (mobile-friendly, no native alert) â”€â”€
 function showConfirm(msg) {
   return new Promise(resolve => {
     _confirmCb = resolve;
@@ -5719,7 +5759,7 @@ function confirmResolve(val) {
   if (_confirmCb) { _confirmCb(val); _confirmCb = null; }
 }
 
-// ── Undo last plot toggle ──
+// â”€â”€ Undo last plot toggle â”€â”€
 function showUndoToast(plotId, wasCompleted) {
   lastToggle = { id: plotId, previousState: wasCompleted };
   document.getElementById('undo-text').textContent = 'Plot ' + plotId + ' marked ' + (wasCompleted ? 'pending' : 'complete');
@@ -5741,7 +5781,7 @@ function undoLastToggle() {
   lastToggle = null;
 }
 
-// ── Wake Lock (keep screen on during navigation) ──
+// â”€â”€ Wake Lock (keep screen on during navigation) â”€â”€
 async function requestWakeLock() {
   try {
     if ('wakeLock' in navigator) {
@@ -5761,12 +5801,12 @@ function releaseWakeLock() {
   document.getElementById('wake-indicator').classList.remove('on');
 }
 
-// ── Vibration helper ──
+// â”€â”€ Vibration helper â”€â”€
 function vibrate(pattern) {
   if (navigator.vibrate) navigator.vibrate(pattern);
 }
 
-// ── Auto-save to IndexedDB ──
+// â”€â”€ Auto-save to IndexedDB â”€â”€
 function openDB() {
   return new Promise((resolve, reject) => {
     const req = indexedDB.open('CruiseNavDB', 2);
@@ -5778,6 +5818,29 @@ function openDB() {
     req.onsuccess = e => resolve(e.target.result);
     req.onerror = () => reject();
   });
+}
+
+// â"€â"€ Debounced cloud sync â"€â"€
+let _cloudSyncTimer = null;
+
+function scheduleCloudSync() {
+  if (!window._activeCloudCruiseId || !fb_user) return;
+  if (_cloudSyncTimer) clearTimeout(_cloudSyncTimer);
+  _cloudSyncTimer = setTimeout(async () => {
+    _cloudSyncTimer = null;
+    try {
+      if (window._activeCloudCruiseOwner === fb_user.uid) {
+        await updateCruiseInCloud(window._activeCloudCruiseId);
+      } else {
+        await saveUserPlotData(window._activeCloudCruiseId);
+      }
+      _lastSyncedPlotHash = getPlotHash();
+      setSyncPending(false);
+    } catch(syncErr) {
+      console.warn('Auto-sync failed:', syncErr);
+      setSyncPending(true);
+    }
+  }, 3000); // Wait 3 seconds of inactivity before syncing
 }
 
 async function saveSession() {
@@ -5809,20 +5872,8 @@ async function saveSession() {
     }, 'session');
     await new Promise((res, rej) => { tx2.oncomplete = res; tx2.onerror = rej; });
 
-    // Auto-sync to cloud if we have an active cloud cruise
-    if (window._activeCloudCruiseId && fb_user) {
-      try {
-        if (window._activeCloudCruiseOwner === fb_user.uid) {
-          await updateCruiseInCloud(window._activeCloudCruiseId);
-        } else {
-          await saveUserPlotData(window._activeCloudCruiseId);
-        }
-        _lastSyncedPlotHash = getPlotHash();
-      } catch(syncErr) {
-        // Sync failed (likely offline), mark pending
-        setSyncPending(true);
-      }
-    }
+    // Schedule debounced cloud sync instead of immediate write
+    scheduleCloudSync();
   } catch(e) { console.warn('Save error:', e); }
 }
 
@@ -5903,7 +5954,7 @@ async function restoreSession() {
   } catch(e) { console.warn('Restore error:', e); return false; }
 }
 
-// ── Job Management ──
+// â”€â”€ Job Management â”€â”€
 function loadJob(jobId, skipSave) {
   // Save current job first (if switching)
   if (!skipSave && activeJobId && activeJobId !== jobId) {
@@ -6104,7 +6155,7 @@ function refreshJobsList() {
     html += '<div class="job-item ' + (isActive ? 'active-job' : '') + '" onclick="switchToJob(\'' + job.id + '\')">' +
       '<div class="job-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg></div>' +
       '<div class="job-info">' +
-        '<div class="job-name">' + job.name + '</div>' +
+        '<div class="job-name">' + escapeHtml(job.name) + '</div>' +
         '<div class="job-meta">' + done + '/' + plotCount + ' plots &middot; ' + polyCount + ' boundaries &middot; ' + date + '</div>' +
         (isActive ? '<div class="job-active-badge">Active</div>' : '') +
       '</div>' +
@@ -6156,7 +6207,7 @@ async function ensureActiveJob() {
   return true;
 }
 
-// ── UI Updates ──
+// â”€â”€ UI Updates â”€â”€
 function updateStats() {
   const total = plotMarkers.length;
   const done = plotMarkers.filter(p => p.completed).length;
@@ -6199,21 +6250,21 @@ function updateEmptyHint() {
   }
 }
 
-// ── Service Worker Registration (PWA) ──
+// â”€â”€ Service Worker Registration (PWA) â”€â”€
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
     navigator.serviceWorker.register('sw.js').catch(() => {});
   });
 }
 
-// ── Re-acquire wake lock when app regains visibility ──
+// â”€â”€ Re-acquire wake lock when app regains visibility â”€â”€
 document.addEventListener('visibilitychange', () => {
   if (document.visibilityState === 'visible' && navTargetId != null) {
     requestWakeLock();
   }
 });
 
-// ── Initialize ──
+// â”€â”€ Initialize â”€â”€
 (async function init() {
   // Try restoring a previous session
   const restored = await restoreSession().catch(() => false);
