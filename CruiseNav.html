@@ -2937,6 +2937,20 @@ function formatCloudSyncError(action, error) {
   return msg ? (action + ' failed: ' + msg) : (action + ' failed.');
 }
 
+function isPermissionDeniedError(error) {
+  const code = String((error && error.code) || '').trim();
+  const msg = String((error && error.message) || error || '').trim();
+  return /permission-denied/i.test(code) || /missing or insufficient permissions|permission[- ]denied/i.test(msg);
+}
+
+function normalizeEmail(value) {
+  return String(value || '').trim().toLowerCase();
+}
+
+function getCurrentUserEmail() {
+  return normalizeEmail(fb_user && fb_user.email);
+}
+
 // â”€â”€ Save cruise to Firestore â”€â”€
 async function saveCruiseToCloud() {
   if (!fb_user) { toast('Sign in first'); return; }
@@ -2952,7 +2966,7 @@ async function saveCruiseToCloud() {
       name: name,
       ownerId: fb_user.uid,
       ownerName: fb_user.displayName || fb_user.email,
-      ownerEmail: fb_user.email,
+      ownerEmail: getCurrentUserEmail(),
       shareCode: generateShareCode(),
       sharedWith: [],
       baf: (activeJob && activeJob.baf) || 10,
@@ -3014,7 +3028,7 @@ async function saveUserPlotData(cruiseId) {
       .collection('userData').doc(fb_user.uid).set({
         uid: fb_user.uid,
         userName: fb_user.displayName || fb_user.email,
-        userEmail: fb_user.email,
+        userEmail: getCurrentUserEmail(),
         plots: JSON.stringify(myPlots),
         updatedAt: firebase.firestore.FieldValue.serverTimestamp()
       });
@@ -3153,7 +3167,7 @@ async function manualCloudSync() {
           name: name,
           ownerId: fb_user.uid,
           ownerName: fb_user.displayName || fb_user.email,
-          ownerEmail: fb_user.email,
+          ownerEmail: getCurrentUserEmail(),
           shareCode: generateShareCode(),
           sharedWith: [],
           baf: (activeJob && activeJob.baf) || 10,
@@ -3226,16 +3240,23 @@ async function pullOtherUsersPlotData(cruiseId, options = {}) {
   const silent = !!options.silent;
   console.log('[PULL] Starting pull from cruise: ' + cruiseId);
   try {
-    // Fetch the main cruise document (plot locations, boundaries) AND userData
-    const [cruiseDoc, userSnap] = await Promise.all([
-      fb_db.collection('cruises').doc(cruiseId).get({ source: 'server' }),
-      fb_db.collection('cruises').doc(cruiseId).collection('userData').get({ source: 'server' })
-    ]);
+    // Fetch the main cruise document first. Shared users may not always have access
+    // to the full userData sub-collection, so we degrade gracefully when that read is blocked.
+    const cruiseDoc = await fb_db.collection('cruises').doc(cruiseId).get({ source: 'server' });
+    let userSnap = null;
+    let userDataUnavailable = false;
+    try {
+      userSnap = await fb_db.collection('cruises').doc(cruiseId).collection('userData').get({ source: 'server' });
+    } catch (userErr) {
+      if (!isPermissionDeniedError(userErr)) throw userErr;
+      console.warn('[PULL] userData read unavailable for this user:', userErr);
+      userDataUnavailable = true;
+    }
 
     if (!cruiseDoc.exists) { console.log('[PULL] Cruise doc not found!'); return { newPlotsCount: 0, newBoundariesCount: 0, updatedPlotsCount: 0 }; }
     const d = cruiseDoc.data();
     if (d.ownerId) window._activeCloudCruiseOwner = d.ownerId;
-    console.log('[PULL] Got cruise doc. plotsJson length=' + (d.plotsJson||'').length + ', userData docs=' + userSnap.size);
+    console.log('[PULL] Got cruise doc. plotsJson length=' + (d.plotsJson||'').length + ', userData docs=' + (userSnap ? userSnap.size : 'NO_ACCESS'));
 
     // Track what's new
     let newPlotsCount = 0;
@@ -3278,29 +3299,31 @@ async function pullOtherUsersPlotData(cruiseId, options = {}) {
     const cloudPlots = {}; // plotId -> { trees, noTally, cruiser, updatedAt }
     const contributors = [];
 
-    userSnap.forEach(udoc => {
-      const ud = udoc.data();
-      const cruiserName = ud.userName || ud.userEmail || udoc.id;
-      contributors.push(cruiserName);
+    if (userSnap) {
+      userSnap.forEach(udoc => {
+        const ud = udoc.data();
+        const cruiserName = ud.userName || ud.userEmail || udoc.id;
+        contributors.push(cruiserName);
 
-      const userPlots = parseJsonArray(ud.plots);
-      const docTime = ud.updatedAt ? ud.updatedAt.toMillis() : 0;
+        const userPlots = parseJsonArray(ud.plots);
+        const docTime = ud.updatedAt ? ud.updatedAt.toMillis() : 0;
 
-      userPlots.forEach(up => {
-        if (!up.completed) return;
-        const plotKey = String(up.id);
-        const existing = cloudPlots[plotKey];
-        if (!existing || docTime > (existing.updatedAt || 0)) {
-          cloudPlots[plotKey] = {
-            trees: up.trees || [],
-            noTally: up.noTally || false,
-            cruiser: cruiserName,
-            fromSelf: udoc.id === fb_user.uid,
-            updatedAt: docTime
-          };
-        }
+        userPlots.forEach(up => {
+          if (!up.completed) return;
+          const plotKey = String(up.id);
+          const existing = cloudPlots[plotKey];
+          if (!existing || docTime > (existing.updatedAt || 0)) {
+            cloudPlots[plotKey] = {
+              trees: up.trees || [],
+              noTally: up.noTally || false,
+              cruiser: cruiserName,
+              fromSelf: udoc.id === fb_user.uid,
+              updatedAt: docTime
+            };
+          }
+        });
       });
-    });
+    }
 
     console.log('[PULL] Cloud completed plots: ' + Object.keys(cloudPlots).length + ', keys: ' + Object.keys(cloudPlots).join(','));
     console.log('[PULL] Local plotMarkers: ' + plotMarkers.length + ', ids: ' + plotMarkers.map(p=>p.id+':'+(p.completed?'done':'pending')).join(','));
@@ -3355,7 +3378,10 @@ async function pullOtherUsersPlotData(cruiseId, options = {}) {
     } else {
       console.log('[PULL] No changes found');
     }
-    return { newPlotsCount, newBoundariesCount, updatedPlotsCount };
+    if (userDataUnavailable && !silent) {
+      toast('Shared plot details are unavailable with current Firestore rules.');
+    }
+    return { newPlotsCount, newBoundariesCount, updatedPlotsCount, userDataUnavailable };
   } catch(e) {
     console.error('[PULL] FAILED:', e);
     if (!silent) toast(formatCloudSyncError('Pull', e));
@@ -3422,11 +3448,13 @@ async function loadMyCruises() {
 // â”€â”€ Load shared cruises â”€â”€
 async function loadSharedCruises() {
   if (!fb_user) { toast('Sign in first'); return; }
+  const userEmail = getCurrentUserEmail();
+  if (!userEmail) { toast('Your account email is unavailable'); return; }
   const container = document.getElementById('cloud-cruise-list');
   container.innerHTML = '<div style="text-align:center;padding:20px;color:var(--text-muted);font-size:0.72rem;">Loading...</div>';
 
   try {
-    const snap = await fb_db.collection('cruises').where('sharedWith', 'array-contains', fb_user.email).orderBy('updatedAt', 'desc').get({ source: 'server' });
+    const snap = await fb_db.collection('cruises').where('sharedWith', 'array-contains', userEmail).orderBy('updatedAt', 'desc').get({ source: 'server' });
     if (snap.empty) {
       container.innerHTML = '<div style="text-align:center;padding:20px;color:var(--text-muted);font-size:0.72rem;">No cruises shared with you yet.</div>';
       return;
@@ -3487,7 +3515,9 @@ async function loadCruiseFromCloud(cruiseId) {
     const d = doc.data();
 
     // Check access
-    if (d.ownerId !== fb_user.uid && !(d.sharedWith || []).includes(fb_user.email)) {
+    const userEmail = getCurrentUserEmail();
+    const sharedWith = Array.isArray(d.sharedWith) ? d.sharedWith.map(normalizeEmail).filter(Boolean) : [];
+    if (d.ownerId !== fb_user.uid && !(userEmail && sharedWith.includes(userEmail))) {
       toast('Access denied'); return;
     }
 
@@ -3496,13 +3526,14 @@ async function loadCruiseFromCloud(cruiseId) {
 
     // Pre-fetch userData sub-collection BEFORE clearing anything
     let userSnap = null;
+    let userDataUnavailable = false;
     if (hasNewFormat) {
       try {
         userSnap = await fb_db.collection('cruises').doc(cruiseId).collection('userData').get({ source: 'server' });
       } catch(subErr) {
-        console.error('Failed to read userData sub-collection:', subErr);
-        toast('Failed to load plot data. Check Firestore rules for userData sub-collection.');
-        return;
+        if (!isPermissionDeniedError(subErr)) throw subErr;
+        console.warn('Shared cruise opened without userData access:', subErr);
+        userDataUnavailable = true;
       }
     }
 
@@ -3541,26 +3572,30 @@ async function loadCruiseFromCloud(cruiseId) {
       const mergedPlots = {}; // plotId -> { trees, cruiser, updatedAt }
       const contributors = [];
 
-      userSnap.forEach(udoc => {
-        const ud = udoc.data();
-        contributors.push(ud.userName || ud.userEmail || udoc.id);
-        const userPlots = parseJsonArray(ud.plots);
-        const docTime = ud.updatedAt ? ud.updatedAt.toMillis() : 0;
-        userPlots.forEach(up => {
-          if (up.completed) {
-            const plotKey = String(up.id);
-            const existing = mergedPlots[plotKey];
-            if (!existing || docTime > (existing.updatedAt || 0)) {
-              mergedPlots[plotKey] = {
-                trees: up.trees || [],
-                noTally: up.noTally || false,
-                cruiser: ud.userName || ud.userEmail || udoc.id,
-                updatedAt: docTime
-              };
+      if (userSnap) {
+        userSnap.forEach(udoc => {
+          const ud = udoc.data();
+          contributors.push(ud.userName || ud.userEmail || udoc.id);
+          const userPlots = parseJsonArray(ud.plots);
+          const docTime = ud.updatedAt ? ud.updatedAt.toMillis() : 0;
+          userPlots.forEach(up => {
+            if (up.completed) {
+              const plotKey = String(up.id);
+              const existing = mergedPlots[plotKey];
+              if (!existing || docTime > (existing.updatedAt || 0)) {
+                mergedPlots[plotKey] = {
+                  trees: up.trees || [],
+                  noTally: up.noTally || false,
+                  cruiser: ud.userName || ud.userEmail || udoc.id,
+                  updatedAt: docTime
+                };
+              }
             }
-          }
+          });
         });
-      });
+      } else if (d.ownerName) {
+        contributors.push(d.ownerName);
+      }
 
       // Apply merged tree data to plot markers
       Object.entries(mergedPlots).forEach(([plotId, data]) => {
@@ -3661,6 +3696,9 @@ async function loadCruiseFromCloud(cruiseId) {
 
     const cc = (window._cloudContributors || []).length;
     toast('Loaded: ' + d.name + (cc > 1 ? ' (' + cc + ' cruisers)' : ''));
+    if (userDataUnavailable) {
+      toast('Loaded, but shared plot details are unavailable with current Firestore rules.');
+    }
     saveSession();
   } catch(e) {
     console.error(e);
@@ -3693,8 +3731,9 @@ async function openSharePanel(cruiseId) {
     document.getElementById('share-code-display').value = d.shareCode || 'N/A';
 
     const usersList = document.getElementById('shared-users-list');
-    if (d.sharedWith && d.sharedWith.length > 0) {
-      usersList.innerHTML = d.sharedWith.map(email => {
+    const sharedUsers = Array.isArray(d.sharedWith) ? Array.from(new Set(d.sharedWith.map(normalizeEmail).filter(Boolean))) : [];
+    if (sharedUsers.length > 0) {
+      usersList.innerHTML = sharedUsers.map(email => {
         const safeEmail = escapeHtml(email);
         const emailJs = escapeJsString(email);
         return '<div style="display:flex;align-items:center;justify-content:space-between;padding:8px 10px;background:var(--bg-deep);border:1px solid var(--border);border-radius:8px;font-size:0.72rem;color:var(--text-primary);">' +
@@ -3726,6 +3765,8 @@ function copyShareCode() {
 // â”€â”€ Join cruise by share code â”€â”€
 async function joinCruiseByCode() {
   if (!fb_user) { toast('Sign in first'); return; }
+  const userEmail = getCurrentUserEmail();
+  if (!userEmail) { toast('Your account email is unavailable'); return; }
   const code = document.getElementById('join-code-input').value.trim().toUpperCase();
   if (!code || code.length < 4) { toast('Enter a valid code'); return; }
 
@@ -3741,8 +3782,14 @@ async function joinCruiseByCode() {
       return;
     }
 
-    const sharedWith = d.sharedWith || [];
-    if (sharedWith.includes(fb_user.email)) {
+    const rawSharedWith = Array.isArray(d.sharedWith) ? d.sharedWith : [];
+    const sharedWith = rawSharedWith.map(normalizeEmail).filter(Boolean);
+    if (sharedWith.includes(userEmail)) {
+      if (!rawSharedWith.includes(userEmail)) {
+        await fb_db.collection('cruises').doc(doc.id).update({
+          sharedWith: firebase.firestore.FieldValue.arrayUnion(userEmail)
+        });
+      }
       toast('Already shared with you');
       loadCruiseFromCloud(doc.id);
       return;
@@ -3750,7 +3797,7 @@ async function joinCruiseByCode() {
 
     // Add user to sharedWith
     await fb_db.collection('cruises').doc(doc.id).update({
-      sharedWith: firebase.firestore.FieldValue.arrayUnion(fb_user.email)
+      sharedWith: firebase.firestore.FieldValue.arrayUnion(userEmail)
     });
 
     document.getElementById('join-code-input').value = '';
@@ -3758,15 +3805,17 @@ async function joinCruiseByCode() {
     loadCruiseFromCloud(doc.id);
   } catch(e) {
     console.error(e);
-    toast('Join failed');
+    toast(formatCloudSyncError('Join', e));
   }
 }
 
 // â”€â”€ Remove shared user â”€â”€
 async function removeSharedUser(cruiseId, email) {
   try {
+    const normalizedEmail = normalizeEmail(email);
+    const emailsToRemove = normalizedEmail && normalizedEmail !== email ? [email, normalizedEmail] : [email];
     await fb_db.collection('cruises').doc(cruiseId).update({
-      sharedWith: firebase.firestore.FieldValue.arrayRemove(email)
+      sharedWith: firebase.firestore.FieldValue.arrayRemove(...emailsToRemove)
     });
     toast('Removed ' + email);
     openSharePanel(cruiseId);
@@ -3780,8 +3829,11 @@ async function leaveCruise(cruiseId, cruiseName) {
   if (!fb_user) return;
   if (!confirm('Leave "' + cruiseName + '"? You can rejoin with the share code.')) return;
   try {
+    const rawEmail = String((fb_user && fb_user.email) || '').trim();
+    const normalizedEmail = getCurrentUserEmail();
+    const emailsToRemove = normalizedEmail && normalizedEmail !== rawEmail ? [rawEmail, normalizedEmail] : [normalizedEmail || rawEmail];
     await fb_db.collection('cruises').doc(cruiseId).update({
-      sharedWith: firebase.firestore.FieldValue.arrayRemove(fb_user.email)
+      sharedWith: firebase.firestore.FieldValue.arrayRemove(...emailsToRemove)
     });
     toast('Left "' + cruiseName + '"');
     loadSharedCruises();
