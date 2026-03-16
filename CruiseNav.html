@@ -2899,6 +2899,10 @@ function findPlotById(id) {
   return plotMarkers.find(p => String(p.id) === String(id)) || null;
 }
 
+function getInlineIdArg(id) {
+  return JSON.stringify(String(id)).replace(/"/g, '&quot;');
+}
+
 function openTallyModal(plotOrId) {
   const plot = (plotOrId && typeof plotOrId === 'object') ? plotOrId : findPlotById(plotOrId);
   if (!plot) {
@@ -6640,6 +6644,7 @@ function openPlotPopup(plot) {
   const noTallyLabel = plot.noTally ? 'No Tally' : '';
   const statusLabel = plot.noTally ? 'No Tally (0 trees)' : (plot.completed ? 'Done (' + treeCount + ' trees)' : 'Pending');
   const statusColor = plot.noTally ? 'var(--text-muted)' : (plot.completed ? 'var(--accent)' : 'var(--orange)');
+  const plotIdArg = getInlineIdArg(plot.id);
 
   const content = '<div class="plot-popup">' +
     '<div class="plot-popup-title">Plot ' + plot.id + '</div>' +
@@ -6650,13 +6655,13 @@ function openPlotPopup(plot) {
       (myLocation ? '<br>Distance: ' + formatDist(getDistance(myLocation.lat, myLocation.lng, plot.lat, plot.lng)) : '') +
     '</div>' +
     '<div class="plot-popup-actions">' +
-      '<button class="popup-btn popup-btn-complete" onclick="map.closePopup(); openTallyModal(' + plot.id + ')">Tally</button>' +
-      '<button class="popup-btn popup-btn-pending" onclick="markNoTally(' + plot.id + ')">No Tally</button>' +
-      '<button class="popup-btn popup-btn-nav" onclick="navigateToPlot(' + plot.id + ')">Nav</button>' +
+      '<button class="popup-btn popup-btn-complete" onclick="map.closePopup(); openTallyModal(' + plotIdArg + ')">Tally</button>' +
+      '<button class="popup-btn popup-btn-pending" onclick="markNoTally(' + plotIdArg + ')">No Tally</button>' +
+      '<button class="popup-btn popup-btn-nav" onclick="navigateToPlot(' + plotIdArg + ')">Nav</button>' +
     '</div>' +
     '<div style="margin-top:6px;display:flex;gap:6px">' +
-      '<button class="popup-btn ' + (plot.completed ? 'popup-btn-pending' : 'popup-btn-complete') + '" style="flex:1" onclick="togglePlotStatus(' + plot.id + ')">' + (plot.completed ? 'Mark Pending' : 'Mark Complete') + '</button>' +
-      '<button class="popup-btn popup-btn-delete" style="flex:0 0 auto;padding:10px 14px" onclick="deletePlot(' + plot.id + ')">Del</button>' +
+      '<button class="popup-btn ' + (plot.completed ? 'popup-btn-pending' : 'popup-btn-complete') + '" style="flex:1" onclick="togglePlotStatus(' + plotIdArg + ')">' + (plot.completed ? 'Mark Pending' : 'Mark Complete') + '</button>' +
+      '<button class="popup-btn popup-btn-delete" style="flex:0 0 auto;padding:10px 14px" onclick="deletePlot(' + plotIdArg + ')">Del</button>' +
     '</div>' +
   '</div>';
 
@@ -6982,8 +6987,9 @@ function refreshPlotList() {
     const dist = myLocation ? getDistance(myLocation.lat, myLocation.lng, plot.lat, plot.lng) : null;
     const statusClass = isNav ? 'navigating' : (plot.completed ? 'complete' : 'pending');
     const itemClass = isNav ? 'active-nav' : (plot.completed ? 'completed' : '');
+    const plotIdArg = getInlineIdArg(plot.id);
 
-    html += '<div class="plot-list-item ' + itemClass + '" onclick="flyToPlot(' + plot.id + ')">' +
+    html += '<div class="plot-list-item ' + itemClass + '" onclick="flyToPlot(' + plotIdArg + ')">' +
       '<div class="plot-dot ' + statusClass + '">' + plot.id + '</div>' +
       '<div class="plot-list-info">' +
         '<div class="plot-list-name">Plot ' + plot.id + '</div>' +
@@ -6996,7 +7002,7 @@ function refreshPlotList() {
 }
 
 function flyToPlot(id) {
-  const plot = plotMarkers.find(p => p.id === id);
+  const plot = findPlotById(id);
   if (!plot) return;
   closePanel();
   map.setView([plot.lat, plot.lng], Math.max(map.getZoom(), 17), { animate: true });
