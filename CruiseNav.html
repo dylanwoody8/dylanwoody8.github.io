@@ -695,6 +695,48 @@
     line-height: 1.8;
   }
   .report-empty-icon { font-size: 2rem; margin-bottom: 8px; opacity: 0.4; }
+  .report-table-wrap {
+    overflow-x: auto;
+    border: 1px solid rgba(45,90,39,0.45);
+    border-radius: 8px;
+  }
+  .report-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.72rem;
+    min-width: 760px;
+  }
+  .report-table th,
+  .report-table td {
+    padding: 8px 10px;
+    border-bottom: 1px solid rgba(45,90,39,0.3);
+    text-align: right;
+    color: var(--text-secondary);
+    white-space: nowrap;
+  }
+  .report-table th {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-size: 0.62rem;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    color: var(--text-muted);
+    background: rgba(255,255,255,0.02);
+  }
+  .report-table th:first-child,
+  .report-table td:first-child {
+    text-align: left;
+  }
+  .report-table tr:last-child td { border-bottom: none; }
+  .report-table td strong {
+    color: var(--text-primary);
+    font-weight: 700;
+  }
+  .report-note {
+    margin-top: 8px;
+    font-size: 0.68rem;
+    color: var(--text-muted);
+    line-height: 1.5;
+  }
 
   /* â•â•â• TALLY MODAL â•â•â• */
   .tally-overlay {
@@ -1787,7 +1829,7 @@
 
   <!-- Empty State Hint -->
   <div class="empty-hint" id="empty-hint">
-    <div class="empty-hint-icon">ðŸŒ²</div>
+    <div class="empty-hint-icon">&#x1F332;</div>
     <div class="empty-hint-text">Tap the Boundary tool to start</div>
   </div>
 
@@ -1808,14 +1850,14 @@
 
   <!-- Draw Controls -->
   <div id="draw-controls">
-    <div class="draw-point-count" id="draw-point-count">0 points â€” need 3 to finish</div>
+    <div class="draw-point-count" id="draw-point-count">0 points &mdash; need 3 to finish</div>
     <div class="draw-btn-row">
-      <button class="draw-btn draw-btn-undo" onclick="undoDrawPoint()">â†© Undo</button>
+      <button class="draw-btn draw-btn-undo" onclick="undoDrawPoint()">&#x21A9; Undo</button>
       <button class="draw-btn draw-btn-drop" onclick="dropDrawPoint()">+ Drop Point</button>
-      <button class="draw-btn draw-btn-finish" id="draw-finish-btn" onclick="finishDraw()" disabled>âœ“ Finish</button>
+      <button class="draw-btn draw-btn-finish" id="draw-finish-btn" onclick="finishDraw()" disabled>&#x2713; Finish</button>
     </div>
     <div class="draw-btn-row">
-      <button class="draw-btn draw-btn-cancel" onclick="cancelDraw()">âœ• Cancel</button>
+      <button class="draw-btn draw-btn-cancel" onclick="cancelDraw()">&#x2715; Cancel</button>
     </div>
   </div>
 
@@ -1829,7 +1871,7 @@
       <div class="nav-hud-label">to plot</div>
       <div class="nav-hud-plot" id="nav-plot-label">--</div>
     </div>
-    <button class="nav-hud-close" onclick="stopNavigation()" title="Stop navigation">âœ•</button>
+    <button class="nav-hud-close" onclick="stopNavigation()" title="Stop navigation">&#x2715;</button>
   </div>
 
   <!-- Layers Widget -->
@@ -2029,9 +2071,19 @@
   <div class="field-group">
     <div class="field-label">Log Rule (Sawtimber)</div>
     <select class="field-input" id="setup-logrule" onchange="updateJobLogRuleFromSetup(this.value)">
-      <option value="scribner">Scribner</option>
+      <option value="scribner">Scribner Decimal C</option>
       <option value="international">International 1/4"</option>
       <option value="doyle">Doyle</option>
+    </select>
+  </div>
+  <div class="field-group">
+    <div class="field-label">Girard Form Class</div>
+    <select class="field-input" id="setup-formclass" onchange="updateJobFormClassFromSetup(this.value)">
+      <option value="76">76</option>
+      <option value="77">77</option>
+      <option value="78" selected>78</option>
+      <option value="79">79</option>
+      <option value="80">80</option>
     </select>
   </div>
   <div class="field-group">
@@ -2066,9 +2118,19 @@
     <div style="flex:1">
       <div class="field-label">Log Rule</div>
       <select class="field-input" id="report-logrule" style="padding:8px 10px;font-size:0.8rem" onchange="updateReportLogRule(this.value); generateCruiseReport()">
-        <option value="scribner">Scribner</option>
+        <option value="scribner">Scribner Decimal C</option>
         <option value="international">International 1/4"</option>
         <option value="doyle">Doyle</option>
+      </select>
+    </div>
+    <div style="flex:1">
+      <div class="field-label">Form Class</div>
+      <select class="field-input" id="report-formclass" style="padding:8px 10px;font-size:0.8rem" onchange="updateReportFormClass(this.value); generateCruiseReport()">
+        <option value="76">76</option>
+        <option value="77">77</option>
+        <option value="78" selected>78</option>
+        <option value="79">79</option>
+        <option value="80">80</option>
       </select>
     </div>
     <div style="flex:1">
@@ -2076,7 +2138,7 @@
       <input class="field-input" id="report-acres" type="number" step="0.1" min="0" placeholder="Auto" style="padding:8px 10px;font-size:0.8rem" onchange="generateCruiseReport()">
     </div>
   </div>
-  <div style="display:flex;gap:8px;margin-bottom:14px;">
+  <div style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap;">
     <button class="btn btn-secondary" style="flex:1;margin:0;font-size:0.7rem;padding:10px" onclick="generateCruiseReport()">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><polyline points="23,4 23,10 17,10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
       Refresh
@@ -2085,9 +2147,13 @@
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7,10 12,15 17,10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
       Export CSV
     </button>
+    <button class="btn btn-secondary" style="flex:1;margin:0;font-size:0.7rem;padding:10px;border-color:var(--orange);color:var(--orange)" onclick="printVolumeReport()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><polyline points="6,9 6,2 18,2 18,9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+      Print / PDF
+    </button>
   </div>
   <div id="report-content" style="max-height:60vh;overflow-y:auto;">
-    <div class="report-empty"><div class="report-empty-icon">ðŸ“Š</div>Complete some plots to generate a report.</div>
+    <div class="report-empty"><div class="report-empty-icon">&#x1F4CA;</div>Complete some plots to generate a report.</div>
   </div>
 </div>
 
@@ -2384,126 +2450,284 @@ async function firebaseSignOut() {
 // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 
 // â”€â”€ Sawtimber Tree Scale Tables â”€â”€
-// Source: Reference Handbook for Foresters (USDA Forest Service, NA-FR-15)
-// Columns: number of 16-ft logs. Scribner: 1,1.5,2,2.5,3,3.5,4
-// International & Doyle: 0.5,1,1.5,2,2.5,3,3.5,4
+// Source: USDA Agriculture Handbook No. 222, Mesavage and Girard tables.
+// Exact published values included for form classes 76-80, DBH classes 10-40
+// (even-inch classes), and 16-foot log counts 1.0 through 5.0 with half-log increments.
+// Legacy 0.5-log support for International and Doyle is retained separately because
+// those values are outside the Mesavage/Girard 1-log minimum tables.
 
-const SCRIBNER = {
-  12:[47,61,75,85,95,100,106],  14:[69,92,114,130,146,156,166],
-  16:[95,127,159,185,211,229,247],  18:[123,166,209,244,280,306,331],
-  20:[157,214,270,317,364,398,432],  22:[194,266,338,398,458,504,549],
-  24:[234,322,409,484,558,611,665],  26:[281,388,494,585,676,745,814],
-  28:[327,452,578,686,795,877,959],  30:[382,530,678,806,933,1028,1124],
-  32:[440,612,784,936,1089,1206,1322],  34:[498,695,892,1066,1239,1373,1507],
-  36:[563,789,1015,1216,1416,1572,1728],  38:[629,882,1135,1366,1596,1769,1942],
-  40:[703,988,1274,1532,1791,1993,2195]
+const FORM_CLASS_OPTIONS = [76, 77, 78, 79, 80];
+const EXACT_LOG_STEPS = [1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5];
+const LEGACY_SUBLOG_STEPS = { scribner: [], international: [0.5], doyle: [0.5] };
+const LEGACY_HALF_LOG_FALLBACKS = {
+  international: { 12:30, 14:40, 16:60, 18:70, 20:90, 22:110, 24:130, 26:160, 28:190, 30:220, 32:260, 34:290, 36:330, 38:370, 40:420, 42:460 },
+  doyle: { 12:20, 14:30, 16:40, 18:60, 20:80, 22:100, 24:130, 26:160, 28:190, 30:230, 32:270, 34:300, 36:350, 38:390, 40:430, 42:470 }
 };
-const SCRIBNER_LOGS = [1,1.5,2,2.5,3,3.5,4];
-
-const INTERNATIONAL = {
-  12:[30,60,80,100,120,0,0,0],  14:[40,80,110,140,160,180,0,0],
-  16:[60,100,150,180,210,250,280,310],  18:[70,140,190,240,280,320,360,400],
-  20:[90,170,240,300,350,400,450,500],  22:[110,210,290,360,430,490,560,610],
-  24:[130,250,350,430,510,590,660,740],  26:[160,300,410,510,600,700,790,880],
-  28:[190,350,480,600,700,810,920,1020],  30:[220,410,550,690,810,930,1060,1180],
-  32:[260,470,640,790,940,1080,1220,1360],  34:[290,530,730,900,1060,1220,1380,1540],
-  36:[330,600,820,1010,1200,1380,1560,1740],  38:[370,670,910,1130,1340,1540,1740,1940],
-  40:[420,740,1010,1250,1480,1700,1920,2160],  42:[460,820,1100,1360,1610,1870,2120,2360]
-};
-const INTERNATIONAL_LOGS = [0.5,1,1.5,2,2.5,3,3.5,4];
-
-const DOYLE = {
-  12:[20,30,40,50,60,0,0,0],  14:[30,50,70,80,90,100,0,0],
-  16:[40,70,100,120,140,160,180,190],  18:[60,100,130,160,200,220,240,260],
-  20:[80,130,180,220,260,300,320,360],  22:[100,170,230,280,340,380,420,460],
-  24:[130,220,290,360,430,490,540,600],  26:[160,260,360,440,520,590,660,740],
-  28:[190,320,430,520,620,710,800,880],  30:[230,380,510,630,740,840,940,1040],
-  32:[270,440,590,730,860,990,1120,1220],  34:[300,510,680,850,1000,1140,1300,1440],
-  36:[350,580,780,970,1140,1310,1480,1640],  38:[390,660,880,1100,1290,1480,1680,1860],
-  40:[430,740,990,1230,1450,1660,1880,2080],  42:[470,830,1100,1370,1620,1860,2100,2320]
-};
-const DOYLE_LOGS = [0.5,1,1.5,2,2.5,3,3.5,4];
-
-// â”€â”€ Pulpwood Cord Table (standing trees) â”€â”€
-// Source: Reference Handbook for Foresters, p.7
-// Columns: number of 8-ft sticks (1..7)
-const PULP_CORDS = {
-  5: [.010,.018,0,0,0,0,0],
-  6: [.018,.030,.043,0,0,0,0],
-  7: [.025,.039,.056,.074,0,0,0],
-  8: [.032,.050,.070,.092,.116,0,0],
-  9: [.040,.061,.085,.112,.140,.168,0],
-  10:[.049,.074,.101,.132,.167,.200,.239],
-  11:[.059,.087,.119,.155,.195,.233,.280],
-  12:[.070,.100,.138,.180,.225,.271,.324],
-  14:[.095,.134,.179,.233,.291,.351,.419],
-  16:[.120,.168,.222,.290,.361,.437,.521],
-  18:[.146,.208,.270,.350,.439,.531,.634],
-  20:[.186,.246,.320,.416,.522,.632,.755],
-  22:[.220,.294,.374,.494,.612,.739,.883]
-};
-const PULP_STICKS = [1,2,3,4,5,6,7];
-
-// â”€â”€ Weight table: tons per standard cord by species â”€â”€
-// Source: Reference Handbook for Foresters, p.15
-const TONS_PER_CORD = {
-  // Pines
-  'LP': 2.4, 'LL': 2.4, 'SP': 2.4, 'VP': 2.4,  // Loblolly, longleaf, shortleaf, Virginia
-  'WP': 1.6, 'RP': 1.9,                           // White pine, red pine
-  // Oaks
-  'WO': 2.8, 'CO': 2.8, 'PO': 2.8,               // White oak, chestnut oak, post oak
-  'RO': 2.9, 'SO': 2.9, 'BO': 2.9, 'NO': 2.9,    // Red oak, scarlet, black, N red oak
-  'WL': 2.9,                                       // Water oak / willow oak
-  // Hickories
-  'HK': 2.9, 'MH': 2.9, 'PH': 2.9, 'SB': 2.9,   // Hickory, mockernut, pignut, shagbark
-  // Maples
-  'SM': 2.7, 'RM': 2.2,                           // Sugar maple, red maple
-  // Other hardwoods
-  'YP': 1.7, 'TU': 1.7,                           // Yellow poplar / tuliptree
-  'GU': 2.3, 'BG': 2.3,                           // Sweetgum, blackgum
-  'WA': 2.2, 'GA': 2.2,                           // White ash, green ash
-  'BC': 2.0,                                       // Black cherry
-  'AM': 2.5,                                       // American elm
-  'SY': 2.4,                                       // Sycamore
-  'BW': 2.6,                                       // Black walnut
-  'BE': 2.5,                                       // Beech
-  'BL': 2.6,                                       // Black locust
-  'CW': 2.2,                                       // Cottonwood
-  'BIR': 2.6,                                      // Birch (yellow)
-  'HM': 2.3,                                       // Hemlock
-  'RC': 1.7, 'WC': 1.3,                           // Red cedar, white cedar
-  'DW': 2.3,                                       // Dogwood
-  'HH': 2.3,                                       // Hackberry
-  'MS': 2.3,                                       // Sassafras
-  'PW': 1.9,                                       // Persimmon
-  'HW': 2.5,                                       // Hardwood mix
-  'SF': 2.0,                                       // Softwood mix
-  'OTH': 2.3,
-  '_default': 2.3
-};
-
-function getTonsPerCord(sppCode) {
-  return TONS_PER_CORD[sppCode] || TONS_PER_CORD['_default'];
-}
-
-// â”€â”€ Convert total tree height (ft) to number of 8-ft sticks â”€â”€
-function heightToSticks(heightFt) {
-  if (!heightFt || heightFt <= 0) return 1;
-  const sticks = Math.floor(heightFt / 8);
-  return Math.max(1, Math.min(sticks, 7));
-}
-
-// Available DBH classes for tally buttons
-const DBH_CLASSES = [6,7,8,9,10,12,14,16,18,20,22,24,26,28,30,32,34,36,38,40];
-
-// Available log rule options
+const VOLUME_TABLES = JSON.parse(atob([
+  'eyJpbnRlcm5hdGlvbmFsIjp7Ijc2Ijp7IjEwIjp7IjEiOjM0LCIxLjUiOjQ0LCIyIjo1NSwiMi41Ijo2MiwiMyI6Njl9LCIxMiI6eyIxIjo1MiwiMS41Ijo2',
+  'OCwiMiI6ODUsIjIuNSI6OTh9LCIxNCI6eyIxIjo3NCwiMS41Ijo5OSwiMiI6MTI0LCIyLjUiOjE0MywiMyI6MTYyLCIzLjUiOjE3NCwiNCI6MTg2fSwiMTYi',
+  'OnsiMSI6MTAwLCIxLjUiOjEzNCwiMiI6MTY5LCIyLjUiOjE5OCwiMyI6MjI2LCIzLjUiOjI0NiwiNCI6MjY3fSwiMTgiOnsiMSI6MTI5LCIxLjUiOjE3NSwi',
+  'MiI6MjIxLCIyLjUiOjI1OSwiMyI6Mjk3LCIzLjUiOjMyNSwiNCI6MzUzfSwiMjAiOnsiMSI6MTYyLCIxLjUiOjIyMCwiMiI6Mjc5LCIyLjUiOjMyOCwiMyI6',
+  'Mzc3LCIzLjUiOjQxMywiNCI6NDQ5LCI0LjUiOjQ3OCwiNSI6NTA3fSwiMjIiOnsiMSI6MTk4LCIxLjUiOjI3MSwiMiI6MzQ0LCIyLjUiOjQwNiwiMyI6NDY3',
+  'LCIzLjUiOjUxNCwiNCI6NTYwLCI0LjUiOjYwMCwiNSI6NjM5fSwiMjQiOnsiMSI6MjM3LCIxLjUiOjMyNiwiMiI6NDE1LCIyLjUiOjQ5MSwiMyI6NTY3LCIz',
+  'LjUiOjYyMiwiNCI6Njc2LCI0LjUiOjczMCwiNSI6Nzg1fSwiMjYiOnsiMSI6Mjg0LCIxLjUiOjM5MiwiMiI6NTAwLCIyLjUiOjU5MiwiMyI6Njg0LCIzLjUi',
+  'Ojc1NSwiNCI6ODI2LCI0LjUiOjg5MiwiNSI6OTU5fSwiMjgiOnsiMSI6MzMxLCIxLjUiOjQ1OCwiMiI6NTg1LCIyLjUiOjY5NiwiMyI6ODA2LCIzLjUiOjg4',
+  'OCwiNCI6OTcxLCI0LjUiOjEwNTIsIjUiOjExMzR9LCIzMCI6eyIxIjozODEsIjEuNSI6NTI5LCIyIjo2NzcsIjIuNSI6ODA1LCIzIjo5MzMsIjMuNSI6MTAy',
+  'OSwiNCI6MTEyNSwiNC41IjoxMjI2LCI1IjoxMzI2fSwiMzIiOnsiMSI6NDM1LCIxLjUiOjYwNiwiMiI6Nzc2LCIyLjUiOjkyNiwiMyI6MTA3NywiMy41Ijox',
+  'MTkyLCI0IjoxMzA3LCI0LjUiOjE0MTcsIjUiOjE1Mjd9LCIzNCI6eyIxIjo0OTMsIjEuNSI6Njg3LCIyIjo4ODEsIjIuNSI6MTA1NCwiMyI6MTIyNywiMy41',
+  'IjoxMzU5LCI0IjoxNDkxLCI0LjUiOjE2MTgsIjUiOjE3NDZ9LCIzNiI6eyIxIjo1NTksIjEuNSI6NzgyLCIyIjoxMDA2LCIyLjUiOjEyMDUsIjMiOjE0MDQs',
+  'IjMuNSI6MTU1NywiNCI6MTcxMCwiNC41IjoxODU5LCI1IjoyMDA4fSwiMzgiOnsiMSI6NjI0LCIxLjUiOjg3NCwiMiI6MTEyNSwiMi41IjoxMzU0LCIzIjox',
+  'NTgyLCIzLjUiOjE3NTQsIjQiOjE5MjYsIjQuNSI6MjEwMSwiNSI6MjI3Nn0sIjQwIjp7IjEiOjY5MywiMS41Ijo5NzQsIjIiOjEyNTYsIjIuNSI6MTUxMCwi',
+  'MyI6MTc2NCwiMy41IjoxOTYyLCI0IjoyMTU5LCI0LjUiOjIzNDYsIjUiOjI1MzJ9fSwiNzciOnsiMTAiOnsiMSI6MzUsIjEuNSI6NDYsIjIiOjU3LCIyLjUi',
+  'OjY0LCIzIjo3MH0sIjEyIjp7IjEiOjU0LCIxLjUiOjcxLCIyIjo4OCwiMi41IjoxMDIsIjMiOjExNX0sIjE0Ijp7IjEiOjc3LCIxLjUiOjEwMywiMiI6MTI5',
+  'LCIyLjUiOjE0OSwiMyI6MTY5LCIzLjUiOjE4MiwiNCI6MTk2fSwiMTYiOnsiMSI6MTAyLCIxLjUiOjEzOCwiMiI6MTczLCIyLjUiOjIwMiwiMyI6MjMxLCIz',
+  'LjUiOjI1MiwiNCI6Mjc0fSwiMTgiOnsiMSI6MTMzLCIxLjUiOjE4MCwiMiI6MjI4LCIyLjUiOjI2OCwiMyI6MzA3LCIzLjUiOjMzNiwiNCI6MzY2fSwiMjAi',
+  'OnsiMSI6MTY2LCIxLjUiOjIyNiwiMiI6Mjg3LCIyLjUiOjMzOCwiMyI6Mzg4LCIzLjUiOjQyNiwiNCI6NDY0LCI0LjUiOjQ5NCwiNSI6NTI0fSwiMjIiOnsi',
+  'MSI6MjAzLCIxLjUiOjI3OCwiMiI6MzU0LCIyLjUiOjQxNywiMyI6NDgwLCIzLjUiOjUyOCwiNCI6NTc3LCI0LjUiOjYxOCwiNSI6NjYwfSwiMjQiOnsiMSI6',
+  'MjQ2LCIxLjUiOjMzOCwiMiI6NDMxLCIyLjUiOjUxMCwiMyI6NTkwLCIzLjUiOjY0NywiNCI6NzA0LCI0LjUiOjc2MSwiNSI6ODE4fSwiMjYiOnsiMSI6Mjkw',
+  'LCIxLjUiOjQwMCwiMiI6NTExLCIyLjUiOjYwNiwiMyI6NzAxLCIzLjUiOjc3NCwiNCI6ODQ2LCI0LjUiOjkxNCwiNSI6OTgzfSwiMjgiOnsiMSI6MzQxLCIx',
+  'LjUiOjQ3MiwiMiI6NjA0LCIyLjUiOjcxOCwiMyI6ODMzLCIzLjUiOjkxOSwiNCI6MTAwNSwiNC41IjoxMDkwLCI1IjoxMTc1fSwiMzAiOnsiMSI6MzkyLCIx',
+  'LjUiOjU0NCwiMiI6Njk3LCIyLjUiOjgzMCwiMyI6OTYyLCIzLjUiOjEwNjIsIjQiOjExNjEsIjQuNSI6MTI2NiwiNSI6MTM3MH0sIjMyIjp7IjEiOjQ0Nywi',
+  'MS41Ijo2MjIsIjIiOjc5OCwiMi41Ijo5NTMsIjMiOjExMDgsIjMuNSI6MTIyOCwiNCI6MTM0NywiNC41IjoxNDYxLCI1IjoxNTc1fSwiMzQiOnsiMSI6NTA5',
+  'LCIxLjUiOjcxMCwiMiI6OTEyLCIyLjUiOjEwOTIsIjMiOjEyNzEsIjMuNSI6MTQxMCwiNCI6MTU0OCwiNC41IjoxNjgwLCI1IjoxODEzfSwiMzYiOnsiMSI6',
+  'NTcyLCIxLjUiOjgwMSwiMiI6MTAzMCwiMi41IjoxMjM0LCIzIjoxNDM4LCIzLjUiOjE1OTYsIjQiOjE3NTUsIjQuNSI6MTkwOCwiNSI6MjA2MX0sIjM4Ijp7',
+  'IjEiOjY0MiwiMS41Ijo5MDAsIjIiOjExNTksIjIuNSI6MTM5NSwiMyI6MTYzMSwiMy41IjoxODEwLCI0IjoxOTg5LCI0LjUiOjIxNzAsIjUiOjIzNTF9LCI0',
+  'MCI6eyIxIjo3MTIsIjEuNSI6MTAwMiwiMiI6MTI5MiwiMi41IjoxNTU0LCIzIjoxODE2LCIzLjUiOjIwMjEsIjQiOjIyMjYsIjQuNSI6MjQyMCwiNSI6MjYx',
+  'M319LCI3OCI6eyIxMCI6eyIxIjozNiwiMS41Ijo0OCwiMiI6NTksIjIuNSI6NjYsIjMiOjczfSwiMTIiOnsiMSI6NTYsIjEuNSI6NzQsIjIiOjkyLCIyLjUi',
+  'OjEwNiwiMyI6MTIwLCIzLjUiOjEyOCwiNCI6MTM3fSwiMTQiOnsiMSI6NzgsIjEuNSI6MTA1LCIyIjoxMzIsIjIuNSI6MTUzLCIzIjoxNzQsIjMuNSI6MTg3',
+  'LCI0IjoyMDB9LCIxNiI6eyIxIjoxMDYsIjEuNSI6MTQzLCIyIjoxODAsIjIuNSI6MjEwLCIzIjoyNDEsIjMuNSI6MjYzLCI0IjoyODV9LCIxOCI6eyIxIjox',
+  'MzYsIjEuNSI6MTg0LCIyIjoyMzMsIjIuNSI6Mjc0LCIzIjozMTQsIjMuNSI6MzQ0LCI0IjozNzR9LCIyMCI6eyIxIjoxNzEsIjEuNSI6MjM0LCIyIjoyOTYs',
+  'IjIuNSI6MzQ4LCIzIjo0MDEsIjMuNSI6NDQwLCI0Ijo0ODAsIjQuNSI6NTExLCI1Ijo1NDJ9LCIyMiI6eyIxIjoyMTEsIjEuNSI6MjkwLCIyIjozNjgsIjIu',
+  'NSI6NDM0LCIzIjo1MDAsIjMuNSI6NTUyLCI0Ijo2MDMsIjQuNSI6NjQ3LCI1Ijo2OTF9LCIyNCI6eyIxIjoyNTEsIjEuNSI6MzQ2LCIyIjo0NDEsIjIuNSI6',
+  'NTIzLCIzIjo2MDUsIjMuNSI6NjY0LCI0Ijo3MjMsIjQuNSI6NzgyLCI1Ijo4NDB9LCIyNiI6eyIxIjoyOTksIjEuNSI6NDE0LCIyIjo1MjgsIjIuNSI6NjI2',
+  'LCIzIjo3MjUsIjMuNSI6ODAxLCI0Ijo4NzcsIjQuNSI6OTQ5LCI1IjoxMDIxfSwiMjgiOnsiMSI6MzQ3LCIxLjUiOjQ4MiwiMiI6NjE2LCIyLjUiOjczMywi',
+  'MyI6ODUwLCIzLjUiOjkzOCwiNCI6MTAyNywiNC41IjoxMTE0LCI1IjoxMjAxfSwiMzAiOnsiMSI6NDAzLCIxLjUiOjU2MCwiMiI6NzE4LCIyLjUiOjg1NCwi',
+  'MyI6OTkxLCIzLjUiOjEwOTQsIjQiOjExOTgsIjQuNSI6MTMwNiwiNSI6MTQxNX0sIjMyIjp7IjEiOjQ2MiwiMS41Ijo2NDQsIjIiOjgyNiwiMi41Ijo5ODgs',
+  'IjMiOjExNDksIjMuNSI6MTI3NCwiNCI6MTQwMCwiNC41IjoxNTE4LCI1IjoxNjM3fSwiMzQiOnsiMSI6NTIxLCIxLjUiOjcyOCwiMiI6OTM0LCIyLjUiOjEx',
+  'MTksIjMiOjEzMDQsIjMuNSI6MTQ0NywiNCI6MTU5MCwiNC41IjoxNzI3LCI1IjoxODY0fSwiMzYiOnsiMSI6NTg5LCIxLjUiOjgyNiwiMiI6MTA2MywiMi41',
+  'IjoxMjc0LCIzIjoxNDg1LCIzLjUiOjE2NTAsIjQiOjE4MTQsIjQuNSI6MTk3NCwiNSI6MjEzNX0sIjM4Ijp7IjEiOjY1NiwiMS41Ijo5MjEsIjIiOjExODYs',
+  'IjIuNSI6MTQyOCwiMyI6MTY3MCwiMy41IjoxODU0LCI0IjoyMDM4LCI0LjUiOjIyMjQsIjUiOjI0MTB9LCI0MCI6eyIxIjo3MzEsIjEuNSI6MTAzMCwiMiI6',
+  'MTMyOSwiMi41IjoxNTk4LCIzIjoxODY4LCIzLjUiOjIwODEsIjQiOjIyOTQsIjQuNSI6MjQ5NCwiNSI6MjY5M319LCI3OSI6eyIxMCI6eyIxIjozOCwiMS41',
+  'Ijo1MCwiMiI6NjEsIjIuNSI6NjksIjMiOjc3fSwiMTIiOnsiMSI6NTgsIjEuNSI6NzcsIjIiOjk2LCIyLjUiOjExMCwiMyI6MTI0LCIzLjUiOjEzMiwiNCI6',
+  'MTQxfSwiMTQiOnsiMSI6ODIsIjEuNSI6MTEwLCIyIjoxMzgsIjIuNSI6MTYwLCIzIjoxODIsIjMuNSI6MTk2LCI0IjoyMTF9LCIxNiI6eyIxIjoxMDgsIjEu',
+  'NSI6MTQ2LCIyIjoxODMsIjIuNSI6MjE0LCIzIjoyNDYsIjMuNSI6MjY5LCI0IjoyOTJ9LCIxOCI6eyIxIjoxNDAsIjEuNSI6MTkwLCIyIjoyNDAsIjIuNSI6',
+  'MjgyLCIzIjozMjUsIjMuNSI6MzU2LCI0IjozODh9LCIyMCI6eyIxIjoxNzYsIjEuNSI6MjQwLCIyIjozMDUsIjIuNSI6MzYwLCIzIjo0MTQsIjMuNSI6NDU1',
+  'LCI0Ijo0OTYsIjQuNSI6NTI4LCI1Ijo1NjF9LCIyMiI6eyIxIjoyMTYsIjEuNSI6Mjk3LCIyIjozNzgsIjIuNSI6NDQ2LCIzIjo1MTQsIjMuNSI6NTY4LCI0',
+  'Ijo2MjEsIjQuNSI6NjY2LCI1Ijo3MTB9LCIyNCI6eyIxIjoyNjAsIjEuNSI6MzU5LCIyIjo0NTgsIjIuNSI6NTQzLCIzIjo2MjgsIjMuNSI6NjkwLCI0Ijo3',
+  'NTMsIjQuNSI6ODE0LCI1Ijo4NzV9LCIyNiI6eyIxIjozMDUsIjEuNSI6NDIyLCIyIjo1NDAsIjIuNSI6NjQxLCIzIjo3NDIsIjMuNSI6ODIwLCI0Ijo4OTks',
+  'IjQuNSI6OTcyLCI1IjoxMDQ2fSwiMjgiOnsiMSI6MzU3LCIxLjUiOjQ5NiwiMiI6NjM1LCIyLjUiOjc1NiwiMyI6ODc3LCIzLjUiOjk2OSwiNCI6MTA2MSwi',
+  'NC41IjoxMTUyLCI1IjoxMjQyfSwiMzAiOnsiMSI6NDEzLCIxLjUiOjU3NSwiMiI6NzM3LCIyLjUiOjg3OCwiMyI6MTAyMCwiMy41IjoxMTI4LCI0IjoxMjM1',
+  'LCI0LjUiOjEzNDYsIjUiOjE0NTh9LCIzMiI6eyIxIjo0NzQsIjEuNSI6NjYxLCIyIjo4NDgsIjIuNSI6MTAxNCwiMyI6MTE4MSwiMy41IjoxMzEwLCI0Ijox',
+  'NDQwLCI0LjUiOjE1NjIsIjUiOjE2ODV9LCIzNCI6eyIxIjo1MzgsIjEuNSI6NzUyLCIyIjo5NjYsIjIuNSI6MTE1OCwiMyI6MTM0OSwiMy41IjoxNDk4LCI0',
+  'IjoxNjQ3LCI0LjUiOjE3OTAsIjUiOjE5MzJ9LCIzNiI6eyIxIjo2MDIsIjEuNSI6ODQ0LCIyIjoxMDg3LCIyLjUiOjEzMDQsIjMiOjE1MjEsIjMuNSI6MTY5',
+  'MCwiNCI6MTg2MCwiNC41IjoyMDI0LCI1IjoyMTg5fSwiMzgiOnsiMSI6Njc0LCIxLjUiOjk0NywiMiI6MTIyMCwiMi41IjoxNDcwLCIzIjoxNzIwLCIzLjUi',
+  'OjE5MTAsIjQiOjIxMDEsIjQuNSI6MjI5NCwiNSI6MjQ4OH0sIjQwIjp7IjEiOjc1MCwiMS41IjoxMDU4LCIyIjoxMzY1LCIyLjUiOjE2NDQsIjMiOjE5MjMs',
+  'IjMuNSI6MjE0MiwiNCI6MjM2MiwiNC41IjoyNTY4LCI1IjoyNzc1fX0sIjgwIjp7IjEwIjp7IjEiOjM5LCIxLjUiOjUxLCIyIjo2MywiMi41Ijo3MiwiMyI6',
+  'ODB9LCIxMiI6eyIxIjo1OSwiMS41Ijo3OCwiMiI6OTgsIjIuNSI6MTEyLCIzIjoxMjcsIjMuNSI6MTM2LCI0IjoxNDZ9LCIxNCI6eyIxIjo4MywiMS41Ijox',
+  'MTIsIjIiOjE0MSwiMi41IjoxNjQsIjMiOjE4NiwiMy41IjoyMDEsIjQiOjIxNn0sIjE2Ijp7IjEiOjExMiwiMS41IjoxNTEsIjIiOjE5MCwiMi41IjoyMjMs',
+  'IjMiOjI1NiwiMy41IjoyODAsIjQiOjMwNX0sIjE4Ijp7IjEiOjE0NCwiMS41IjoxOTYsIjIiOjI0OCwiMi41IjoyOTIsIjMiOjMzNiwiMy41IjozNjksIjQi',
+  'OjQwMn0sIjIwIjp7IjEiOjE4MSwiMS41IjoyNDgsIjIiOjMxNCwiMi41IjozNzAsIjMiOjQyNywiMy41Ijo0NzAsIjQiOjUxMiwiNC41Ijo1NDYsIjUiOjU4',
+  'MH0sIjIyIjp7IjEiOjIyMSwiMS41IjozMDQsIjIiOjM4NywiMi41Ijo0NTgsIjMiOjUyOCwiMy41Ijo1ODMsIjQiOjYzOCwiNC41Ijo2ODUsIjUiOjczMn0s',
+  'IjI0Ijp7IjEiOjI2NiwiMS41IjozNjgsIjIiOjQ2OSwiMi41Ijo1NTYsIjMiOjY0NCwiMy41Ijo3MDgsIjQiOjc3MywiNC41Ijo4MzYsIjUiOjg5OX0sIjI2',
+  'Ijp7IjEiOjMxNSwiMS41Ijo0MzYsIjIiOjU1OCwiMi41Ijo2NjIsIjMiOjc2NywiMy41Ijo4NDksIjQiOjkzMSwiNC41IjoxMDA4LCI1IjoxMDg2fSwiMjgi',
+  'OnsiMSI6MzY3LCIxLjUiOjUxMCwiMiI6NjU0LCIyLjUiOjc3OSwiMyI6OTA0LCIzLjUiOjEwMDAsIjQiOjEwOTYsIjQuNSI6MTE5MCwiNSI6MTI4NH0sIjMw',
+  'Ijp7IjEiOjQyNCwiMS41Ijo1OTEsIjIiOjc1OCwiMi41Ijo5MDQsIjMiOjEwNTAsIjMuNSI6MTE2MSwiNCI6MTI3MiwiNC41IjoxMzg4LCI1IjoxNTAzfSwi',
+  'MzIiOnsiMSI6NDg1LCIxLjUiOjY3OCwiMiI6ODcwLCIyLjUiOjEwNDIsIjMiOjEyMTMsIjMuNSI6MTM0NiwiNCI6MTQ4MCwiNC41IjoxNjA2LCI1IjoxNzMz',
+  'fSwiMzQiOnsiMSI6NTUwLCIxLjUiOjc3MCwiMiI6OTg5LCIyLjUiOjExODYsIjMiOjEzODMsIjMuNSI6MTUzNywiNCI6MTY5MSwiNC41IjoxODM4LCI1Ijox',
+  'OTg0fSwiMzYiOnsiMSI6NjIwLCIxLjUiOjg3MCwiMiI6MTEyMSwiMi41IjoxMzQ2LCIzIjoxNTcxLCIzLjUiOjE3NDYsIjQiOjE5MjIsIjQuNSI6MjA5Mywi',
+  'NSI6MjI2NH0sIjM4Ijp7IjEiOjY5MywiMS41Ijo5NzQsIjIiOjEyNTYsIjIuNSI6MTUxNCwiMyI6MTc3MiwiMy41IjoxOTcwLCI0IjoyMTY3LCI0LjUiOjIz',
+  'NjgsIjUiOjI1Njh9LCI0MCI6eyIxIjo3NzAsIjEuNSI6MTA4NiwiMiI6MTQwMywiMi41IjoxNjkwLCIzIjoxOTc3LCIzLjUiOjIyMDQsIjQiOjI0MzIsIjQu',
+  'NSI6MjY0NiwiNSI6Mjg2MH19fSwic2NyaWJuZXIiOnsiNzYiOnsiMTAiOnsiMSI6MjYsIjEuNSI6MzMsIjIiOjQwLCIyLjUiOjQ0LCIzIjo0OH0sIjEyIjp7',
+  'IjEiOjQzLCIxLjUiOjU2LCIyIjo2OCwiMi41Ijo3NywiMyI6ODZ9LCIxNCI6eyIxIjo2NCwiMS41Ijo4NCwiMiI6MTA1LCIyLjUiOjEyMCwiMyI6MTM1LCIz',
+  'LjUiOjE0NCwiNCI6MTUyfSwiMTYiOnsiMSI6OTAsIjEuNSI6MTIwLCIyIjoxNTAsIjIuNSI6MTc0LCIzIjoxOTgsIjMuNSI6MjE0LCI0IjoyMzF9LCIxOCI6',
+  'eyIxIjoxMTcsIjEuNSI6MTU4LCIyIjoxOTgsIjIuNSI6MjMyLCIzIjoyNjUsIjMuNSI6Mjg4LCI0IjozMTJ9LCIyMCI6eyIxIjoxNDgsIjEuNSI6MjAxLCIy',
+  'IjoyNTQsIjIuNSI6Mjk4LCIzIjozNDEsIjMuNSI6MzcyLCI0Ijo0MDMsIjQuNSI6NDI4LCI1Ijo0NTJ9LCIyMiI6eyIxIjoxODIsIjEuNSI6MjQ4LCIyIjoz',
+  'MTUsIjIuNSI6MzcwLCIzIjo0MjYsIjMuNSI6NDY4LCI0Ijo1MDksIjQuNSI6NTQ0LCI1Ijo1Nzh9LCIyNCI6eyIxIjoyMjEsIjEuNSI6MzAzLCIyIjozODUs',
+  'IjIuNSI6NDU0LCIzIjo1MjMsIjMuNSI6NTcyLCI0Ijo2MjAsIjQuNSI6NjY4LCI1Ijo3MTZ9LCIyNiI6eyIxIjoyNjYsIjEuNSI6MzY2LCIyIjo0NjUsIjIu',
+  'NSI6NTUwLCIzIjo2MzYsIjMuNSI6NzAxLCI0Ijo3NjYsIjQuNSI6ODI2LCI1Ijo4ODZ9LCIyOCI6eyIxIjozMTEsIjEuNSI6NDMwLCIyIjo1NDgsIjIuNSI6',
+  'NjUwLCIzIjo3NTIsIjMuNSI6ODI4LCI0Ijo5MDMsIjQuNSI6OTc5LCI1IjoxMDU1fSwiMzAiOnsiMSI6MzYxLCIxLjUiOjUwMCwiMiI6NjM5LCIyLjUiOjc1',
+  'OCwiMyI6ODc4LCIzLjUiOjk2NiwiNCI6MTA1NCwiNC41IjoxMTQ2LCI1IjoxMjM5fSwiMzIiOnsiMSI6NDE0LCIxLjUiOjU3NCwiMiI6NzM0LCIyLjUiOjg3',
+  'NiwiMyI6MTAxOCwiMy41IjoxMTI1LCI0IjoxMjMyLCI0LjUiOjEzMzQsIjUiOjE0Mzd9LCIzNCI6eyIxIjo0NzIsIjEuNSI6NjU2LCIyIjo4NDAsIjIuNSI6',
+  'MTAwNCwiMyI6MTE2OCwiMy41IjoxMjkwLCI0IjoxNDEzLCI0LjUiOjE1MzMsIjUiOjE2NTN9LCIzNiI6eyIxIjo1MzQsIjEuNSI6NzQ3LCIyIjo5NjAsIjIu',
+  'NSI6MTE0OCwiMyI6MTMzNywiMy41IjoxNDgyLCI0IjoxNjI2LCI0LjUiOjE3NjUsIjUiOjE5MDR9LCIzOCI6eyIxIjo1OTcsIjEuNSI6ODM2LCIyIjoxMDc1',
+  'LCIyLjUiOjEyOTIsIjMiOjE1MTAsIjMuNSI6MTY3MiwiNCI6MTgzNSwiNC41IjoyMDAwLCI1IjoyMTY2fSwiNDAiOnsiMSI6NjY1LCIxLjUiOjkzNCwiMiI6',
+  'MTIwMywiMi41IjoxNDQ2LCIzIjoxNjg4LCIzLjUiOjE4NzYsIjQiOjIwNjQsIjQuNSI6MjI0MCwiNSI6MjQxNn19LCI3NyI6eyIxMCI6eyIxIjoyNywiMS41',
+  'IjozNCwiMiI6NDIsIjIuNSI6NDYsIjMiOjQ5fSwiMTIiOnsiMSI6NDUsIjEuNSI6NTgsIjIiOjcxLCIyLjUiOjgwLCIzIjo5MH0sIjE0Ijp7IjEiOjg4LCIx',
+  'LjUiOjExMCwiMiI6MTI2LCIyLjUiOjE0MiwiMyI6MTUyLCIzLjUiOjE2MX0sIjE2Ijp7IjEiOjkxLCIxLjUiOjEyMiwiMiI6MTUyLCIyLjUiOjE3NiwiMyI6',
+  'MjAxLCIzLjUiOjIxOCwiNCI6MjM1fSwiMTgiOnsiMSI6MTIxLCIxLjUiOjE2MywiMiI6MjA1LCIyLjUiOjI0MCwiMyI6Mjc1LCIzLjUiOjMwMCwiNCI6MzI1',
+  'fSwiMjAiOnsiMSI6MTUzLCIxLjUiOjIwOCwiMiI6MjYzLCIyLjUiOjMwOCwiMyI6MzUzLCIzLjUiOjM4NiwiNCI6NDE4LCI0LjUiOjQ0NCwiNSI6NDcwfSwi',
+  'MjIiOnsiMSI6MTg3LCIxLjUiOjI1NiwiMiI6MzI0LCIyLjUiOjMyLCIzIjo0MzksIjMuNSI6NDgyLCI0Ijo1MjUsIjQuNSI6NTYxLCI1Ijo1OTd9LCIyNCI6',
+  'eyIxIjoyMjksIjEuNSI6MzE0LCIyIjo0MDAsIjIuNSI6NDcyLCIzIjo1NDQsIjMuNSI6NTk2LCI0Ijo2NDgsIjQuNSI6Njk4LCI1Ijo3NDl9LCIyNiI6eyIx',
+  'IjoyNzIsIjEuNSI6Mzc0LCIyIjo0NzYsIjIuNSI6NTY0LCIzIjo2NTEsIjMuNSI6NzE4LCI0Ijo3ODUsIjQuNSI6ODQ3LCI1Ijo5MDl9LCIyOCI6eyIxIjoz',
+  'MjAsIjEuNSI6NDQyLCIyIjo1NjUsIjIuNSI6NjcxLCIzIjo3NzcsIjMuNSI6ODU2LCI0Ijo5MzYsIjQuNSI6MTAxNSwiNSI6MTA5NH0sIjMwIjp7IjEiOjM3',
+  'MiwiMS41Ijo1MTYsIjIiOjY1OSwiMi41Ijo3ODIsIjMiOjkwNiwiMy41Ijo5OTgsIjQiOjEwOTAsIjQuNSI6MTE4NiwiNSI6MTI4Mn0sIjMyIjp7IjEiOjQy',
+  'NiwiMS41Ijo1OTEsIjIiOjc1NiwiMi41Ijo5MDIsIjMiOjEwNDksIjMuNSI6MTE2MCwiNCI6MTI3MSwiNC41IjoxMzc3LCI1IjoxNDgzfSwiMzQiOnsiMSI6',
+  'NDg2LCIxLjUiOjY3NywiMiI6ODY4LCIyLjUiOjEwMzcsIjMiOjEyMDYsIjMuNSI6MTMzNiwiNCI6MTQ2NSwiNC41IjoxNTkwLCI1IjoxNzE1fSwiMzYiOnsi',
+  'MSI6NTQ2LCIxLjUiOjc2NCwiMiI6OTgyLCIyLjUiOjExNzYsIjMiOjEzNzEsIjMuNSI6MTUyMCwiNCI6MTY2OSwiNC41IjoxODEyLCI1IjoxOTU0fSwiMzgi',
+  'OnsiMSI6NjE1LCIxLjUiOjg2MiwiMiI6MTEwOSwiMi41IjoxMzM0LCIzIjoxNTU5LCIzLjUiOjE3MjcsIjQiOjE4OTUsIjQuNSI6MjA2OCwiNSI6MjI0MX0s',
+  'IjQwIjp7IjEiOjY4MywiMS41Ijo5NjAsIjIiOjEyMzcsIjIuNSI6MTQ4OCwiMyI6MTczOCwiMy41IjoxOTMyLCI0IjoyMTI3LCI0LjUiOjIzMTAsIjUiOjI0',
+  'OTR9fSwiNzgiOnsiMTAiOnsiMSI6MjgsIjEuNSI6MzYsIjIiOjQ0LCIyLjUiOjQ4LCIzIjo1Mn0sIjEyIjp7IjEiOjQ3LCIxLjUiOjYxLCIyIjo3NSwiMi41',
+  'Ijo4NSwiMyI6OTUsIjMuNSI6MTAwLCI0IjoxMDZ9LCIxNCI6eyIxIjo2OSwiMS41Ijo5MiwiMiI6MTE0LCIyLjUiOjEzMCwiMyI6MTQ2LCIzLjUiOjE1Niwi',
+  'NCI6MTY2fSwiMTYiOnsiMSI6OTUsIjEuNSI6MTI3LCIyIjoxNTksIjIuNSI6MTg1LCIzIjoyMTEsIjMuNSI6MjI5LCI0IjoyNDd9LCIxOCI6eyIxIjoxMjMs',
+  'IjEuNSI6MTY2LCIyIjoyMDksIjIuNSI6MjQ0LCIzIjoyODAsIjMuNSI6MzA2LCI0IjozMzF9LCIyMCI6eyIxIjoxNTcsIjEuNSI6MjE0LCIyIjoyNzAsIjIu',
+  'NSI6MzE3LCIzIjozNjQsIjMuNSI6Mzk4LCI0Ijo0MzIsIjQuNSI6NDU5LCI1Ijo0ODZ9LCIyMiI6eyIxIjoxOTQsIjEuNSI6MjY2LCIyIjozMzgsIjIuNSI6',
+  'Mzk4LCIzIjo0NTgsIjMuNSI6NTA0LCI0Ijo1NDksIjQuNSI6NTg4LCI1Ijo2MjZ9LCIyNCI6eyIxIjoyMzQsIjEuNSI6MzIyLCIyIjo0MDksIjIuNSI6NDg0',
+  'LCIzIjo1NTgsIjMuNSI6NjExLCI0Ijo2NjUsIjQuNSI6NzE4LCI1Ijo3NzB9LCIyNiI6eyIxIjoyODEsIjEuNSI6Mzg4LCIyIjo0OTQsIjIuNSI6NTg1LCIz',
+  'Ijo2NzYsIjMuNSI6NzQ1LCI0Ijo4MTQsIjQuNSI6ODgwLCI1Ijo5NDV9LCIyOCI6eyIxIjozMjcsIjEuNSI6NDUyLCIyIjo1NzgsIjIuNSI6Njg2LCIzIjo3',
+  'OTUsIjMuNSI6ODc3LCI0Ijo5NTksIjQuNSI6MTA0MCwiNSI6MTEyMH0sIjMwIjp7IjEiOjM4MiwiMS41Ijo1MzAsIjIiOjY3OCwiMi41Ijo4MDYsIjMiOjkz',
+  'MywiMy41IjoxMDI4LCI0IjoxMTI0LCI0LjUiOjEyMjQsIjUiOjEzMjV9LCIzMiI6eyIxIjo0NDAsIjEuNSI6NjEyLCIyIjo3ODQsIjIuNSI6OTM2LCIzIjox',
+  'MDg5LCIzLjUiOjEyMDYsIjQiOjEzMjIsIjQuNSI6MTQzMiwiNSI6MTU0M30sIjM0Ijp7IjEiOjQ5OCwiMS41Ijo2OTUsIjIiOjg5MiwiMi41IjoxMDY2LCIz',
+  'IjoxMjM5LCIzLjUiOjEzNzMsIjQiOjE1MDcsIjQuNSI6MTYzNiwiNSI6MTc2Nn0sIjM2Ijp7IjEiOjU2MywiMS41Ijo3ODksIjIiOjEwMTUsIjIuNSI6MTIx',
+  'NiwiMyI6MTQxNiwiMy41IjoxNTcyLCI0IjoxNzI4LCI0LjUiOjE4NzcsIjUiOjIwMjZ9LCIzOCI6eyIxIjo2MjksIjEuNSI6ODgyLCIyIjoxMTM1LCIyLjUi',
+  'OjEzNjYsIjMiOjE1OTYsIjMuNSI6MTc2OSwiNCI6MTk0MiwiNC41IjoyMTE4LCI1IjoyMjk1fSwiNDAiOnsiMSI6NzAzLCIxLjUiOjk4OCwiMiI6MTI3NCwi',
+  'Mi41IjoxNTMyLCIzIjoxNzkxLCIzLjUiOjE5OTMsIjQiOjIxOTUsIjQuNSI6MjM4NCwiNSI6MjU3NH19LCI3OSI6eyIxMCI6eyIxIjoyOSwiMS41IjozNywi',
+  'MiI6NDUsIjIuNSI6NTAsIjMiOjU1fSwiMTIiOnsiMSI6NDgsIjEuNSI6NjIsIjIiOjc3LCIyLjUiOjg4LCIzIjo5OCwiMy41IjoxMDQsIjQiOjEwOX0sIjE0',
+  'Ijp7IjEiOjcyLCIxLjUiOjk2LCIyIjoxMTksIjIuNSI6MTM2LCIzIjoxNTQsIjMuNSI6MTY1LCI0IjoxNzZ9LCIxNiI6eyIxIjo5NywiMS41IjoxMzAsIjIi',
+  'OjE2MywiMi41IjoxOTAsIjMiOjIxNiwiMy41IjoyMzQsIjQiOjI1M30sIjE4Ijp7IjEiOjEyNywiMS41IjoxNzIsIjIiOjIxNywiMi41IjoyNTQsIjMiOjI5',
+  'MSwiMy41IjozMTgsIjQiOjM0NX0sIjIwIjp7IjEiOjE2MSwiMS41IjoyMjAsIjIiOjI3OCwiMi41IjozMjcsIjMiOjM3NiwiMy41Ijo0MTIsIjQiOjQ0Nywi',
+  'NC41Ijo0NzUsIjUiOjUwM30sIjIyIjp7IjEiOjE5OSwiMS41IjoyNzMsIjIiOjM0NywiMi41Ijo0MDksIjMiOjQ3MSwiMy41Ijo1MTgsIjQiOjU2NiwiNC41',
+  'Ijo2MDYsIjUiOjY0NX0sIjI0Ijp7IjEiOjI0MywiMS41IjozMzQsIjIiOjQyNSwiMi41Ijo1MDMsIjMiOjU4MSwiMy41Ijo2MzgsIjQiOjY5NCwiNC41Ijo3',
+  'NTAsIjUiOjgwNX0sIjI2Ijp7IjEiOjI4NywiMS41IjozOTYsIjIiOjUwNSwiMi41Ijo1OTgsIjMiOjY5MSwiMy41Ijo3NjMsIjQiOjgzNSwiNC41Ijo5MDIs',
+  'IjUiOjk3MH0sIjI4Ijp7IjEiOjMzNywiMS41Ijo0NjcsIjIiOjU5NywiMi41Ijo3MTAsIjMiOjgyMiwiMy41Ijo5MDcsIjQiOjk5MiwiNC41IjoxMDc2LCI1',
+  'IjoxMTYwfSwiMzAiOnsiMSI6Mzk0LCIxLjUiOjU0NiwiMiI6Njk5LCIyLjUiOjgzMCwiMyI6OTYyLCIzLjUiOjEwNjIsIjQiOjExNjMsIjQuNSI6MTI2Nywi',
+  'NSI6MTM3MX0sIjMyIjp7IjEiOjQ1MiwiMS41Ijo2MjksIjIiOjgwNiwiMi41Ijo5NjQsIjMiOjExMjEsIjMuNSI6MTI0MiwiNCI6MTM2MywiNC41IjoxNDc2',
+  'LCI1IjoxNTkwfSwiMzQiOnsiMSI6NTE0LCIxLjUiOjcxNywiMiI6OTIwLCIyLjUiOjExMDIsIjMiOjEyODMsIjMuNSI6MTQyMywiNCI6MTU2MywiNC41Ijox',
+  'Njk4LCI1IjoxODMzfSwiMzYiOnsiMSI6NTc1LCIxLjUiOjgwNywiMiI6MTAzOSwiMi41IjoxMjQ1LCIzIjoxNDUxLCIzLjUiOjE2MTAsIjQiOjE3NzAsIjQu',
+  'NSI6MTkyNCwiNSI6MjA3OX0sIjM4Ijp7IjEiOjY0NywiMS41Ijo5MDgsIjIiOjExNjksIjIuNSI6MTQwNywiMyI6MTY0NSwiMy41IjoxODI2LCI0IjoyMDA3',
+  'LCI0LjUiOjIxODksIjUiOjIzNzF9LCI0MCI6eyIxIjo3MjIsIjEuNSI6MTAxNiwiMiI6MTMwOSwiMi41IjoxNTc2LCIzIjoxODQ0LCIzLjUiOjIwNTQsIjQi',
+  'OjIyNjMsIjQuNSI6MjQ1OCwiNSI6MjY1NH19LCI4MCI6eyIxMCI6eyIxIjozMCwiMS41IjozOCwiMiI6NDcsIjIuNSI6NTIsIjMiOjU3fSwiMTIiOnsiMSI6',
+  'NTAsIjEuNSI6NjUsIjIiOjgwLCIyLjUiOjkxLCIzIjoxMDIsIjMuNSI6MTA4LCI0IjoxMTV9LCIxNCI6eyIxIjo3NCwiMS41Ijo5OCwiMiI6MTIyLCIyLjUi',
+  'OjE0MCwiMyI6MTU4LCIzLjUiOjE3MCwiNCI6MTgxfSwiMTYiOnsiMSI6MTAxLCIxLjUiOjEzNiwiMiI6MTcwLCIyLjUiOjE5OCwiMyI6MjI2LCIzLjUiOjI0',
+  'NiwiNCI6MjY1fSwiMTgiOnsiMSI6MTMxLCIxLjUiOjE3OCwiMiI6MjI0LCIyLjUiOjI2MywiMyI6MzAyLCIzLjUiOjMzMCwiNCI6MzU5fSwiMjAiOnsiMSI6',
+  'MTY2LCIxLjUiOjIyNiwiMiI6Mjg3LCIyLjUiOjMzOCwiMyI6Mzg4LCIzLjUiOjQyNiwiNCI6NDYzLCI0LjUiOjQ5MiwiNSI6NTIyfSwiMjIiOnsiMSI6MjA0',
+  'LCIxLjUiOjI4MCwiMiI6MzU3LCIyLjUiOjQyMCwiMyI6NDg0LCIzLjUiOjUzNCwiNCI6NTgzLCI0LjUiOjYyNCwiNSI6NjY2fSwiMjQiOnsiMSI6MjQ4LCIx',
+  'LjUiOjM0MiwiMiI6NDM1LCIyLjUiOjUxNSwiMyI6NTk1LCIzLjUiOjY1NCwiNCI6NzEyLCI0LjUiOjc3MCwiNSI6ODI3fSwiMjYiOnsiMSI6Mjk2LCIxLjUi',
+  'OjQxMCwiMiI6NTIzLCIyLjUiOjYyMCwiMyI6NzE2LCIzLjUiOjc5MCwiNCI6ODY1LCI0LjUiOjkzNiwiNSI6MTAwN30sIjI4Ijp7IjEiOjM0OCwiMS41Ijo0',
+  'ODIsIjIiOjYxNywiMi41Ijo3MzQsIjMiOjg1MSwiMy41Ijo5NDAsIjQiOjEwMjgsIjQuNSI6MTExNCwiNSI6MTIwMH0sIjMwIjp7IjEiOjQwMywiMS41Ijo1',
+  'NjAsIjIiOjcxNywiMi41Ijo4NTQsIjMiOjk5MSwiMy41IjoxMDk0LCI0IjoxMTk4LCI0LjUiOjEzMDYsIjUiOjE0MTN9LCIzMiI6eyIxIjo0NjQsIjEuNSI6',
+  'NjQ2LCIyIjo4MjksIjIuNSI6OTkxLCIzIjoxMTUzLCIzLjUiOjEyNzgsIjQiOjE0MDIsIjQuNSI6MTUyMCwiNSI6MTYzOX0sIjM0Ijp7IjEiOjUyNiwiMS41',
+  'Ijo3MzUsIjIiOjk0NCwiMi41IjoxMTMxLCIzIjoxMzE4LCIzLjUiOjE0NjIsIjQiOjE2MDcsIjQuNSI6MTc0NSwiNSI6MTg4M30sIjM2Ijp7IjEiOjU5Miwi',
+  'MS41Ijo4MzEsIjIiOjEwNzAsIjIuNSI6MTI4NCwiMyI6MTQ5OCwiMy41IjoxNjY0LCI0IjoxODMwLCI0LjUiOjE5OTIsIjUiOjIxNTN9LCIzOCI6eyIxIjo2',
+  'NjUsIjEuNSI6OTM0LCIyIjoxMjAzLCIyLjUiOjE0NTAsIjMiOjE2OTYsIjMuNSI6MTg4MywiNCI6MjA3MCwiNC41IjoyMjYwLCI1IjoyNDUxfSwiNDAiOnsi',
+  'MSI6NzQxLCIxLjUiOjEwNDQsIjIiOjEzNDcsIjIuNSI6MTYyMiwiMyI6MTg5NywiMy41IjoyMTEzLCI0IjoyMzI5LCI0LjUiOjI1MzIsIjUiOjI3MzV9fX0s',
+  'ImRveWxlIjp7Ijc2Ijp7IjEwIjp7IjEiOjEzLCIxLjUiOjE2LCIyIjoxOCwiMi41IjoxOSwiMyI6MjB9LCIxMiI6eyIxIjoyNiwiMS41IjozMiwiMiI6Mzgs',
+  'IjIuNSI6NDIsIjMiOjQ1fSwiMTQiOnsiMSI6NDQsIjEuNSI6NTYsIjIiOjY4LCIyLjUiOjc2LCIzIjo4NCwiMy41Ijo4OCwiNCI6OTJ9LCIxNiI6eyIxIjo2',
+  'NywiMS41Ijo4NywiMiI6MTA3LCIyLjUiOjEyMiwiMyI6MTM3LCIzLjUiOjE0NiwiNCI6MTU2fSwiMTgiOnsiMSI6OTQsIjEuNSI6MTI0LCIyIjoxNTMsIjIu',
+  'NSI6MTc2LCIzIjoyMDAsIjMuNSI6MjE1LCI0IjoyMzB9LCIyMCI6eyIxIjoxMjUsIjEuNSI6MTY2LCIyIjoyMDgsIjIuNSI6MjQwLCIzIjoyNzMsIjMuNSI6',
+  'Mjk0LCI0IjozMTYsIjQuNSI6MzM0LCI1IjozNTF9LCIyMiI6eyIxIjoxNjEsIjEuNSI6MjE2LCIyIjoyNzEsIjIuNSI6MzE1LCIzIjozNTksIjMuNSI6Mzkw',
+  'LCI0Ijo0MjEsIjQuNSI6NDQ4LCI1Ijo0NzR9LCIyNCI6eyIxIjoyMDIsIjEuNSI6MjczLCIyIjozNDQsIjIuNSI6NDAyLCIzIjo0NjAsIjMuNSI6NDk4LCI0',
+  'Ijo1MzUsIjQuNSI6NTc1LCI1Ijo2MTV9LCIyNiI6eyIxIjoyNTAsIjEuNSI6MzQwLCIyIjo0MzAsIjIuNSI6NTA0LCIzIjo1NzgsIjMuNSI6NjMxLCI0Ijo2',
+  'ODQsIjQuNSI6NzM1LCI1Ijo3ODZ9LCIyOCI6eyIxIjoyOTksIjEuNSI6NDA4LCIyIjo1MTgsIjIuNSI6NjEwLCIzIjo3MDIsIjMuNSI6NzY3LCI0Ijo4MzIs',
+  'IjQuNSI6ODk4LCI1Ijo5NjR9LCIzMCI6eyIxIjozNTMsIjEuNSI6NDg0LCIyIjo2MTUsIjIuNSI6NzI2LCIzIjo4MzcsIjMuNSI6OTE1LCI0Ijo5OTMsIjQu',
+  'NSI6MTA3NiwiNSI6MTE2MH0sIjMyIjp7IjEiOjQxMiwiMS41Ijo1NjcsIjIiOjcyMiwiMi41Ijo4NTYsIjMiOjk5MCwiMy41IjoxMDg4LCI0IjoxMTYsIjQu',
+  'NSI6MTI4MCwiNSI6MTM3M30sIjM0Ijp7IjEiOjQ3NSwiMS41Ijo2NTYsIjIiOjgzNiwiMi41Ijo5OTQsIjMiOjExNTIsIjMuNSI6MTI2OCwiNCI6MTM4Mywi',
+  'NC41IjoxNDk0LCI1IjoxNjA2fSwiMzYiOnsiMSI6NTQ4LCIxLjUiOjc2MCwiMiI6OTcyLCIyLjUiOjExNTgsIjMiOjEzNDQsIjMuNSI6MTQ4MiwiNCI6MTYx',
+  'OSwiNC41IjoxNzUzLCI1IjoxODg3fSwiMzgiOnsiMSI6NjIwLCIxLjUiOjg2MiwiMiI6MTEwNCwiMi41IjoxMzIyLCIzIjoxNTQwLCIzLjUiOjE2OTcsIjQi',
+  'OjE4NTQsIjQuNSI6MjAxNiwiNSI6MjE3N30sIjQwIjp7IjEiOjY5NywiMS41Ijo5NzMsIjIiOjEyNDksIjIuNSI6MTQ5NSwiMyI6MTc0MSwiMy41IjoxOTI2',
+  'LCI0IjoyMTExLCI0LjUiOjIyODQsIjUiOjI0NTd9fSwiNzciOnsiMTAiOnsiMSI6MTQsIjEuNSI6MTYsIjIiOjE5LCIyLjUiOjIwLCIzIjoyMX0sIjEyIjp7',
+  'IjEiOjI3LCIxLjUiOjM0LCIyIjo0MCwiMi41Ijo0NCwiMyI6NDh9LCIxNCI6eyIxIjo0NiwiMS41Ijo1OSwiMiI6NzIsIjIuNSI6ODAsIjMiOjg5LCIzLjUi',
+  'Ojk0LCI0Ijo5OH0sIjE2Ijp7IjEiOjY5LCIxLjUiOjkwLCIyIjoxMTAsIjIuNSI6MTI2LCIzIjoxNDEsIjMuNSI6MTUxLCI0IjoxNjF9LCIxOCI6eyIxIjo5',
+  'OCwiMS41IjoxMjksIjIiOjE2MCwiMi41IjoxODQsIjMiOjIwOSwiMy41IjoyMjYsIjQiOjI0Mn0sIjIwIjp7IjEiOjEzMCwiMS41IjoxNzMsIjIiOjIxNiwi',
+  'Mi41IjoyNTAsIjMiOjI4NSwiMy41IjozMDgsIjQiOjMzMSwiNC41IjozNDksIjUiOjM2N30sIjIyIjp7IjEiOjE2NiwiMS41IjoyMjMsIjIiOjI4MCwiMi41',
+  'IjozMjYsIjMiOjM3MiwiMy41Ijo0MDQsIjQiOjQzNywiNC41Ijo0NjQsIjUiOjQ5Mn0sIjI0Ijp7IjEiOjIxMCwiMS41IjoyODQsIjIiOjM1OSwiMi41Ijo0',
+  'MjAsIjMiOjQ4MSwiMy41Ijo1MjIsIjQiOjU2MywiNC41Ijo2MDUsIjUiOjY0N30sIjI2Ijp7IjEiOjI1NiwiMS41IjozNDgsIjIiOjQ0MSwiMi41Ijo1MTgs',
+  'IjMiOjU5NCwiMy41Ijo2NTAsIjQiOjcwNSwiNC41Ijo3NTgsIjUiOjgxMH0sIjI4Ijp7IjEiOjMxMCwiMS41Ijo0MjQsIjIiOjUzOCwiMi41Ijo2MzQsIjMi',
+  'OjczMCwiMy41Ijo3OTksIjQiOjg2OCwiNC41Ijo5MzYsIjUiOjEwMDV9LCIzMCI6eyIxIjozNjUsIjEuNSI6NTAxLCIyIjo2MzcsIjIuNSI6NzUyLCIzIjo4',
+  'NjcsIjMuNSI6OTUwLCI0IjoxMDMyLCI0LjUiOjExMTksIjUiOjEyMDZ9LCIzMiI6eyIxIjo0MjQsIjEuNSI6NTg0LCIyIjo3NDQsIjIuNSI6ODg0LCIzIjox',
+  'MDIzLCIzLjUiOjExMjUsIjQiOjEyMjcsIjQuNSI6MTMyNCwiNSI6MTQyMH0sIjM0Ijp7IjEiOjQ5MywiMS41Ijo2ODEsIjIiOjg2OSwiMi41IjoxMDM0LCIz',
+  'IjoxMjAwLCIzLjUiOjEzMjEsIjQiOjE0NDIsIjQuNSI6MTU2MCwiNSI6MTY3N30sIjM2Ijp7IjEiOjU2MiwiMS41Ijo3ODAsIjIiOjk5OSwiMi41IjoxMTkw',
+  'LCIzIjoxMzgyLCIzLjUiOjE1MjQsIjQiOjE2NjcsIjQuNSI6MTgwNiwiNSI6MTk0NX0sIjM4Ijp7IjEiOjY0MCwiMS41Ijo4OTEsIjIiOjExNDIsIjIuNSI6',
+  'MTM2OCwiMyI6MTU5NCwiMy41IjoxNzU5LCI0IjoxOTI0LCI0LjUiOjIwOTIsIjUiOjIyNjB9LCI0MCI6eyIxIjo3MTgsIjEuNSI6MTAwNCwiMiI6MTI4OSwi',
+  'Mi41IjoxNTQ0LCIzIjoxNzk4LCIzLjUiOjE5OTEsIjQiOjIxODQsIjQuNSI6MjM2NSwiNSI6MjU0Nn19LCI3OCI6eyIxMCI6eyIxIjoxNCwiMS41IjoxNywi',
+  'MiI6MjAsIjIuNSI6MjEsIjMiOjIyfSwiMTIiOnsiMSI6MjksIjEuNSI6MzYsIjIiOjQzLCIyLjUiOjQ4LCIzIjo1MywiMy41Ijo1NCwiNCI6NTZ9LCIxNCI6',
+  'eyIxIjo0OCwiMS41Ijo2MiwiMiI6NzUsIjIuNSI6ODQsIjMiOjkzLCIzLjUiOjk4LCI0IjoxMDN9LCIxNiI6eyIxIjo3MiwiMS41Ijo5NCwiMiI6MTE2LCIy',
+  'LjUiOjEzMiwiMyI6MTQ5LCIzLjUiOjE2MCwiNCI6MTcwfSwiMTgiOnsiMSI6MTAwLCIxLjUiOjEzMiwiMiI6MTY0LCIyLjUiOjE5MCwiMyI6MjE1LCIzLjUi',
+  'OjIzMiwiNCI6MjQ4fSwiMjAiOnsiMSI6MTM1LCIxLjUiOjE4MCwiMiI6MjI1LCIyLjUiOjI2MSwiMyI6Mjk3LCIzLjUiOjMyMiwiNCI6MzQ2LCI0LjUiOjM2',
+  'NCwiNSI6MzgzfSwiMjIiOnsiMSI6MTc0LCIxLjUiOjIzNCwiMiI6Mjk1LCIyLjUiOjM0NCwiMyI6MzkyLCIzLjUiOjQyNywiNCI6NDYyLCI0LjUiOjQ5Miwi',
+  'NSI6NTIxfSwiMjQiOnsiMSI6MjE2LCIxLjUiOjI5MywiMiI6MzcwLCIyLjUiOjQzMywiMyI6NDk2LCIzLjUiOjUzOSwiNCI6NTgyLCI0LjUiOjYyNSwiNSI6',
+  'NjY4fSwiMjYiOnsiMSI6MjY2LCIxLjUiOjM2MiwiMiI6NDU5LCIyLjUiOjUzOSwiMyI6NjE5LCIzLjUiOjY3OCwiNCI6NzM3LCI0LjUiOjc5MywiNSI6ODQ5',
+  'fSwiMjgiOnsiMSI6MzE3LCIxLjUiOjQzNCwiMiI6NTUxLCIyLjUiOjY1MCwiMyI6NzUwLCIzLjUiOjgyMCwiNCI6ODkwLCI0LjUiOjk2MSwiNSI6MTAzMn0s',
+  'IjMwIjp7IjEiOjM3NiwiMS41Ijo1MTcsIjIiOjY1OCwiMi41Ijo3NzgsIjMiOjg5OCwiMy41Ijo5ODQsIjQiOjEwNjksIjQuNSI6MTE2MCwiNSI6MTI1MX0s',
+  'IjMyIjp7IjEiOjQ0MSwiMS41Ijo2MDgsIjIiOjc3NiwiMi41Ijo5MjIsIjMiOjEwNjgsIjMuNSI6MTE3NiwiNCI6MTI4MywiNC41IjoxMzg2LCI1IjoxNDg4',
+  'fSwiMzQiOnsiMSI6NTA2LCIxLjUiOjcwMCwiMiI6ODk0LCIyLjUiOjEwNjQsIjMiOjEyMzUsIjMuNSI6MTM2MSwiNCI6MTQ4NywiNC41IjoxNjA4LCI1Ijox',
+  'NzMwfSwiMzYiOnsiMSI6NTgxLCIxLjUiOjMwOCwiMiI6MTAzNSwiMi41IjoxMjM0LCIzIjoxNDM0LCIzLjUiOjE1ODMsIjQiOjE3MzIsIjQuNSI6MTg3OCwi',
+  'NSI6MjAyM30sIjM4Ijp7IjEiOjY1NSwiMS41Ijo5MTIsIjIiOjExNzAsIjIuNSI6MTQwMiwiMyI6MTYzNSwiMy41IjoxODA1LCI0IjoxOTc1LCI0LjUiOjIx',
+  'NDgsIjUiOjIzMjJ9LCI0MCI6eyIxIjo3NDAsIjEuNSI6MTAzNSwiMiI6MTMzMCwiMi41IjoxNTk0LCIzIjoxODU4LCIzLjUiOjIwNTksIjQiOjIyNjAsIjQu',
+  'NSI6MjQ0OCwiNSI6MjYzNn19LCI3OSI6eyIxMCI6eyIxIjoxNSwiMS41IjoxOCwiMiI6MjEsIjIuNSI6MjIsIjMiOjI0fSwiMTIiOnsiMSI6MzAsIjEuNSI6',
+  'MzgsIjIiOjQ1LCIyLjUiOjUwLCIzIjo1NSwiMy41Ijo1NywiNCI6NTl9LCIxNCI6eyIxIjo1MCwiMS41Ijo2NCwiMiI6NzksIjIuNSI6ODksIjMiOjk5LCIz',
+  'LjUiOjEwNCwiNCI6MTEwfSwiMTYiOnsiMSI6NzQsIjEuNSI6OTYsIjIiOjExOSwiMi41IjoxMzYsIjMiOjE1MywiMy41IjoxNjUsIjQiOjE3N30sIjE4Ijp7',
+  'IjEiOjEwNCwiMS41IjoxMzgsIjIiOjE3MSwiMi41IjoxOTgsIjMiOjIyNCwiMy41IjoyNDIsIjQiOjI2MH0sIjIwIjp7IjEiOjEzOSwiMS41IjoxODYsIjIi',
+  'OjIzMywiMi41IjoyNzAsIjMiOjMwOCwiMy41IjozMzQsIjQiOjM1OSwiNC41IjozODAsIjUiOjQwMH0sIjIyIjp7IjEiOjE4MCwiMS41IjoyNDIsIjIiOjMw',
+  'NSwiMi41IjozNTYsIjMiOjQwNywiMy41Ijo0NDQsIjQiOjQ4MCwiNC41Ijo1MTAsIjUiOjU0MX0sIjI0Ijp7IjEiOjIyNSwiMS41IjozMDYsIjIiOjM4Niwi',
+  'Mi41Ijo0NTMsIjMiOjUyMCwiMy41Ijo1NjYsIjQiOjYxMSwiNC41Ijo2NTYsIjUiOjcwMn0sIjI2Ijp7IjEiOjI3MiwiMS41IjozNzIsIjIiOjQ3MSwiMi41',
+  'Ijo1NTQsIjMiOjYzNiwiMy41Ijo2OTcsIjQiOjc1OCwiNC41Ijo4MTYsIjUiOjg3M30sIjI4Ijp7IjEiOjMyOCwiMS41Ijo0NTAsIjIiOjU3MSwiMi41Ijo2',
+  'NzQsIjMiOjc3OCwiMy41Ijo4NTIsIjQiOjkyNywiNC41IjoxMDAyLCI1IjoxMDc2fSwiMzAiOnsiMSI6Mzg4LCIxLjUiOjUzNCwiMiI6NjgwLCIyLjUiOjgw',
+  'NCwiMyI6OTI5LCIzLjUiOjEwMTgsIjQiOjExMDgsIjQuNSI6MTIwMywiNSI6MTI5OH0sIjMyIjp7IjEiOjQ1NCwiMS41Ijo2MjcsIjIiOjgwMCwiMi41Ijo5',
+  'NTEsIjMiOjExMDIsIjMuNSI6MTIxNCwiNCI6MTMyNiwiNC41IjoxNDMzLCI1IjoxNTR9LCIzNCI6eyIxIjo1MjQsIjEuNSI6NzI2LCIyIjo5MjgsIjIuNSI6',
+  'MTEwNiwiMyI6MTI4NSwiMy41IjoxNDE3LCI0IjoxNTQ5LCI0LjUiOjE2NzYsIjUiOjE4MDR9LCIzNiI6eyIxIjo1OTUsIjEuNSI6ODI4LCIyIjoxMDYyLCIy',
+  'LjUiOjEyNjcsIjMiOjE0NzIsIjMuNSI6MTYyNywiNCI6MTc4MiwiNC41IjoxOTMyLCI1IjoyMDgyfSwiMzgiOnsiMSI6Njc2LCIxLjUiOjk0MywiMiI6MTIx',
+  'MCwiMi41IjoxNDUxLCIzIjoxNjkyLCIzLjUiOjE4NzAsIjQiOjIwNDcsIjQuNSI6MjIyOCwiNSI6MjQwOH0sIjQwIjp7IjEiOjc2MiwiMS41IjoxMDY3LCIy',
+  'IjoxMzcyLCIyLjUiOjE2NDUsIjMiOjE5MTgsIjMuNSI6MjEyNiwiNCI6MjMzNSwiNC41IjoyNTMwLCI1IjoyNzI2fX0sIjgwIjp7IjEwIjp7IjEiOjE2LCIx',
+  'LjUiOjIwLCIyIjoyMywiMi41IjoyNCwiMyI6MjZ9LCIxMiI6eyIxIjozMSwiMS41IjozOSwiMiI6NDcsIjIuNSI6NTIsIjMiOjU3LCIzLjUiOjYwLCI0Ijo2',
+  'Mn0sIjE0Ijp7IjEiOjUyLCIxLjUiOjY3LCIyIjo4MiwiMi41Ijo5MywiMyI6MTA0LCIzLjUiOjEwOSwiNCI6MTE0fSwiMTYiOnsiMSI6NzcsIjEuNSI6MTAx',
+  'LCIyIjoxMjUsIjIuNSI6MTQzLCIzIjoxNjEsIjMuNSI6MTc0LCI0IjoxODZ9LCIxOCI6eyIxIjoxMDgsIjEuNSI6MTQ0LCIyIjoxNzksIjIuNSI6MjA2LCIz',
+  'IjoyMzQsIjMuNSI6MjU0LCI0IjoyNzN9LCIyMCI6eyIxIjoxNDQsIjEuNSI6MTkzLCIyIjoyNDIsIjIuNSI6MjgyLCIzIjozMjEsIjMuNSI6MzQ4LCI0Ijoz',
+  'NzQsIjQuNSI6Mzk2LCI1Ijo0MTd9LCIyMiI6eyIxIjoxODUsIjEuNSI6MjUwLCIyIjozMTUsIjIuNSI6MzY4LCIzIjo0MjAsIjMuNSI6NDU4LCI0Ijo0OTcs',
+  'IjQuNSI6NTI5LCI1Ijo1NjF9LCIyNCI6eyIxIjoyMzEsIjEuNSI6MzE0LCIyIjozOTcsIjIuNSI6NDY2LCIzIjo1MzYsIjMuNSI6NTgzLCI0Ijo2MzAsIjQu',
+  'NSI6Njc4LCI1Ijo3MjV9LCIyNiI6eyIxIjoyODIsIjEuNSI6Mzg2LCIyIjo0ODksIjIuNSI6NTc2LCIzIjo2NjMsIjMuNSI6NzI3LCI0Ijo3OTEsIjQuNSI6',
+  'ODUyLCI1Ijo5MTJ9LCIyOCI6eyIxIjozMzksIjEuNSI6NDY2LCIyIjo1OTIsIjIuNSI6NzAwLCIzIjo4MDcsIjMuNSI6ODg1LCI0Ijo5NjMsIjQuNSI6MTA0',
+  'MCwiNSI6MTExOH0sIjMwIjp7IjEiOjQwMCwiMS41Ijo1NTIsIjIiOjcwMywiMi41Ijo4MzIsIjMiOjk2MSwiMy41IjoxMDU1LCI0IjoxMTQ5LCI0LjUiOjEy',
+  'NDgsIjUiOjEzNDZ9LCIzMiI6eyIxIjo0NjcsIjEuNSI6NjQ2LCIyIjo4MjQsIjIuNSI6OTgwLCIzIjoxMTM3LCIzLjUiOjEyNTQsIjQiOjEzNzAsIjQuNSI6',
+  'MTQ4MSwiNSI6MTU5Mn0sIjM0Ijp7IjEiOjUzOCwiMS41Ijo3NDYsIjIiOjk1NCwiMi41IjoxMTM4LCIzIjoxMzIyLCIzLjUiOjE0NTksIjQiOjE1OTYsIjQu',
+  'NSI6MTcyOCwiNSI6MTg2MX0sIjM2Ijp7IjEiOjYxNSwiMS41Ijo4NTcsIjIiOjEwOTksIjIuNSI6MTMxMiwiMyI6MTUyNiwiMy41IjoxNjg4LCI0IjoxODQ5',
+  'LCI0LjUiOjIwMDYsIjUiOjIxNjN9LCIzOCI6eyIxIjo2OTcsIjEuNSI6OTczLCIyIjoxMjQ5LCIyLjUiOjE0OTksIjMiOjE3NDksIjMuNSI6MTkzNCwiNCI6',
+  'MjExOSwiNC41IjoyMzA4LCI1IjoyNDk2fSwiNDAiOnsiMSI6Nzg0LCIxLjUiOjEwOTksIjIiOjE0MTQsIjIuNSI6MTY5NiwiMyI6MTk3OSwiMy41IjoyMTk2',
+  'LCI0IjoyNDEzLCI0LjUiOjI2MTYsIjUiOjI4MTl9fX19',
+].join('')));
 const LOG_RULES = {
-  scribner: { name: 'Scribner', table: SCRIBNER, steps: SCRIBNER_LOGS, unit: 'BF' },
-  international: { name: 'International 1/4"', table: INTERNATIONAL, steps: INTERNATIONAL_LOGS, unit: 'BF' },
-  doyle: { name: 'Doyle', table: DOYLE, steps: DOYLE_LOGS, unit: 'BF' }
+  scribner: { id: 'scribner', name: 'Scribner Decimal C', steps: EXACT_LOG_STEPS.slice(), unit: 'BF' },
+  international: { id: 'international', name: 'International 1/4"', steps: LEGACY_SUBLOG_STEPS.international.concat(EXACT_LOG_STEPS), unit: 'BF' },
+  doyle: { id: 'doyle', name: 'Doyle', steps: LEGACY_SUBLOG_STEPS.doyle.concat(EXACT_LOG_STEPS), unit: 'BF' }
 };
 
-// â”€â”€ Full species list organized by group â”€â”€
+function normalizeFormClass(value) {
+  const formClass = parseInt(value, 10);
+  return FORM_CLASS_OPTIONS.includes(formClass) ? formClass : 78;
+}
+
+function formatLogStepKey(step) {
+  const num = Number(step);
+  if (!Number.isFinite(num)) return '';
+  return Number.isInteger(num) ? String(num) : num.toFixed(1).replace(/\.0$/, '');
+}
+
+function getVolumeTable(rule, formClass) {
+  const normalizedRule = LOG_RULES[rule] ? rule : 'scribner';
+  const normalizedClass = normalizeFormClass(formClass);
+  return (VOLUME_TABLES[normalizedRule] && VOLUME_TABLES[normalizedRule][String(normalizedClass)]) || (VOLUME_TABLES.scribner && VOLUME_TABLES.scribner['78']) || null;
+}
+
+function getVolumeRow(rule, formClass, dbh) {
+  let dbhClass = Math.round((Number(dbh) || 0) / 2) * 2;
+  if (dbhClass < 10) dbhClass = 10;
+  if (dbhClass > 40) dbhClass = 40;
+  const table = getVolumeTable(rule, formClass);
+  return { dbhClass, row: table ? (table[String(dbhClass)] || null) : null };
+}
+
+function getDefaultCruiseSpecies() {
+  return DEFAULT_SPECIES.filter(s => ['LP','SP','RO','WO','YP','HK','GU','HW'].includes(s.code));
+}
+
+function normalizeJobCruiseSettings(job) {
+  if (!job) return job;
+  if (!LOG_RULES[job.logRule]) job.logRule = 'scribner';
+  job.formClass = normalizeFormClass(job.formClass);
+  if (!Array.isArray(job.species) || job.species.length === 0) job.species = getDefaultCruiseSpecies();
+  if (!Number.isFinite(Number(job.baf)) || Number(job.baf) <= 0) job.baf = 10;
+  return job;
+}
+
 const DEFAULT_SPECIES = [
   // Pines
   {code:'LP',label:'Loblolly Pine',group:'Pine'},
@@ -2561,32 +2785,48 @@ const DEFAULT_SPECIES = [
 ];
 
 // â”€â”€ Volume lookup: sawtimber (any rule) â”€â”€
-function sawtimberVol(dbh, logs, rule) {
-  rule = rule || 'scribner';
-  const r = LOG_RULES[rule] || LOG_RULES.scribner;
-  // Round DBH to nearest even inch for table lookup
-  let d = Math.round(dbh / 2) * 2;
-  if (d < 12) d = 12;
-  if (d > 42) d = 42;
-  const row = r.table[d];
-  if (!row) return 0;
-  const idx = r.steps.indexOf(parseFloat(logs));
-  if (idx < 0) {
-    // Find nearest log step
-    let best = 0, bestDiff = Math.abs(r.steps[0] - logs);
-    for (let i = 1; i < r.steps.length; i++) {
-      const diff = Math.abs(r.steps[i] - logs);
-      if (diff < bestDiff) { bestDiff = diff; best = i; }
-    }
-    return row[best] || 0;
+// Volume lookup: sawtimber (any rule)
+function sawtimberVol(dbh, logs, rule, formClass) {
+  const normalizedRule = LOG_RULES[rule] ? rule : 'scribner';
+  const resolvedFormClass = formClass == null ? getJobFormClass() : formClass;
+  const logCount = parseFloat(logs);
+  if (!Number.isFinite(logCount) || logCount <= 0) return 0;
+
+  if (logCount < 1) {
+    const legacyTable = LEGACY_HALF_LOG_FALLBACKS[normalizedRule];
+    if (!legacyTable) return 0;
+    let legacyDbh = Math.round((Number(dbh) || 0) / 2) * 2;
+    if (legacyDbh < 12) legacyDbh = 12;
+    if (legacyDbh > 42) legacyDbh = 42;
+    return legacyTable[legacyDbh] || 0;
   }
-  return row[idx] || 0;
+
+  const lookup = getVolumeRow(normalizedRule, resolvedFormClass, dbh);
+  const row = lookup.row;
+  if (!row) return 0;
+
+  const exactKey = formatLogStepKey(logCount);
+  if (row[exactKey] != null) return row[exactKey];
+
+  const available = Object.keys(row).map(Number).filter(Number.isFinite).sort((a, b) => a - b);
+  if (!available.length) return 0;
+
+  let nearest = available[0];
+  let nearestDiff = Math.abs(available[0] - logCount);
+  for (let i = 1; i < available.length; i++) {
+    const diff = Math.abs(available[i] - logCount);
+    if (diff < nearestDiff) {
+      nearest = available[i];
+      nearestDiff = diff;
+    }
+  }
+  return row[formatLogStepKey(nearest)] || 0;
 }
 
 // Backward compat wrapper
-function scribnerVol(dbh, logs) { return sawtimberVol(dbh, logs, 'scribner'); }
+function scribnerVol(dbh, logs, formClass) { return sawtimberVol(dbh, logs, 'scribner', formClass); }
 
-// â”€â”€ Pulpwood: cords from DBH + total height (ft), converted to sticks internally â”€â”€
+// Pulpwood: cords from DBH + total height (ft), converted to sticks internally
 function pulpwoodCords(dbh, heightFt) {
   const d = Math.round(dbh);
   const sticks = heightToSticks(heightFt);
@@ -2610,19 +2850,31 @@ function pulpwoodTons(dbh, heightFt, spp) {
 
 function calcTPA(baf, dbh) { return baf / (0.005454 * dbh * dbh); }
 
-// â”€â”€ Get available log steps for the current rule â”€â”€
-function getLogSteps(rule) {
-  const r = LOG_RULES[rule || 'scribner'] || LOG_RULES.scribner;
-  return r.steps;
+// Get available log steps for the current rule
+function getLogSteps(rule, dbh, formClass) {
+  const normalizedRule = LOG_RULES[rule] ? rule : 'scribner';
+  const resolvedFormClass = formClass == null ? getJobFormClass() : formClass;
+  const baseSteps = (LOG_RULES[normalizedRule] || LOG_RULES.scribner).steps.slice();
+  if (dbh == null) return baseSteps;
+  const legacySteps = (LEGACY_SUBLOG_STEPS[normalizedRule] || []).slice();
+  const lookup = getVolumeRow(normalizedRule, resolvedFormClass, dbh);
+  if (!lookup.row) return baseSteps;
+  const publishedSteps = EXACT_LOG_STEPS.filter(step => lookup.row[formatLogStepKey(step)] != null);
+  return legacySteps.concat(publishedSteps);
 }
 
-// â”€â”€ Get active log rule for current job â”€â”€
+// Get active log rule for current job
 function getJobLogRule() {
-  const job = allJobs.find(j => j.id === activeJobId);
+  const job = normalizeJobCruiseSettings(allJobs.find(j => j.id === activeJobId));
   return (job && job.logRule) || 'scribner';
 }
 
-// â”€â”€ Tally State â”€â”€
+function getJobFormClass() {
+  const job = normalizeJobCruiseSettings(allJobs.find(j => j.id === activeJobId));
+  return normalizeFormClass(job && job.formClass);
+}
+
+// Tally State
 let tallyPlotId = null;         // currently open plot ID
 let tallyTrees = [];            // trees being edited in modal
 let tallyLastTree = null;       // last added tree for repeat
@@ -2633,10 +2885,12 @@ let tallySelHeight = 50;
 
 // â”€â”€ Get cruise config for active job â”€â”€
 function getJobCruiseConfig() {
-  const job = allJobs.find(j => j.id === activeJobId);
+  const job = normalizeJobCruiseSettings(allJobs.find(j => j.id === activeJobId));
   return {
     baf: (job && job.baf) || 10,
-    species: (job && job.species) || DEFAULT_SPECIES.filter(s => ['LP','SP','RO','WO','YP','HK','GU','HW'].includes(s.code))
+    logRule: (job && job.logRule) || 'scribner',
+    formClass: normalizeFormClass(job && job.formClass),
+    species: (job && job.species) || getDefaultCruiseSpecies()
   };
 }
 
@@ -2706,11 +2960,12 @@ function tallyPickDBH(d) {
   tallySelDBH = d;
   document.querySelectorAll('#tally-dbh-grid .dbh-btn').forEach(b => b.classList.toggle('sel', parseInt(b.dataset.dbh) === d));
   if (tallySelProduct === 'pulpwood') tallyBuildHeight();
+  else tallyBuildLogs();
 }
 
 function tallyBuildLogs() {
   const rule = getJobLogRule();
-  const steps = getLogSteps(rule);
+  const steps = getLogSteps(rule, tallySelDBH, getJobFormClass());
   // Reset selLogs if not in the new steps
   if (!steps.includes(tallySelLogs)) tallySelLogs = steps[Math.min(1, steps.length - 1)];
   document.getElementById('tally-logs-row').innerHTML = steps.map(l =>
@@ -3207,6 +3462,7 @@ async function saveCruiseToCloud() {
       sharedWith: [],
       baf: (activeJob && activeJob.baf) || 10,
       logRule: (activeJob && activeJob.logRule) || 'scribner',
+      formClass: normalizeFormClass(activeJob && activeJob.formClass),
       species: (activeJob && activeJob.species) || [],
       createdAt: firebase.firestore.FieldValue.serverTimestamp(),
       updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
@@ -3221,6 +3477,10 @@ async function saveCruiseToCloud() {
       plotCount: plotMarkers.length,
       polyCount: allPolygons.length,
       completedCount: plotMarkers.filter(p => p.completed).length,
+      baf: (activeJob && activeJob.baf) || 10,
+      logRule: (activeJob && activeJob.logRule) || 'scribner',
+      formClass: normalizeFormClass(activeJob && activeJob.formClass),
+      species: (activeJob && activeJob.species) || [],
       distUnit: distUnit,
       basemap: currentBasemap
     };
@@ -3410,6 +3670,7 @@ async function manualCloudSync() {
           sharedWith: [],
           baf: (activeJob && activeJob.baf) || 10,
           logRule: (activeJob && activeJob.logRule) || 'scribner',
+          formClass: normalizeFormClass(activeJob && activeJob.formClass),
           species: (activeJob && activeJob.species) || [],
           createdAt: firebase.firestore.FieldValue.serverTimestamp(),
           updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
@@ -3639,6 +3900,7 @@ window.addEventListener('online', function() {
 // â”€â”€ Update existing cruise in Firestore â”€â”€
 async function updateCruiseInCloud(cruiseId) {
   if (!fb_user) return;
+  const activeJob = normalizeJobCruiseSettings(allJobs.find(j => j.id === activeJobId));
   try {
     // Update shared cruise metadata (polygons, plot locations, settings)
     await fb_db.collection('cruises').doc(cruiseId).update({
@@ -3651,6 +3913,10 @@ async function updateCruiseInCloud(cruiseId) {
       plotCount: plotMarkers.length,
       polyCount: allPolygons.length,
       completedCount: plotMarkers.filter(p => p.completed).length,
+      baf: (activeJob && activeJob.baf) || 10,
+      logRule: (activeJob && activeJob.logRule) || 'scribner',
+      formClass: normalizeFormClass(activeJob && activeJob.formClass),
+      species: (activeJob && activeJob.species) || [],
       distUnit: distUnit,
       basemap: currentBasemap
     });
@@ -3953,6 +4219,7 @@ async function loadCruiseFromCloud(cruiseId, options = {}) {
         polygons: [],
         baf: d.baf || 10,
         logRule: d.logRule || 'scribner',
+        formClass: normalizeFormClass(d.formClass),
         species: d.species || [],
         cloudCruiseId: cruiseId,
         createdAt: Date.now(),
@@ -3965,6 +4232,7 @@ async function loadCruiseFromCloud(cruiseId, options = {}) {
     localJob.name = d.name || localJob.name;
     localJob.baf = d.baf || localJob.baf;
     localJob.logRule = d.logRule || localJob.logRule;
+    localJob.formClass = normalizeFormClass(d.formClass || localJob.formClass);
     localJob.species = (d.species && d.species.length) ? d.species : localJob.species;
     localJob.plots = plotMarkers.map(p => ({
       id: p.id, lat: p.lat, lng: p.lng, completed: p.completed,
@@ -5036,7 +5304,7 @@ function toast(msg) {
 let currentPanel = null;
 // â”€â”€ Cruise Setup Panel â”€â”€
 function initCruiseSetupPanel() {
-  const job = allJobs.find(j => j.id === activeJobId);
+  const job = normalizeJobCruiseSettings(allJobs.find(j => j.id === activeJobId));
   if (!job) { toast('Create a job first'); return; }
 
   // Set BAF selector
@@ -5046,6 +5314,9 @@ function initCruiseSetupPanel() {
   // Set log rule selector
   const ruleSel = document.getElementById('setup-logrule');
   ruleSel.value = job.logRule || 'scribner';
+
+  const formClassSel = document.getElementById('setup-formclass');
+  if (formClassSel) formClassSel.value = normalizeFormClass(job.formClass);
 
   // Build species chips grouped by category
   const activeSpecies = job.species || DEFAULT_SPECIES.filter(s => ['LP','SP','RO','WO','YP','HK','GU','HW'].includes(s.code));
@@ -5099,9 +5370,17 @@ function updateJobBAF(val) {
 }
 
 function updateJobLogRuleFromSetup(val) {
-  const job = allJobs.find(j => j.id === activeJobId);
+  const job = normalizeJobCruiseSettings(allJobs.find(j => j.id === activeJobId));
   if (!job) return;
   job.logRule = val;
+  job.updatedAt = Date.now();
+  saveSession();
+}
+
+function updateJobFormClassFromSetup(val) {
+  const job = normalizeJobCruiseSettings(allJobs.find(j => j.id === activeJobId));
+  if (!job) return;
+  job.formClass = normalizeFormClass(val);
   job.updatedAt = Date.now();
   saveSession();
 }
@@ -5136,10 +5415,129 @@ function toggleSpeciesRef() {
 
 let _reportJobId = null;
 
+function captureGridSettingsToJob(job) {
+  if (!job) return;
+  const spacingX = parseFloat((document.getElementById('grid-spacing-x') || {}).value);
+  const spacingY = parseFloat((document.getElementById('grid-spacing-y') || {}).value);
+  const bearing = parseFloat((document.getElementById('grid-bearing') || {}).value);
+  if (Number.isFinite(spacingX) && spacingX > 0) job.gridSpacingX = spacingX;
+  if (Number.isFinite(spacingY) && spacingY > 0) job.gridSpacingY = spacingY;
+  if (Number.isFinite(bearing)) job.gridBearing = bearing;
+}
+
+function getJobGridSettings(job) {
+  const spacingXInput = parseFloat((document.getElementById('grid-spacing-x') || {}).value);
+  const spacingYInput = parseFloat((document.getElementById('grid-spacing-y') || {}).value);
+  const bearingInput = parseFloat((document.getElementById('grid-bearing') || {}).value);
+  return {
+    spacingX: Number.isFinite(Number(job && job.gridSpacingX)) && Number(job.gridSpacingX) > 0 ? Number(job.gridSpacingX) : (Number.isFinite(spacingXInput) && spacingXInput > 0 ? spacingXInput : 5),
+    spacingY: Number.isFinite(Number(job && job.gridSpacingY)) && Number(job.gridSpacingY) > 0 ? Number(job.gridSpacingY) : (Number.isFinite(spacingYInput) && spacingYInput > 0 ? spacingYInput : 5),
+    bearing: Number.isFinite(Number(job && job.gridBearing)) ? Number(job.gridBearing) : (Number.isFinite(bearingInput) ? bearingInput : 0)
+  };
+}
+
+function applyJobGridSettings(job) {
+  const settings = getJobGridSettings(job);
+  const spacingXEl = document.getElementById('grid-spacing-x');
+  const spacingYEl = document.getElementById('grid-spacing-y');
+  const bearingEl = document.getElementById('grid-bearing');
+  if (spacingXEl) spacingXEl.value = settings.spacingX;
+  if (spacingYEl) spacingYEl.value = settings.spacingY;
+  if (bearingEl) bearingEl.value = settings.bearing;
+}
+
+function buildNoticeSpeciesRows(speciesEntries, totalAcres) {
+  const rows = {};
+  (speciesEntries || []).forEach(entry => {
+    if (!entry || !entry.spp) return;
+    if (!rows[entry.spp]) {
+      rows[entry.spp] = {
+        spp: entry.spp,
+        label: getSpeciesLabel(entry.spp),
+        treeCount: 0,
+        baAc: 0,
+        tpaAc: 0,
+        sawBfAc: 0,
+        totalSawBf: 0,
+        totalSawMbf: 0,
+        pulpCdAc: 0,
+        totalPulpCd: 0,
+        pulpGtAc: 0,
+        totalPulpGt: 0
+      };
+    }
+    const row = rows[entry.spp];
+    row.treeCount += entry.count || 0;
+    row.baAc += entry.baAc || 0;
+    row.tpaAc += entry.tpaAc || 0;
+    if (entry.product === 'pulpwood') {
+      row.pulpCdAc += entry.volAc || 0;
+      row.pulpGtAc += entry.tonsAc || 0;
+      if (totalAcres > 0) {
+        row.totalPulpCd += (entry.volAc || 0) * totalAcres;
+        row.totalPulpGt += (entry.tonsAc || 0) * totalAcres;
+      }
+    } else {
+      row.sawBfAc += entry.volAc || 0;
+      if (totalAcres > 0) {
+        row.totalSawBf += (entry.volAc || 0) * totalAcres;
+        row.totalSawMbf += ((entry.volAc || 0) * totalAcres) / 1000;
+      }
+    }
+  });
+  return Object.values(rows).sort((a, b) => String(a.spp).localeCompare(String(b.spp)));
+}
+
+function renderNoticeVolumeTable(speciesRows, totalAcres, ruleName, formClass) {
+  if (!speciesRows || !speciesRows.length) return '';
+  const headerNote = totalAcres > 0
+    ? 'Estimated tract totals are based on ' + totalAcres.toFixed(1) + ' acres.'
+    : 'Enter tract acres in the report panel to show total tract estimates.';
+  let html = '<div class="report-card">' +
+    '<div class="report-card-title">Estimated Sale Volumes</div>' +
+    '<div class="report-table-wrap">' +
+      '<table class="report-table">' +
+        '<thead><tr>' +
+          '<th>Species</th>' +
+          '<th>Trees</th>' +
+          '<th>BA/ac</th>' +
+          '<th>TPA</th>' +
+          '<th>Saw BF/ac</th>' +
+          '<th>Total BF</th>' +
+          '<th>Total MBF</th>' +
+          '<th>Pulp CD/ac</th>' +
+          '<th>Total CD</th>' +
+          '<th>Pulp GT/ac</th>' +
+          '<th>Total GT</th>' +
+        '</tr></thead><tbody>';
+
+  speciesRows.forEach(row => {
+    const speciesLabel = row.label ? (row.spp + ' (' + row.label + ')') : row.spp;
+    html += '<tr>' +
+      '<td><strong>' + escapeHtml(speciesLabel) + '</strong></td>' +
+      '<td>' + row.treeCount + '</td>' +
+      '<td>' + row.baAc.toFixed(1) + '</td>' +
+      '<td>' + row.tpaAc.toFixed(1) + '</td>' +
+      '<td>' + (row.sawBfAc > 0 ? Math.round(row.sawBfAc).toLocaleString() : '') + '</td>' +
+      '<td>' + (row.totalSawBf > 0 ? Math.round(row.totalSawBf).toLocaleString() : '') + '</td>' +
+      '<td>' + (row.totalSawMbf > 0 ? row.totalSawMbf.toFixed(1) : '') + '</td>' +
+      '<td>' + (row.pulpCdAc > 0 ? row.pulpCdAc.toFixed(2) : '') + '</td>' +
+      '<td>' + (row.totalPulpCd > 0 ? row.totalPulpCd.toFixed(1) : '') + '</td>' +
+      '<td>' + (row.pulpGtAc > 0 ? row.pulpGtAc.toFixed(2) : '') + '</td>' +
+      '<td>' + (row.totalPulpGt > 0 ? row.totalPulpGt.toFixed(1) : '') + '</td>' +
+    '</tr>';
+  });
+
+  html += '</tbody></table></div>' +
+    '<div class="report-note">Notice-style estimate table using ' + escapeHtml(ruleName) + ' FC ' + escapeHtml(String(formClass || 78)) + ' for sawtimber. ' + escapeHtml(headerNote) + '</div>' +
+  '</div>';
+  return html;
+}
+
 function generateCruiseReport() {
   const el = document.getElementById('report-content');
   const rJobId = _reportJobId || activeJobId;
-  const job = allJobs.find(j => j.id === rJobId);
+  const job = normalizeJobCruiseSettings(allJobs.find(j => j.id === rJobId));
   if (!job) {
     el.innerHTML = '<div class="report-empty"><div class="report-empty-icon">📊</div>No job selected.</div>';
     return;
@@ -5171,6 +5569,8 @@ function generateCruiseReport() {
 
   const rule = document.getElementById('report-logrule').value || 'scribner';
   const ruleName = (LOG_RULES[rule] || LOG_RULES.scribner).name;
+  const formClass = normalizeFormClass(document.getElementById('report-formclass').value || 78);
+  const sawtimberLabel = ruleName + ' FC ' + formClass;
   const sd = {};
   let totalTreeCount = 0;
   allDonePlots.forEach(plot => {
@@ -5188,7 +5588,7 @@ function generateCruiseReport() {
         if (!sd[key].tonsT) sd[key].tonsT = 0;
         sd[key].tonsT += cords * getTonsPerCord(t.spp);
       }
-      else sd[key].volT += sawtimberVol(t.dbh, t.logs, rule) * tp;
+      else sd[key].volT += sawtimberVol(t.dbh, t.logs, rule, formClass) * tp;
     });
   });
 
@@ -5206,8 +5606,9 @@ function generateCruiseReport() {
     else { totSawBA += d.baAc; totSawTPA += d.tpaAc; totSawVol += d.volAc; }
   });
 
-  const spX = parseFloat(document.getElementById('grid-spacing-x').value) || 5;
-  const spY = parseFloat(document.getElementById('grid-spacing-y').value) || 5;
+  const gridSettings = getJobGridSettings(job);
+  const spX = gridSettings.spacingX;
+  const spY = gridSettings.spacingY;
 
   const cruiserNames = new Set();
   allDonePlots.forEach(p => { if (p.cruiser) cruiserNames.add(p.cruiser); });
@@ -5219,6 +5620,7 @@ function generateCruiseReport() {
     '<div class="report-row"><span>Job</span><span class="rval">' + escapeHtml(job.name) + '</span></div>' +
     '<div class="report-row"><span>BAF</span><span class="rval">' + baf + '</span></div>' +
     '<div class="report-row"><span>Log Rule</span><span class="rval">' + ruleName + '</span></div>' +
+    '<div class="report-row"><span>Form Class</span><span class="rval">' + formClass + '</span></div>' +
     '<div class="report-row"><span>Grid</span><span class="rval">' + spX + ' x ' + spY + ' chains</span></div>' +
     '<div class="report-row"><span>Plots</span><span class="rval">' + n + ' / ' + totalPlotCount + ' done</span></div>' +
     (noTallyCount > 0 ? '<div class="report-row"><span>No Tally Plots</span><span class="rval">' + noTallyCount + '</span></div>' : '') +
@@ -5230,7 +5632,7 @@ function generateCruiseReport() {
 
   if (totSawTPA > 0) {
     html += '<div class="report-card">' +
-      '<div class="report-card-title">Sawtimber, All Species (' + ruleName + ')</div>' +
+      '<div class="report-card-title">Sawtimber, All Species (' + sawtimberLabel + ')</div>' +
       '<div class="report-row"><span>BA / Acre</span><span class="rval">' + totSawBA.toFixed(1) + ' sq ft</span></div>' +
       '<div class="report-row"><span>Trees / Acre</span><span class="rval">' + totSawTPA.toFixed(1) + '</span></div>' +
       '<div class="report-row"><span>Volume / Acre</span><span class="rval">' + Math.round(totSawVol).toLocaleString() + ' BF</span></div>' +
@@ -5261,6 +5663,9 @@ function generateCruiseReport() {
     '</div>';
   }
 
+  const noticeSpeciesRows = buildNoticeSpeciesRows(Object.values(sd), totalAcres);
+  html += renderNoticeVolumeTable(noticeSpeciesRows, totalAcres, ruleName, formClass);
+
   const speciesList = [...new Set(Object.values(sd).map(d => d.spp))];
   speciesList.forEach(spp => {
     const sawKey = spp + '|sawtimber', pulpKey = spp + '|pulpwood';
@@ -5270,7 +5675,7 @@ function generateCruiseReport() {
 
     if (saw) {
       html += '<div class="report-card">' +
-        '<div class="report-card-title">Sawtimber (' + ruleName + ')</div>' +
+        '<div class="report-card-title">Sawtimber (' + sawtimberLabel + ')</div>' +
         '<div class="report-row"><span>Trees Tallied</span><span class="rval">' + saw.count + '</span></div>' +
         '<div class="report-row"><span>BA / Acre</span><span class="rval">' + saw.baAc.toFixed(1) + ' sq ft</span></div>' +
         '<div class="report-row"><span>Trees / Acre</span><span class="rval">' + saw.tpaAc.toFixed(1) + '</span></div>' +
@@ -5297,60 +5702,439 @@ function generateCruiseReport() {
   el.innerHTML = html;
 }
 
+function printVolumeReport() {
+  generateCruiseReport();
+  const rJobId = _reportJobId || activeJobId;
+  const job = allJobs.find(j => j.id === rJobId);
+  if (!job) { toast('No job selected'); return; }
+
+  const content = document.getElementById('report-content').innerHTML;
+  if (!content) { toast('No report to print'); return; }
+
+  const win = window.open('', '_blank');
+  if (!win) { toast('Allow popups to print the report'); return; }
+
+  const title = escapeHtml((job.name || 'Cruise Report') + ' Volume Report');
+  const today = new Date().toLocaleDateString();
+  win.document.open();
+  win.document.write(
+    '<!doctype html><html><head><meta charset="utf-8"><title>' + title + '</title>' +
+    '<style>' +
+      'body{font-family:Arial,sans-serif;color:#111;margin:24px;background:#fff;}' +
+      'h1{margin:0 0 4px 0;font-size:24px;}' +
+      '.sub{margin:0 0 18px 0;color:#555;font-size:12px;}' +
+      '.report-card{border:1px solid #d7d7d7;border-radius:8px;padding:14px;margin-bottom:12px;break-inside:avoid;}' +
+      '.report-card-title{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:0.8px;border-bottom:1px solid #ddd;padding-bottom:6px;margin-bottom:8px;color:#333;}' +
+      '.report-row{display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid #eee;font-size:12px;}' +
+      '.report-row:last-child{border-bottom:none;}' +
+      '.rval{font-weight:700;}' +
+      '.report-species-hdr{font-size:16px;font-weight:700;margin:18px 0 8px;padding-bottom:4px;border-bottom:2px solid #ccc;}' +
+      '.report-table-wrap{overflow:visible;border:1px solid #ddd;border-radius:8px;}' +
+      '.report-table{width:100%;border-collapse:collapse;font-size:11px;}' +
+      '.report-table th,.report-table td{padding:7px 8px;border-bottom:1px solid #eee;text-align:right;}' +
+      '.report-table th:first-child,.report-table td:first-child{text-align:left;}' +
+      '.report-table th{font-size:10px;text-transform:uppercase;letter-spacing:0.6px;background:#f6f6f6;color:#555;}' +
+      '.report-note{margin-top:8px;font-size:11px;color:#666;line-height:1.5;}' +
+      '@media print{body{margin:0.35in;}button{display:none;}}' +
+    '</style></head><body>' +
+    '<h1>' + title + '</h1>' +
+    '<div class="sub">Generated ' + escapeHtml(today) + '</div>' +
+    content +
+    '</body></html>'
+  );
+  win.document.close();
+  setTimeout(() => {
+    try {
+      win.focus();
+      win.print();
+    } catch (e) {}
+  }, 250);
+}
+
+function getSpeciesLabel(code) {
+  const match = DEFAULT_SPECIES.find(s => s.code === code);
+  return match ? match.label : '';
+}
+
+function formatCsvDateTime(value) {
+  if (!value) return '';
+  try {
+    const date = value && value.toDate ? value.toDate() : new Date(value);
+    return Number.isNaN(date.getTime()) ? '' : date.toLocaleString();
+  } catch (e) {
+    return '';
+  }
+}
+
+function csvCell(value) {
+  if (value == null) return '';
+  const str = String(value);
+  return /[",\r\n]/.test(str) ? '"' + str.replace(/"/g, '""') + '"' : str;
+}
+
+function downloadCsvRows(rows, fileName) {
+  const csv = rows.map(row => (row || []).map(csvCell).join(',')).join('\r\n');
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
+  const href = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = href;
+  a.download = fileName;
+  a.click();
+  setTimeout(() => URL.revokeObjectURL(href), 1000);
+}
+
+function getBoundaryCoordinateText(poly) {
+  if (!poly || !poly.layer || !poly.layer.getLatLngs) return '';
+  const latlngs = poly.layer.getLatLngs()[0] || [];
+  return latlngs.map(ll => {
+    const lat = Number(ll.lat);
+    const lng = Number(ll.lng);
+    return (Number.isFinite(lat) ? lat.toFixed(6) : '') + ' ' + (Number.isFinite(lng) ? lng.toFixed(6) : '');
+  }).join(' | ');
+}
+
+function getPlotExportSummary(plot, baf, rule, formClass) {
+  const trees = Array.isArray(plot && plot.trees) ? plot.trees : [];
+  let totalTPA = 0;
+  let sawBF = 0;
+  let pulpCords = 0;
+  let pulpTons = 0;
+  let sawCount = 0;
+  let pulpCount = 0;
+
+  trees.forEach(tree => {
+    const tpa = calcTPA(baf, tree.dbh);
+    totalTPA += tpa;
+    if ((tree.product || 'sawtimber') === 'pulpwood') {
+      pulpCount++;
+      const cords = pulpwoodCords(tree.dbh, tree.height || 30) * tpa;
+      pulpCords += cords;
+      pulpTons += cords * getTonsPerCord(tree.spp);
+    } else {
+      sawCount++;
+      sawBF += sawtimberVol(tree.dbh, tree.logs, rule, formClass) * tpa;
+    }
+  });
+
+  return {
+    treeCount: trees.length,
+    sawCount: sawCount,
+    pulpCount: pulpCount,
+    totalTPA: totalTPA,
+    sawBF: sawBF,
+    pulpCords: pulpCords,
+    pulpTons: pulpTons
+  };
+}
+
 function exportCruiseCSV() {
+  const rJobId = _reportJobId || activeJobId;
+  const job = normalizeJobCruiseSettings(allJobs.find(j => j.id === rJobId));
+  if (!job) { toast('No job selected'); return; }
+
   const rData = getReportJobData();
-  const rPlots = rData.plots;
-  const rPolygons = rData.polygons;
+  const rPlots = rData.plots || [];
+  const rPolygons = rData.polygons || [];
+  if (!rPlots.length && !rPolygons.length) { toast('No cruise data to export'); return; }
 
   const baf = parseInt(document.getElementById('report-baf').value) || 10;
-  const allDone = rPlots.filter(p => p.completed);
-  if (!allDone.length) { toast('No data to export'); return; }
+  const rule = document.getElementById('report-logrule').value || 'scribner';
+  const ruleName = (LOG_RULES[rule] || LOG_RULES.scribner).name;
+  const formClass = normalizeFormClass(document.getElementById('report-formclass').value || 78);
+  const sawtimberLabel = ruleName + ' FC ' + formClass;
+  const allDonePlots = rPlots.filter(p => p.completed);
+  const noTallyCount = allDonePlots.filter(p => p.noTally || !p.trees || p.trees.length === 0).length;
+  const totalTreeCount = allDonePlots.reduce((sum, plot) => sum + ((plot.trees || []).length), 0);
+  const gridSettings = getJobGridSettings(job);
+  const spX = gridSettings.spacingX;
+  const spY = gridSettings.spacingY;
+  const gridBearing = gridSettings.bearing;
 
   const manualAcres = parseFloat(document.getElementById('report-acres').value);
   let totalAcres = 0;
   if (manualAcres > 0) {
     totalAcres = manualAcres;
   } else {
-    rPolygons.forEach(p => { try { totalAcres += calcAcres(p.layer); } catch(e) {} });
+    rPolygons.forEach(poly => {
+      try { totalAcres += calcAcres(poly.layer); } catch (e) {}
+    });
   }
 
-  const rows = [['Plot','Species','Product','DBH_in','Logs','Height_ft','BAF','TPA','Cords_per_Acre','Tons_per_Acre','BF_per_Acre','Volume_Unit','Lat','Lng']];
-  const rule = document.getElementById('report-logrule').value || 'scribner';
-  allDone.forEach(p => {
-    if (p.noTally || !p.trees || p.trees.length === 0) {
-      rows.push([p.id, 'NO TALLY', '', '', '', '', baf, '', '', '', '', '', p.lat.toFixed(6), p.lng.toFixed(6)]);
-      return;
-    }
-    (p.trees || []).forEach(t => {
-      const tpa = calcTPA(baf, t.dbh);
-      const isPulp = (t.product || 'sawtimber') === 'pulpwood';
-      if (isPulp) {
-        const cords = pulpwoodCords(t.dbh, t.height || 30) * tpa;
-        const tons = cords * getTonsPerCord(t.spp);
-        rows.push([p.id, t.spp, 'pulpwood', t.dbh, '', t.height || '', baf, tpa.toFixed(2), cords.toFixed(3), tons.toFixed(2), '', 'CD/GT', p.lat.toFixed(6), p.lng.toFixed(6)]);
+  const cruiserNames = new Set();
+  rPlots.forEach(plot => { if (plot && plot.cruiser) cruiserNames.add(plot.cruiser); });
+  if (cruiserNames.size === 0 && Array.isArray(window._cloudContributors)) {
+    window._cloudContributors.forEach(name => { if (name) cruiserNames.add(name); });
+  }
+  const cruiserList = Array.from(cruiserNames);
+
+  const selectedSpeciesCodes = (job.species || []).map(species =>
+    typeof species === 'string' ? species : species && species.code
+  ).filter(Boolean);
+  const selectedSpecies = selectedSpeciesCodes.map(code => {
+    const label = getSpeciesLabel(code);
+    return label ? (code + ' - ' + label) : code;
+  });
+
+  const speciesStats = {};
+  let totSawBA = 0, totSawTPA = 0, totSawVol = 0;
+  let totPulpBA = 0, totPulpTPA = 0, totPulpVol = 0, totPulpTons = 0;
+
+  allDonePlots.forEach(plot => {
+    (plot.trees || []).forEach(tree => {
+      const product = tree.product || 'sawtimber';
+      const key = tree.spp + '|' + product;
+      const tpa = calcTPA(baf, tree.dbh);
+      if (!speciesStats[key]) {
+        speciesStats[key] = {
+          spp: tree.spp,
+          product: product,
+          baT: 0,
+          tpaT: 0,
+          volT: 0,
+          tonsT: 0,
+          count: 0
+        };
+      }
+      speciesStats[key].baT += baf;
+      speciesStats[key].tpaT += tpa;
+      speciesStats[key].count++;
+      if (product === 'pulpwood') {
+        const cords = pulpwoodCords(tree.dbh, tree.height || 30) * tpa;
+        speciesStats[key].volT += cords;
+        speciesStats[key].tonsT += cords * getTonsPerCord(tree.spp);
       } else {
-        const bf = sawtimberVol(t.dbh, t.logs, rule) * tpa;
-        rows.push([p.id, t.spp, 'sawtimber', t.dbh, t.logs, '', baf, tpa.toFixed(2), '', '', bf.toFixed(1), 'BF', p.lat.toFixed(6), p.lng.toFixed(6)]);
+        speciesStats[key].volT += sawtimberVol(tree.dbh, tree.logs, rule, formClass) * tpa;
       }
     });
   });
 
-  rows.push([]);
-  rows.push(['--- SUMMARY ---']);
-  rows.push(['Total Acres', totalAcres > 0 ? totalAcres.toFixed(1) : 'N/A']);
-  rows.push(['Plots Completed', allDone.length + ' / ' + rPlots.length]);
-  rows.push(['BAF', baf]);
-  rows.push(['Log Rule', (LOG_RULES[rule] || LOG_RULES.scribner).name]);
+  Object.values(speciesStats).forEach(stat => {
+    const plotCount = allDonePlots.length || 1;
+    stat.baAc = stat.baT / plotCount;
+    stat.tpaAc = stat.tpaT / plotCount;
+    stat.volAc = stat.volT / plotCount;
+    stat.tonsAc = (stat.tonsT || 0) / plotCount;
+    if (stat.product === 'pulpwood') {
+      totPulpBA += stat.baAc;
+      totPulpTPA += stat.tpaAc;
+      totPulpVol += stat.volAc;
+      totPulpTons += stat.tonsAc;
+    } else {
+      totSawBA += stat.baAc;
+      totSawTPA += stat.tpaAc;
+      totSawVol += stat.volAc;
+    }
+  });
 
-  const blob = new Blob([rows.map(r => r.join(',')).join('\n')], { type: 'text/csv' });
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(blob);
-  const rJobId = _reportJobId || activeJobId;
-  const job = allJobs.find(j => j.id === rJobId);
-  const safeName = job ? job.name.replace(/[^a-zA-Z0-9_-]/g, '_') : 'cruise';
-  a.download = safeName + '_cruise_data.csv';
-  a.click();
-  toast('CSV exported!');
+  const rows = [];
+
+  rows.push(['CRUISE SUMMARY']);
+  rows.push(['Field', 'Value']);
+  rows.push(['Job Name', job.name || '']);
+  rows.push(['Job ID', job.id || '']);
+  rows.push(['Created At', formatCsvDateTime(job.createdAt)]);
+  rows.push(['Updated At', formatCsvDateTime(job.updatedAt)]);
+  rows.push(['Cloud Cruise ID', job.cloudCruiseId || (rJobId === activeJobId ? (window._activeCloudCruiseId || '') : '')]);
+  rows.push(['BAF', baf]);
+  rows.push(['Log Rule', ruleName]);
+  rows.push(['Form Class', formClass]);
+  rows.push(['Sawtimber Volume Basis', sawtimberLabel]);
+  rows.push(['Grid Spacing X (chains)', spX]);
+  rows.push(['Grid Spacing Y (chains)', spY]);
+  rows.push(['Grid Bearing (degrees)', gridBearing]);
+  rows.push(['Boundary Count', rPolygons.length]);
+  rows.push(['Total Plots', rPlots.length]);
+  rows.push(['Completed Plots', allDonePlots.length]);
+  rows.push(['Pending Plots', rPlots.filter(plot => !plot.completed).length]);
+  rows.push(['No Tally Plots', noTallyCount]);
+  rows.push(['Trees Tallied', totalTreeCount]);
+  rows.push(['Acres', totalAcres > 0 ? totalAcres.toFixed(1) : '']);
+  rows.push(['Cruisers', cruiserList.join('; ')]);
+  rows.push(['Selected Species', selectedSpecies.join('; ')]);
+  rows.push(['Exported At', new Date().toLocaleString()]);
+  rows.push([]);
+
+  rows.push(['STAND SUMMARY']);
+  rows.push(['Category', 'BA_per_Acre_sqft', 'Trees_per_Acre', 'Saw_BF_per_Acre', 'Total_Saw_BF', 'Total_Saw_MBF', 'Pulp_Cords_per_Acre', 'Pulp_Tons_per_Acre', 'Total_Pulp_Cords', 'Total_Pulp_Tons']);
+  rows.push([
+    'Sawtimber',
+    totSawBA ? totSawBA.toFixed(1) : '',
+    totSawTPA ? totSawTPA.toFixed(1) : '',
+    totSawVol ? Math.round(totSawVol) : '',
+    totalAcres > 0 && totSawVol ? Math.round(totSawVol * totalAcres) : '',
+    totalAcres > 0 && totSawVol ? (totSawVol * totalAcres / 1000).toFixed(1) : '',
+    '',
+    '',
+    '',
+    ''
+  ]);
+  rows.push([
+    'Pulpwood',
+    totPulpBA ? totPulpBA.toFixed(1) : '',
+    totPulpTPA ? totPulpTPA.toFixed(1) : '',
+    '',
+    '',
+    '',
+    totPulpVol ? totPulpVol.toFixed(3) : '',
+    totPulpTons ? totPulpTons.toFixed(2) : '',
+    totalAcres > 0 && totPulpVol ? (totPulpVol * totalAcres).toFixed(1) : '',
+    totalAcres > 0 && totPulpTons ? (totPulpTons * totalAcres).toFixed(1) : ''
+  ]);
+  rows.push([
+    'Combined',
+    (totSawBA + totPulpBA) ? (totSawBA + totPulpBA).toFixed(1) : '',
+    (totSawTPA + totPulpTPA) ? (totSawTPA + totPulpTPA).toFixed(1) : '',
+    totSawVol ? Math.round(totSawVol) : '',
+    totalAcres > 0 && totSawVol ? Math.round(totSawVol * totalAcres) : '',
+    totalAcres > 0 && totSawVol ? (totSawVol * totalAcres / 1000).toFixed(1) : '',
+    totPulpVol ? totPulpVol.toFixed(3) : '',
+    totPulpTons ? totPulpTons.toFixed(2) : '',
+    totalAcres > 0 && totPulpVol ? (totPulpVol * totalAcres).toFixed(1) : '',
+    totalAcres > 0 && totPulpTons ? (totPulpTons * totalAcres).toFixed(1) : ''
+  ]);
+  rows.push([]);
+
+  rows.push(['SPECIES SUMMARY']);
+  rows.push(['Species_Code', 'Species_Name', 'Product', 'Trees_Tallied', 'BA_per_Acre_sqft', 'Trees_per_Acre', 'BF_per_Acre', 'Total_BF', 'Total_MBF', 'Cords_per_Acre', 'Tons_per_Acre', 'Total_Cords', 'Total_Tons']);
+  if (Object.keys(speciesStats).length === 0) {
+    rows.push(['', '', '', '0', '', '', '', '', '', '', '', '', '']);
+  } else {
+    Object.values(speciesStats).sort((a, b) => {
+      const bySpecies = String(a.spp || '').localeCompare(String(b.spp || ''));
+      if (bySpecies !== 0) return bySpecies;
+      return String(a.product || '').localeCompare(String(b.product || ''));
+    }).forEach(stat => {
+      rows.push([
+        stat.spp,
+        getSpeciesLabel(stat.spp),
+        stat.product,
+        stat.count,
+        stat.baAc.toFixed(1),
+        stat.tpaAc.toFixed(1),
+        stat.product === 'pulpwood' ? '' : Math.round(stat.volAc),
+        stat.product === 'pulpwood' || totalAcres <= 0 ? '' : Math.round(stat.volAc * totalAcres),
+        stat.product === 'pulpwood' || totalAcres <= 0 ? '' : (stat.volAc * totalAcres / 1000).toFixed(1),
+        stat.product === 'pulpwood' ? stat.volAc.toFixed(3) : '',
+        stat.product === 'pulpwood' ? stat.tonsAc.toFixed(2) : '',
+        stat.product === 'pulpwood' && totalAcres > 0 ? (stat.volAc * totalAcres).toFixed(1) : '',
+        stat.product === 'pulpwood' && totalAcres > 0 ? (stat.tonsAc * totalAcres).toFixed(1) : ''
+      ]);
+    });
+  }
+  rows.push([]);
+
+  rows.push(['BOUNDARIES']);
+  rows.push(['Boundary_Name', 'Acres', 'Vertex_Count', 'Coordinates']);
+  if (!rPolygons.length) {
+    rows.push(['', '', '', '']);
+  } else {
+    rPolygons.forEach((poly, index) => {
+      const latlngs = poly && poly.layer && poly.layer.getLatLngs ? (poly.layer.getLatLngs()[0] || []) : [];
+      let acres = '';
+      try { acres = calcAcres(poly.layer).toFixed(2); } catch (e) {}
+      rows.push([
+        poly.name || ('Boundary ' + (index + 1)),
+        acres,
+        latlngs.length,
+        getBoundaryCoordinateText(poly)
+      ]);
+    });
+  }
+  rows.push([]);
+
+  rows.push(['PLOTS']);
+  rows.push(['Plot_ID', 'Status', 'No_Tally', 'Cruiser', 'Tree_Count', 'Saw_Tree_Count', 'Pulp_Tree_Count', 'Total_TPA', 'Saw_BF_per_Acre', 'Pulp_Cords_per_Acre', 'Pulp_Tons_per_Acre', 'Lat', 'Lng']);
+  if (!rPlots.length) {
+    rows.push(['', '', '', '', '', '', '', '', '', '', '', '', '']);
+  } else {
+    rPlots.forEach(plot => {
+      const summary = getPlotExportSummary(plot, baf, rule, formClass);
+      const status = plot.noTally ? 'No Tally' : (plot.completed ? 'Completed' : 'Pending');
+      rows.push([
+        plot.id,
+        status,
+        plot.noTally ? 'Yes' : 'No',
+        plot.cruiser || '',
+        summary.treeCount,
+        summary.sawCount,
+        summary.pulpCount,
+        summary.totalTPA ? summary.totalTPA.toFixed(2) : '',
+        summary.sawBF ? summary.sawBF.toFixed(1) : '',
+        summary.pulpCords ? summary.pulpCords.toFixed(3) : '',
+        summary.pulpTons ? summary.pulpTons.toFixed(2) : '',
+        Number.isFinite(plot.lat) ? Number(plot.lat).toFixed(6) : '',
+        Number.isFinite(plot.lng) ? Number(plot.lng).toFixed(6) : ''
+      ]);
+    });
+  }
+  rows.push([]);
+
+  rows.push(['TREES']);
+  rows.push(['Plot_ID', 'Plot_Status', 'Tree_Index', 'Cruiser', 'Species_Code', 'Species_Name', 'Product', 'DBH_in', 'Logs', 'Height_ft', 'BAF', 'Form_Class', 'TPA', 'BF_per_Acre', 'Cords_per_Acre', 'Tons_per_Acre', 'Volume_Unit', 'Lat', 'Lng']);
+  if (!allDonePlots.length) {
+    rows.push(['', 'No completed plots', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '']);
+  } else {
+    allDonePlots.forEach(plot => {
+      const status = plot.noTally ? 'No Tally' : 'Completed';
+      if (plot.noTally || !plot.trees || plot.trees.length === 0) {
+        rows.push([
+          plot.id,
+          status,
+          '',
+          plot.cruiser || '',
+          'NO_TALLY',
+          '',
+          '',
+          '',
+          '',
+          '',
+          baf,
+          formClass,
+          '',
+          '',
+          '',
+          '',
+          '',
+          Number.isFinite(plot.lat) ? Number(plot.lat).toFixed(6) : '',
+          Number.isFinite(plot.lng) ? Number(plot.lng).toFixed(6) : ''
+        ]);
+        return;
+      }
+
+      (plot.trees || []).forEach((tree, index) => {
+        const tpa = calcTPA(baf, tree.dbh);
+        const isPulp = (tree.product || 'sawtimber') === 'pulpwood';
+        const cords = isPulp ? (pulpwoodCords(tree.dbh, tree.height || 30) * tpa) : 0;
+        const tons = isPulp ? (cords * getTonsPerCord(tree.spp)) : 0;
+        const bf = isPulp ? 0 : (sawtimberVol(tree.dbh, tree.logs, rule, formClass) * tpa);
+        rows.push([
+          plot.id,
+          status,
+          index + 1,
+          plot.cruiser || '',
+          tree.spp || '',
+          getSpeciesLabel(tree.spp),
+          tree.product || 'sawtimber',
+          tree.dbh,
+          tree.logs || '',
+          tree.height || '',
+          baf,
+          formClass,
+          tpa.toFixed(2),
+          bf ? bf.toFixed(1) : '',
+          cords ? cords.toFixed(3) : '',
+          tons ? tons.toFixed(2) : '',
+          isPulp ? 'CD/GT' : 'BF',
+          Number.isFinite(plot.lat) ? Number(plot.lat).toFixed(6) : '',
+          Number.isFinite(plot.lng) ? Number(plot.lng).toFixed(6) : ''
+        ]);
+      });
+    });
+  }
+
+  const safeName = (job.name || 'cruise').replace(/[^a-zA-Z0-9_-]/g, '_');
+  downloadCsvRows(rows, safeName + '_cruise_export.csv');
+  toast('Cruise CSV exported!');
 }
 
 // â”€â”€ Report panel init â”€â”€
@@ -5373,12 +6157,14 @@ function initReportPanel() {
   }
   _reportJobId = jobSel.value;
 
-  const job = allJobs.find(j => j.id === _reportJobId);
+  const job = normalizeJobCruiseSettings(allJobs.find(j => j.id === _reportJobId));
   const bafSel = document.getElementById('report-baf');
   bafSel.value = (job && job.baf) || 10;
 
   const ruleSel = document.getElementById('report-logrule');
   ruleSel.value = (job && job.logRule) || 'scribner';
+  const formClassSel = document.getElementById('report-formclass');
+  if (formClassSel) formClassSel.value = normalizeFormClass(job && job.formClass);
 
   const acresInput = document.getElementById('report-acres');
   acresInput.value = '';
@@ -5396,12 +6182,14 @@ function initReportPanel() {
 
 function switchReportJob(jobId) {
   _reportJobId = jobId;
-  const job = allJobs.find(j => j.id === jobId);
+  const job = normalizeJobCruiseSettings(allJobs.find(j => j.id === jobId));
 
   const bafSel = document.getElementById('report-baf');
   bafSel.value = (job && job.baf) || 10;
   const ruleSel = document.getElementById('report-logrule');
   ruleSel.value = (job && job.logRule) || 'scribner';
+  const formClassSel = document.getElementById('report-formclass');
+  if (formClassSel) formClassSel.value = normalizeFormClass(job && job.formClass);
 
   const acresInput = document.getElementById('report-acres');
   acresInput.value = '';
@@ -5455,9 +6243,20 @@ function updateReportBAF(val) {
 
 function updateReportLogRule(val) {
   if (_reportJobId === activeJobId) {
-    const job = allJobs.find(j => j.id === activeJobId);
+    const job = normalizeJobCruiseSettings(allJobs.find(j => j.id === activeJobId));
     if (job) {
       job.logRule = val;
+      job.updatedAt = Date.now();
+      saveSession();
+    }
+  }
+}
+
+function updateReportFormClass(val) {
+  if (_reportJobId === activeJobId) {
+    const job = normalizeJobCruiseSettings(allJobs.find(j => j.id === activeJobId));
+    if (job) {
+      job.formClass = normalizeFormClass(val);
       job.updatedAt = Date.now();
       saveSession();
     }
@@ -5574,9 +6373,9 @@ function updateDrawUI() {
   const n = drawPoints.length;
   const countEl = document.getElementById('draw-point-count');
   if (n < 3) {
-    countEl.textContent = n + (n === 1 ? ' point' : ' points') + ' â€” need ' + (3 - n) + ' more';
+    countEl.textContent = n + (n === 1 ? ' point' : ' points') + ' - need ' + (3 - n) + ' more';
   } else {
-    countEl.textContent = n + ' points â€” ready to finish';
+    countEl.textContent = n + ' points - ready to finish';
   }
   const finishBtn = document.getElementById('draw-finish-btn');
   finishBtn.disabled = n < 3;
@@ -5977,6 +6776,13 @@ function generatePlots() {
   const spacingX = parseFloat(document.getElementById('grid-spacing-x').value) || 5;
   const spacingY = parseFloat(document.getElementById('grid-spacing-y').value) || 5;
   const bearing = parseFloat(document.getElementById('grid-bearing').value) || 0;
+  const activeJob = allJobs.find(j => j.id === activeJobId);
+  if (activeJob) {
+    activeJob.gridSpacingX = spacingX;
+    activeJob.gridSpacingY = spacingY;
+    activeJob.gridBearing = bearing;
+    activeJob.updatedAt = Date.now();
+  }
 
   const dxM = spacingX * 20.1168;
   const dyM = spacingY * 20.1168;
@@ -6172,7 +6978,7 @@ function refreshPlotList() {
       '<div class="plot-dot ' + statusClass + '">' + plot.id + '</div>' +
       '<div class="plot-list-info">' +
         '<div class="plot-list-name">Plot ' + plot.id + '</div>' +
-        '<div class="plot-list-meta">' + (plot.noTally ? 'No Tally' + (plot.cruiser ? ' Â· ' + plot.cruiser : '') : (plot.completed ? (plot.trees ? plot.trees.length : 0) + ' trees' + (plot.cruiser ? ' Â· ' + plot.cruiser : '') : (isNav ? 'Navigating...' : 'Pending'))) + '</div>' +
+        '<div class="plot-list-meta">' + (plot.noTally ? 'No Tally' + (plot.cruiser ? ' &middot; ' + plot.cruiser : '') : (plot.completed ? (plot.trees ? plot.trees.length : 0) + ' trees' + (plot.cruiser ? ' &middot; ' + plot.cruiser : '') : (isNav ? 'Navigating...' : 'Pending'))) + '</div>' +
       '</div>' +
       (dist != null ? '<div class="plot-list-dist">' + formatDist(dist) + '</div>' : '') +
     '</div>';
@@ -6690,7 +7496,8 @@ function getCurrentJobData() {
     plots: plotMarkers.map(p => ({
       id: p.id, lat: p.lat, lng: p.lng, completed: p.completed,
       trees: p.trees || [],
-      noTally: p.noTally || false
+      noTally: p.noTally || false,
+      cruiser: p.cruiser || ''
     })),
     polygons: allPolygons.map(p => {
       const lls = p.layer.getLatLngs()[0];
@@ -6707,7 +7514,7 @@ async function restoreSession() {
     const tx = db.transaction('jobs', 'readonly');
     const store = tx.objectStore('jobs');
     const getAllReq = store.getAll();
-    allJobs = await new Promise((res, rej) => { getAllReq.onsuccess = () => res(getAllReq.result || []); getAllReq.onerror = rej; });
+    allJobs = (await new Promise((res, rej) => { getAllReq.onsuccess = () => res(getAllReq.result || []); getAllReq.onerror = rej; })).map(job => normalizeJobCruiseSettings(job));
 
     // Load global state
     const tx2 = db.transaction('state', 'readonly');
@@ -6765,6 +7572,11 @@ async function restoreSession() {
           name: 'Migrated Session',
           plots: oldData.plots || [],
           polygons: oldData.polygons || [],
+          gridSpacingX: 5,
+          gridSpacingY: 5,
+          gridBearing: 0,
+          logRule: 'scribner',
+          formClass: 78,
           createdAt: Date.now(),
           updatedAt: Date.now()
         };
@@ -6787,6 +7599,7 @@ function loadJob(jobId, skipSave) {
   if (!skipSave && activeJobId && activeJobId !== jobId) {
     const currentJob = allJobs.find(j => j.id === activeJobId);
     if (currentJob) {
+      captureGridSettingsToJob(currentJob);
       const data = getCurrentJobData();
       currentJob.plots = data.plots;
       currentJob.polygons = data.polygons;
@@ -6802,8 +7615,9 @@ function loadJob(jobId, skipSave) {
   plotMarkers = [];
   stopNavigation();
 
-  const job = allJobs.find(j => j.id === jobId);
+  const job = normalizeJobCruiseSettings(allJobs.find(j => j.id === jobId));
   if (!job) return;
+  applyJobGridSettings(job);
 
   activeJobId = jobId;
 
@@ -6836,6 +7650,7 @@ function loadJob(jobId, skipSave) {
       if (plot) {
         if (pd.trees && pd.trees.length) plot.trees = JSON.parse(JSON.stringify(pd.trees));
         if (pd.noTally) plot.noTally = true;
+        if (pd.cruiser) plot.cruiser = pd.cruiser;
         if (pd.completed) { plot.completed = true; updatePlotMarkerStyle(plot); }
       }
     });
@@ -6888,6 +7703,11 @@ async function createNewJob() {
     plots: [],
     polygons: [],
     baf: 10,
+    logRule: 'scribner',
+    formClass: 78,
+    gridSpacingX: 5,
+    gridSpacingY: 5,
+    gridBearing: 0,
     species: DEFAULT_SPECIES.slice(0, 3),
     createdAt: Date.now(),
     updatedAt: Date.now()
@@ -7027,6 +7847,11 @@ async function ensureActiveJob() {
     plots: [],
     polygons: [],
     baf: 10,
+    logRule: 'scribner',
+    formClass: 78,
+    gridSpacingX: 5,
+    gridSpacingY: 5,
+    gridBearing: 0,
     species: DEFAULT_SPECIES.slice(0, 3),
     createdAt: Date.now(),
     updatedAt: Date.now()
