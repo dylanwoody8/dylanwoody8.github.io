@@ -3100,50 +3100,86 @@ async function manualCloudSync() {
   }
 }
 
-// Pull other users' completed plot data from Firestore and merge locally
+// Pull all users' completed plot data from Firestore and merge locally
+// This includes your own data from other devices and other cruisers' data
 async function pullOtherUsersPlotData(cruiseId) {
   if (!fb_user || !cruiseId) return;
   try {
     const userSnap = await fb_db.collection('cruises').doc(cruiseId).collection('userData').get();
     let newPlotsCount = 0;
+    let updatedPlotsCount = 0;
     const contributors = [];
+
+    // Build a map of all completed plots from all users in the cloud
+    // If multiple users completed the same plot, use the most recent one
+    const cloudPlots = {}; // plotId -> { trees, noTally, cruiser, updatedAt }
 
     userSnap.forEach(udoc => {
       const ud = udoc.data();
-      contributors.push(ud.userName || ud.userEmail || udoc.id);
-
-      // Skip this user's own data (we already have it locally)
-      if (udoc.id === fb_user.uid) return;
+      const cruiserName = ud.userName || ud.userEmail || udoc.id;
+      contributors.push(cruiserName);
 
       const userPlots = JSON.parse(ud.plots || '[]');
+      const docTime = ud.updatedAt ? ud.updatedAt.toMillis() : 0;
+
       userPlots.forEach(up => {
         if (!up.completed) return;
-        const local = plotMarkers.find(p => p.id === up.id);
-        if (!local) return; // Plot doesn't exist locally
+        const existing = cloudPlots[up.id];
+        // Keep the most recently updated version if there's a conflict
+        if (!existing || docTime > (existing.updatedAt || 0)) {
+          cloudPlots[up.id] = {
+            trees: up.trees || [],
+            noTally: up.noTally || false,
+            cruiser: cruiserName,
+            fromSelf: udoc.id === fb_user.uid,
+            updatedAt: docTime
+          };
+        }
+      });
+    });
 
-        // Only merge if the local plot is NOT already completed by this user
-        // (don't overwrite your own tally with someone else's)
-        if (local.completed) return;
+    // Merge cloud data onto local plot markers
+    Object.entries(cloudPlots).forEach(([plotId, data]) => {
+      const local = plotMarkers.find(p => p.id === parseInt(plotId) || p.id === plotId);
+      if (!local) return;
 
-        // Apply the other user's tree data
-        local.trees = JSON.parse(JSON.stringify(up.trees || []));
+      if (!local.completed) {
+        // Local plot is pending, apply cloud data
+        local.trees = JSON.parse(JSON.stringify(data.trees));
         local.completed = true;
-        local.noTally = up.noTally || false;
-        local.cruiser = ud.userName || ud.userEmail || udoc.id;
+        local.noTally = data.noTally || false;
+        local.cruiser = data.cruiser;
         updatePlotMarkerStyle(local);
         newPlotsCount++;
-      });
+      } else if (data.fromSelf) {
+        // Local plot IS completed AND the cloud data is from this same user (different device)
+        // Check if cloud has newer/different tree data
+        const localTreeHash = JSON.stringify(local.trees || []);
+        const cloudTreeHash = JSON.stringify(data.trees || []);
+        if (localTreeHash !== cloudTreeHash && data.trees.length > 0) {
+          // Cloud version from another device is different, update local
+          local.trees = JSON.parse(JSON.stringify(data.trees));
+          local.noTally = data.noTally || false;
+          updatePlotMarkerStyle(local);
+          updatedPlotsCount++;
+        }
+      }
+      // If local is completed by this user and cloud data is from a different user, skip
+      // (this user's own tally takes priority for plots they completed)
     });
 
     window._cloudContributors = contributors;
 
-    if (newPlotsCount > 0) {
+    if (newPlotsCount > 0 || updatedPlotsCount > 0) {
       updateStats();
       updateTractInfo();
-      toast(newPlotsCount + ' plot' + (newPlotsCount > 1 ? 's' : '') + ' received from other cruisers');
+      const parts = [];
+      if (newPlotsCount > 0) parts.push(newPlotsCount + ' new plot' + (newPlotsCount > 1 ? 's' : ''));
+      if (updatedPlotsCount > 0) parts.push(updatedPlotsCount + ' updated');
+      toast(parts.join(', ') + ' from cloud');
     }
   } catch(e) {
-    console.warn('Pull other users data failed:', e);
+    console.warn('Pull cloud data failed:', e);
   }
 }
 
