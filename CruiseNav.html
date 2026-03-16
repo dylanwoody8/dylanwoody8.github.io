@@ -3271,13 +3271,7 @@ async function loadCruiseFromCloud(cruiseId) {
 
       window._cloudContributors = contributors;
 
-      // Sync cruise settings to local job
-      const job = allJobs.find(j => j.id === activeJobId);
-      if (job) {
-        if (d.baf) job.baf = d.baf;
-        if (d.logRule) job.logRule = d.logRule;
-        if (d.species && d.species.length) job.species = d.species;
-      }
+      // Local job creation/sync handled after both format branches
 
     } else {
       // â”€â”€ Legacy single-user format â”€â”€
@@ -3310,6 +3304,40 @@ async function loadCruiseFromCloud(cruiseId) {
 
     window._activeCloudCruiseId = cruiseId;
     window._activeCloudCruiseOwner = d.ownerId;
+
+    // Create or update a local job so the cloud cruise appears in the Jobs list and Report selector
+    const cloudJobId = 'cloud_' + cruiseId;
+    let localJob = allJobs.find(j => j.id === cloudJobId);
+    if (!localJob) {
+      localJob = {
+        id: cloudJobId,
+        name: d.name || 'Cloud Cruise',
+        plots: [],
+        polygons: [],
+        baf: d.baf || 10,
+        logRule: d.logRule || 'scribner',
+        species: d.species || [],
+        createdAt: Date.now(),
+        updatedAt: Date.now()
+      };
+      allJobs.push(localJob);
+    }
+    // Update the local job with current map data
+    localJob.name = d.name || localJob.name;
+    localJob.baf = d.baf || localJob.baf;
+    localJob.logRule = d.logRule || localJob.logRule;
+    localJob.species = (d.species && d.species.length) ? d.species : localJob.species;
+    localJob.plots = plotMarkers.map(p => ({
+      id: p.id, lat: p.lat, lng: p.lng, completed: p.completed,
+      trees: p.trees || [], noTally: p.noTally || false, cruiser: p.cruiser || ''
+    }));
+    localJob.polygons = allPolygons.map(p => {
+      const lls = p.layer.getLatLngs()[0];
+      return { name: p.name, coords: lls.map(ll => [ll.lat, ll.lng]) };
+    });
+    localJob.updatedAt = Date.now();
+    activeJobId = cloudJobId;
+    updateJobLabel();
 
     updateStats();
     updateTractInfo();
