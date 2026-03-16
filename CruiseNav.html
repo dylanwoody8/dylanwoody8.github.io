@@ -3105,7 +3105,7 @@ async function manualCloudSync() {
 async function pullOtherUsersPlotData(cruiseId) {
   if (!fb_user || !cruiseId) return;
   try {
-    const userSnap = await fb_db.collection('cruises').doc(cruiseId).collection('userData').get();
+    const userSnap = await fb_db.collection('cruises').doc(cruiseId).collection('userData').get({ source: 'server' });
     let newPlotsCount = 0;
     let updatedPlotsCount = 0;
     const contributors = [];
@@ -3225,7 +3225,7 @@ async function loadMyCruises() {
   container.innerHTML = '<div style="text-align:center;padding:20px;color:var(--text-muted);font-size:0.72rem;">Loading...</div>';
 
   try {
-    const snap = await fb_db.collection('cruises').where('ownerId', '==', fb_user.uid).orderBy('updatedAt', 'desc').get();
+    const snap = await fb_db.collection('cruises').where('ownerId', '==', fb_user.uid).orderBy('updatedAt', 'desc').get({ source: 'server' });
     if (snap.empty) {
       container.innerHTML = '<div style="text-align:center;padding:20px;color:var(--text-muted);font-size:0.72rem;">No cruises saved yet.</div>';
       return;
@@ -3244,7 +3244,7 @@ async function loadSharedCruises() {
   container.innerHTML = '<div style="text-align:center;padding:20px;color:var(--text-muted);font-size:0.72rem;">Loading...</div>';
 
   try {
-    const snap = await fb_db.collection('cruises').where('sharedWith', 'array-contains', fb_user.email).orderBy('updatedAt', 'desc').get();
+    const snap = await fb_db.collection('cruises').where('sharedWith', 'array-contains', fb_user.email).orderBy('updatedAt', 'desc').get({ source: 'server' });
     if (snap.empty) {
       container.innerHTML = '<div style="text-align:center;padding:20px;color:var(--text-muted);font-size:0.72rem;">No cruises shared with you yet.</div>';
       return;
@@ -3300,7 +3300,7 @@ async function loadCruiseFromCloud(cruiseId) {
   if (!fb_user) return;
   try {
     // Fetch ALL data from Firestore BEFORE clearing local state
-    const doc = await fb_db.collection('cruises').doc(cruiseId).get();
+    const doc = await fb_db.collection('cruises').doc(cruiseId).get({ source: 'server' });
     if (!doc.exists) { toast('Cruise not found'); return; }
     const d = doc.data();
 
@@ -3316,7 +3316,7 @@ async function loadCruiseFromCloud(cruiseId) {
     let userSnap = null;
     if (hasNewFormat) {
       try {
-        userSnap = await fb_db.collection('cruises').doc(cruiseId).collection('userData').get();
+        userSnap = await fb_db.collection('cruises').doc(cruiseId).collection('userData').get({ source: 'server' });
       } catch(subErr) {
         console.error('Failed to read userData sub-collection:', subErr);
         toast('Failed to load plot data. Check Firestore rules for userData sub-collection.');
