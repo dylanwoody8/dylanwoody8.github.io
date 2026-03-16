@@ -2965,6 +2965,7 @@ async function saveUserPlotData(cruiseId) {
   const myPlots = plotMarkers
     .filter(p => p.completed)
     .map(p => ({ id: p.id, lat: p.lat, lng: p.lng, completed: true, trees: p.trees || [], noTally: p.noTally || false }));
+  console.log('[PUSH] saveUserPlotData: cruiseId=' + cruiseId + ', completedPlots=' + myPlots.length + ', plotIds=' + myPlots.map(p=>p.id).join(',') + ', treeCounts=' + myPlots.map(p=>(p.trees||[]).length).join(','));
 
   try {
     await fb_db.collection('cruises').doc(cruiseId)
@@ -3041,6 +3042,8 @@ async function manualCloudSync() {
   btn.classList.add('sync-active');
   btn.classList.remove('sync-pending');
 
+  console.log('[SYNC] Starting. cloudCruiseId=' + (window._activeCloudCruiseId || 'NONE') + ', plots=' + plotMarkers.length + ', completed=' + plotMarkers.filter(p=>p.completed).length);
+
   try {
     if (!window._activeCloudCruiseId) {
       // No cloud cruise linked yet, auto-create one
@@ -3085,11 +3088,14 @@ async function manualCloudSync() {
       }
     } else {
       // Cloud cruise exists, sync everything
-      toast('Syncing...');
+      toast('Syncing to ' + window._activeCloudCruiseId.substring(0,6) + '...');
+      console.log('[SYNC] Push to existing cruise: ' + window._activeCloudCruiseId + ', owner=' + (window._activeCloudCruiseOwner === fb_user.uid ? 'SELF' : 'OTHER'));
       if (window._activeCloudCruiseOwner === fb_user.uid) {
         await updateCruiseInCloud(window._activeCloudCruiseId);
+        console.log('[SYNC] Push complete (owner path)');
       } else {
         await saveUserPlotData(window._activeCloudCruiseId);
+        console.log('[SYNC] Push complete (shared user path)');
       }
     }
 
@@ -3116,6 +3122,7 @@ async function manualCloudSync() {
 // Full pull from Firestore: reads main cruise doc + all userData, merges onto local state
 async function pullOtherUsersPlotData(cruiseId) {
   if (!fb_user || !cruiseId) return;
+  console.log('[PULL] Starting pull from cruise: ' + cruiseId);
   try {
     // Fetch the main cruise document (plot locations, boundaries) AND userData
     const [cruiseDoc, userSnap] = await Promise.all([
@@ -3123,8 +3130,9 @@ async function pullOtherUsersPlotData(cruiseId) {
       fb_db.collection('cruises').doc(cruiseId).collection('userData').get({ source: 'server' })
     ]);
 
-    if (!cruiseDoc.exists) return;
+    if (!cruiseDoc.exists) { console.log('[PULL] Cruise doc not found!'); return; }
     const d = cruiseDoc.data();
+    console.log('[PULL] Got cruise doc. plotsJson length=' + (d.plotsJson||'').length + ', userData docs=' + userSnap.size);
 
     // Track what's new
     let newPlotsCount = 0;
@@ -3190,6 +3198,9 @@ async function pullOtherUsersPlotData(cruiseId) {
       });
     });
 
+    console.log('[PULL] Cloud completed plots: ' + Object.keys(cloudPlots).length + ', keys: ' + Object.keys(cloudPlots).join(','));
+    console.log('[PULL] Local plotMarkers: ' + plotMarkers.length + ', ids: ' + plotMarkers.map(p=>p.id+':'+(p.completed?'done':'pending')).join(','));
+
     // Merge completed plot data onto local plot markers
     Object.entries(cloudPlots).forEach(([plotId, data]) => {
       const numId = parseInt(plotId);
@@ -3225,6 +3236,8 @@ async function pullOtherUsersPlotData(cruiseId) {
 
     window._cloudContributors = contributors;
 
+    console.log('[PULL] Result: newPlots=' + newPlotsCount + ', updatedPlots=' + updatedPlotsCount);
+
     if (newPlotsCount > 0 || updatedPlotsCount > 0) {
       updateStats();
       updateTractInfo();
@@ -3234,9 +3247,12 @@ async function pullOtherUsersPlotData(cruiseId) {
       if (newPlotsCount > 0) parts.push(newPlotsCount + ' new plot' + (newPlotsCount > 1 ? 's' : ''));
       if (updatedPlotsCount > 0) parts.push(updatedPlotsCount + ' updated');
       toast(parts.join(', ') + ' from cloud');
+    } else {
+      console.log('[PULL] No changes found');
     }
   } catch(e) {
-    console.warn('Pull cloud data failed:', e);
+    console.error('[PULL] FAILED:', e);
+    toast('Pull failed: ' + e.message);
   }
 }
 
