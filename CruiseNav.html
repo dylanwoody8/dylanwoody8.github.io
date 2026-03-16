@@ -2895,7 +2895,16 @@ function getJobCruiseConfig() {
 }
 
 // â”€â”€ Open tally modal for a plot â”€â”€
-function openTallyModal(plot) {
+function findPlotById(id) {
+  return plotMarkers.find(p => String(p.id) === String(id)) || null;
+}
+
+function openTallyModal(plotOrId) {
+  const plot = (plotOrId && typeof plotOrId === 'object') ? plotOrId : findPlotById(plotOrId);
+  if (!plot) {
+    toast('Plot not found');
+    return;
+  }
   tallyPlotId = plot.id;
   const trees = plot.trees || [];
   tallyTrees = JSON.parse(JSON.stringify(trees));
@@ -3089,7 +3098,7 @@ function tallyUpdateStats() {
 
 function tallySavePlot() {
   if (tallyPlotId == null) return;
-  const plot = plotMarkers.find(p => p.id === tallyPlotId);
+  const plot = findPlotById(tallyPlotId);
   if (!plot) return;
   plot.trees = JSON.parse(JSON.stringify(tallyTrees));
   plot.completed = true;
@@ -3118,7 +3127,7 @@ function tallySaveAndNav() {
 
 function tallyNoTally() {
   if (tallyPlotId == null) return;
-  const plot = plotMarkers.find(p => p.id === tallyPlotId);
+  const plot = findPlotById(tallyPlotId);
   if (!plot) return;
   plot.trees = [];
   plot.completed = true;
@@ -6641,7 +6650,7 @@ function openPlotPopup(plot) {
       (myLocation ? '<br>Distance: ' + formatDist(getDistance(myLocation.lat, myLocation.lng, plot.lat, plot.lng)) : '') +
     '</div>' +
     '<div class="plot-popup-actions">' +
-      '<button class="popup-btn popup-btn-complete" onclick="map.closePopup(); openTallyModal(plotMarkers.find(p=>p.id===' + plot.id + '))">Tally</button>' +
+      '<button class="popup-btn popup-btn-complete" onclick="map.closePopup(); openTallyModal(' + plot.id + ')">Tally</button>' +
       '<button class="popup-btn popup-btn-pending" onclick="markNoTally(' + plot.id + ')">No Tally</button>' +
       '<button class="popup-btn popup-btn-nav" onclick="navigateToPlot(' + plot.id + ')">Nav</button>' +
     '</div>' +
@@ -6656,7 +6665,7 @@ function openPlotPopup(plot) {
 }
 
 function markNoTally(id) {
-  const plot = plotMarkers.find(p => p.id === id);
+  const plot = findPlotById(id);
   if (!plot) return;
   plot.trees = [];
   plot.completed = true;
@@ -6677,7 +6686,7 @@ function markNoTally(id) {
 }
 
 function togglePlotStatus(id) {
-  const plot = plotMarkers.find(p => p.id === id);
+  const plot = findPlotById(id);
   if (!plot) return;
   const wasCompleted = plot.completed;
   plot.completed = !plot.completed;
@@ -6708,7 +6717,7 @@ function updatePlotMarkerStyle(plot) {
 }
 
 function deletePlot(id) {
-  const idx = plotMarkers.findIndex(p => p.id === id);
+  const idx = plotMarkers.findIndex(p => String(p.id) === String(id));
   if (idx === -1) return;
   const plot = plotMarkers[idx];
   plotLayer.removeLayer(plot.marker);
@@ -6871,7 +6880,7 @@ function pointInPolygon(lat, lng, polygon) {
 
 // â”€â”€ Navigation â”€â”€
 function navigateToPlot(id) {
-  const plot = plotMarkers.find(p => p.id === id);
+  const plot = findPlotById(id);
   if (!plot) return;
 
   // Clear previous nav styling
