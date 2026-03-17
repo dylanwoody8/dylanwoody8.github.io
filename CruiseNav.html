@@ -3932,15 +3932,29 @@ async function pullOtherUsersPlotData(cruiseId, options = {}) {
         updatePlotMarkerStyle(local);
         updatedPlotsCount++;
       } else {
-        // Local plot already completed. Update if cloud has newer data from any source.
+        // Local plot already completed. Merge cloud data carefully.
         const localTreeCount = (local.trees || []).length;
         const cloudTreeCount = (data.trees || []).length;
         const localIsNoTally = local.noTally || localTreeCount === 0;
         const cloudHasData = cloudTreeCount > 0 || data.noTally;
 
-        // Update if: cloud has trees and local doesn't, or cloud is from self with different data
-        if ((localIsNoTally && cloudTreeCount > 0) ||
-            (data.fromSelf && JSON.stringify(local.trees || []) !== JSON.stringify(data.trees || []))) {
+        // For self-data: local is authoritative when the user has unsaved local edits
+        // (sync pending or plot hash changed). The push will update the cloud.
+        // Only pull self-data when local has NOT changed (e.g. loading on a different device).
+        const localHasUnsyncedEdits = _syncPending || (getPlotHash() !== _lastSyncedPlotHash);
+
+        if (data.fromSelf && localHasUnsyncedEdits) {
+          // Skip: local edits exist, they will be pushed to cloud next
+          console.log('[PULL] Skipping self-data overwrite for plot ' + plotId + ' (local has unsynced edits)');
+        } else if (data.fromSelf && !localHasUnsyncedEdits && JSON.stringify(local.trees || []) !== JSON.stringify(data.trees || [])) {
+          // No local edits, pull self-data from another device
+          local.trees = cloneJson(data.trees || []);
+          local.noTally = data.noTally || false;
+          local.cruiser = data.cruiser;
+          updatePlotMarkerStyle(local);
+          updatedPlotsCount++;
+        } else if (!data.fromSelf && localIsNoTally && cloudTreeCount > 0) {
+          // Other user filled in a plot that's empty locally
           local.trees = cloneJson(data.trees || []);
           local.noTally = data.noTally || false;
           local.cruiser = data.cruiser;
