@@ -498,7 +498,7 @@
     top: 56px;
     left: 50%;
     transform: translateX(-50%);
-    z-index: 999;
+    z-index: 1001;
     background: var(--bg-deep);
     border: 1px solid var(--blue);
     border-radius: 12px;
@@ -511,8 +511,8 @@
   .nav-hud.open { display: flex; }
 
   .nav-hud-compass {
-    width: 40px;
-    height: 40px;
+    width: 44px;
+    height: 44px;
     border-radius: 50%;
     border: 2px solid var(--blue);
     display: flex;
@@ -520,14 +520,17 @@
     justify-content: center;
     position: relative;
     flex-shrink: 0;
+    background: rgba(52, 152, 219, 0.08);
   }
   .nav-hud-arrow {
-    width: 0;
-    height: 0;
-    border-left: 6px solid transparent;
-    border-right: 6px solid transparent;
-    border-bottom: 20px solid var(--blue);
+    width: 24px;
+    height: 24px;
     transition: transform 0.3s ease;
+  }
+  .nav-hud-arrow svg {
+    width: 100%;
+    height: 100%;
+    display: block;
   }
 
   .nav-hud-info { text-align: center; }
@@ -1864,7 +1867,7 @@
   <!-- Navigation HUD -->
   <div class="nav-hud" id="nav-hud">
     <div class="nav-hud-compass">
-      <div class="nav-hud-arrow" id="nav-arrow"></div>
+      <div class="nav-hud-arrow" id="nav-arrow"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><polygon points="12,2 22,20 12,15 2,20" fill="#3498db" stroke="#2980b9" stroke-width="1" stroke-linejoin="round"/></svg></div>
     </div>
     <div class="nav-hud-info">
       <div class="nav-hud-dist" id="nav-dist">--</div>
