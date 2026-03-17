@@ -6789,10 +6789,15 @@ function togglePlotStatus(id) {
 }
 
 function updatePlotMarkerStyle(plot) {
-  const el = document.getElementById('plot-marker-' + plot.id);
-  if (!el) return;
-  el.className = 'cruise-plot-marker ' +
-    (String(navTargetId) === String(plot.id) ? 'navigating' : (plot.completed ? 'complete' : 'pending'));
+  const status = String(navTargetId) === String(plot.id) ? 'navigating' : (plot.completed ? 'complete' : 'pending');
+  const size = 28;
+  const newIcon = L.divIcon({
+    className: '',
+    html: '<div class="cruise-plot-marker ' + status + '" id="plot-marker-' + plot.id + '" style="width:' + size + 'px;height:' + size + 'px;">' + plot.id + '</div>',
+    iconSize: [size, size],
+    iconAnchor: [size/2, size/2]
+  });
+  plot.marker.setIcon(newIcon);
 }
 
 function deletePlot(id) {
@@ -7469,7 +7474,7 @@ function showUndoToast(plotId, wasCompleted) {
 }
 function undoLastToggle() {
   if (!lastToggle) return;
-  const plot = plotMarkers.find(p => p.id === lastToggle.id);
+  const plot = findPlotById(lastToggle.id);
   if (plot) {
     plot.completed = lastToggle.previousState;
     updatePlotMarkerStyle(plot);
