@@ -7838,7 +7838,7 @@ async function createNewJob() {
     gridSpacingX: 5,
     gridSpacingY: 5,
     gridBearing: 0,
-    species: DEFAULT_SPECIES.slice(0, 3),
+    species: getDefaultCruiseSpecies(),
     createdAt: Date.now(),
     updatedAt: Date.now()
   };
@@ -7982,7 +7982,7 @@ async function ensureActiveJob() {
     gridSpacingX: 5,
     gridSpacingY: 5,
     gridBearing: 0,
-    species: DEFAULT_SPECIES.slice(0, 3),
+    species: getDefaultCruiseSpecies(),
     createdAt: Date.now(),
     updatedAt: Date.now()
   };
