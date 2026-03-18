@@ -1210,6 +1210,7 @@
     border: 3px solid #fff;
     border-radius: 50%;
     box-shadow: 0 0 0 3px rgba(52,152,219,0.3), 0 2px 8px rgba(0,0,0,0.4);
+    z-index: 2;
   }
   .my-location-cone {
     position: absolute;
@@ -1219,6 +1220,7 @@
     height: 48px;
     transition: transform 0.15s ease-out;
     pointer-events: none;
+    z-index: 1;
   }
   .my-location-cone.no-heading { display: none; }
   .my-location-arrow {
@@ -1231,6 +1233,7 @@
     transform-origin: 24px 24px;
     pointer-events: none;
     filter: drop-shadow(0 1px 2px rgba(0,0,0,0.45));
+    z-index: 3;
   }
   .my-location-arrow.no-heading { display: none; }
   .my-location-pulse {
@@ -7132,8 +7135,8 @@ function updateLocationMarker() {
             '</svg>' +
             '<div class="my-location-dot"></div>' +
             '<svg class="my-location-arrow no-heading" id="loc-arrow" viewBox="0 0 48 48" aria-hidden="true">' +
-              '<path d="M24 10 L29.5 22.5 L24 19.5 L18.5 22.5 Z" fill="#ffffff" stroke="#1f6ea8" stroke-width="1.4" stroke-linejoin="round"/>' +
-              '<path d="M24 19.5 L24 28" stroke="#ffffff" stroke-width="2.6" stroke-linecap="round"/>' +
+              '<path d="M24 6 L33 23 L24 18.5 L15 23 Z" fill="#ffffff" stroke="#1f6ea8" stroke-width="1.8" stroke-linejoin="round"/>' +
+              '<path d="M24 18.5 L24 32" stroke="#ffffff" stroke-width="3.6" stroke-linecap="round"/>' +
             '</svg>'
     });
     myLocationMarker = L.marker([myLocation.lat, myLocation.lng], { icon, zIndexOffset: 1000 }).addTo(map);
@@ -7146,16 +7149,19 @@ function updateLocationMarker() {
 function updateLocationHeading() {
   const cone = document.getElementById('loc-cone');
   const arrow = document.getElementById('loc-arrow');
-  if (!cone || !arrow) return;
   const activeHeading = getActiveHeading();
-  if (activeHeading != null) {
+  if (cone && activeHeading != null) {
     cone.classList.remove('no-heading');
     cone.style.transform = 'rotate(' + activeHeading + 'deg)';
-    arrow.classList.remove('no-heading');
-    arrow.style.transform = 'rotate(' + activeHeading + 'deg)';
-  } else {
+  } else if (cone) {
     cone.classList.add('no-heading');
     cone.style.transform = '';
+  }
+
+  if (arrow && activeHeading != null) {
+    arrow.classList.remove('no-heading');
+    arrow.style.transform = 'rotate(' + activeHeading + 'deg)';
+  } else if (arrow) {
     arrow.classList.add('no-heading');
     arrow.style.transform = '';
   }
