@@ -2734,62 +2734,23 @@ function normalizeJobCruiseSettings(job) {
 // Available DBH classes for tally buttons
 const DBH_CLASSES = [6,7,8,9,10,12,14,16,18,20,22,24,26,28,30,32,34,36,38,40];
 
-// Pulpwood Cord Table (standing trees)
-// Source: Reference Handbook for Foresters, p.7
-// Columns: number of 8-ft sticks (1..7)
-const PULP_CORDS = {
-  5: [.010,.018,0,0,0,0,0],
-  6: [.018,.030,.043,0,0,0,0],
-  7: [.025,.039,.056,.074,0,0,0],
-  8: [.032,.050,.070,.092,.116,0,0],
-  9: [.040,.061,.085,.112,.140,.168,0],
-  10:[.049,.074,.101,.132,.167,.200,.239],
-  11:[.059,.087,.119,.155,.195,.233,.280],
-  12:[.070,.100,.138,.180,.225,.271,.324],
-  14:[.095,.134,.179,.233,.291,.351,.419],
-  16:[.120,.168,.222,.290,.361,.437,.521],
-  18:[.146,.208,.270,.350,.439,.531,.634],
-  20:[.186,.246,.320,.416,.522,.632,.755],
-  22:[.220,.294,.374,.494,.612,.739,.883]
+// Pulpwood Tons Table (RGT16 log rule)
+// Columns: number of 16-ft logs (1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5)
+// Values: green tons per tree
+const RGT16_LOGS = [1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5];
+const RGT16_TONS = {
+  6:  [0.082755, 0.111915, 0.141075, 0.170235, 0.199395, 0.228555, 0.257715, 0.286875, 0.316035],
+  8:  [0.128115, 0.179955, 0.231795, 0.283635, 0.335475, 0.387315, 0.439155, 0.490995, 0.542835],
+  10: [0.186435, 0.267435, 0.348435, 0.429435, 0.510435, 0.591435, 0.672435, 0.753435, 0.834435],
+  12: [0.257715, 0.374355, 0.490955, 0.607635, 0.724275, 0.840915, 0.957555, 1.074195, 1.190835],
+  14: [0.341955, 0.500715, 0.659475, 0.818235, 0.976995, 1.135755, 1.294515, 1.453275, 1.612035],
+  16: [0.439155, 0.646515, 0.853875, 1.061235, 1.268595, 1.475955, 1.683315, 1.890675, 2.098035],
+  18: [0.549315, 0.811755, 1.074195, 1.336635, 1.599075, 1.861515, 2.123955, 2.386395, 2.648835],
+  20: [0.672435, 0.996435, 1.320435, 1.644435, 1.968435, 2.292435, 2.616435, 2.940435, 3.264435],
+  22: [0.808515, 1.200555, 1.592595, 1.984635, 2.376675, 2.768715, 3.160755, 3.552795, 3.944835],
+  24: [0.957555, 1.424115, 1.890675, 2.357235, 2.823795, 3.290355, 3.756915, 4.223475, 4.690035],
+  26: [1.119555, 1.667115, 2.214675, 2.762235, 3.303795, 3.857355, 4.404915, 4.952475, 5.500035]
 };
-const PULP_STICKS = [1,2,3,4,5,6,7];
-
-// Weight table: tons per standard cord by species
-// Source: Reference Handbook for Foresters, p.15
-const TONS_PER_CORD = {
-  'LP': 2.4, 'LL': 2.4, 'SP': 2.4, 'VP': 2.4,
-  'WP': 1.6, 'RP': 1.9,
-  'WO': 2.8, 'CO': 2.8, 'PO': 2.8,
-  'RO': 2.9, 'SO': 2.9, 'BO': 2.9, 'NO': 2.9,
-  'WL': 2.9,
-  'HK': 2.9, 'MH': 2.9, 'PH': 2.9, 'SB': 2.9,
-  'SM': 2.7, 'RM': 2.2,
-  'YP': 1.7, 'TU': 1.7,
-  'GU': 2.3, 'BG': 2.3,
-  'WA': 2.2, 'GA': 2.2,
-  'BC': 2.0,
-  'AM': 2.5,
-  'SY': 2.4,
-  'BW': 2.6,
-  'BE': 2.5,
-  'BL': 2.6,
-  'CW': 2.2,
-  'BIR': 2.6,
-  'HM': 2.3,
-  'RC': 1.7, 'WC': 1.3,
-  'DW': 2.3,
-  'HH': 2.3,
-  'MS': 2.3,
-  'PW': 1.9,
-  'HW': 2.5,
-  'SF': 2.0,
-  'OTH': 2.3,
-  '_default': 2.3
-};
-
-function getTonsPerCord(sppCode) {
-  return TONS_PER_CORD[sppCode] || TONS_PER_CORD._default;
-}
 
 const DEFAULT_SPECIES = [
   // Pines
@@ -2889,33 +2850,26 @@ function sawtimberVol(dbh, logs, rule, formClass) {
 // Backward compat wrapper
 function scribnerVol(dbh, logs, formClass) { return sawtimberVol(dbh, logs, 'scribner', formClass); }
 
-// Convert total tree height (ft) to number of 8-foot sticks
-function heightToSticks(heightFt) {
-  if (!heightFt || heightFt <= 0) return 1;
-  const sticks = Math.floor(heightFt / 8);
-  return Math.max(1, Math.min(sticks, 7));
-}
-
-// Pulpwood: cords from DBH + total height (ft), converted to sticks internally
-function pulpwoodCords(dbh, heightFt) {
-  const d = Math.round(dbh);
-  const sticks = heightToSticks(heightFt);
-  // Find the right row (table has 5..22, some gaps)
-  const keys = Object.keys(PULP_CORDS).map(Number).sort((a,b) => a - b);
+// Pulpwood: tons per tree from RGT16 table using DBH + number of 16-ft logs
+function pulpwoodTons(dbh, logs) {
+  const d = Math.round(Number(dbh) || 0);
+  const logCount = parseFloat(logs) || 1;
+  // Find the right DBH row (table has 6..26 in even increments)
+  const keys = Object.keys(RGT16_TONS).map(Number).sort((a,b) => a - b);
   let rowKey = keys[0];
   for (const k of keys) {
     if (k <= d) rowKey = k;
     else break;
   }
-  const row = PULP_CORDS[rowKey];
+  const row = RGT16_TONS[rowKey];
   if (!row) return 0;
-  const sIdx = Math.max(0, Math.min(sticks - 1, row.length - 1));
-  return row[sIdx] || 0;
-}
-
-// Legacy wrapper (returns tons using species-avg cord weight)
-function pulpwoodTons(dbh, heightFt, spp) {
-  return pulpwoodCords(dbh, heightFt || 30) * getTonsPerCord(spp || 'OTH');
+  // Find the closest log step
+  let bestIdx = 0, bestDiff = Math.abs(RGT16_LOGS[0] - logCount);
+  for (let i = 1; i < RGT16_LOGS.length; i++) {
+    const diff = Math.abs(RGT16_LOGS[i] - logCount);
+    if (diff < bestDiff) { bestIdx = i; bestDiff = diff; }
+  }
+  return row[bestIdx] || 0;
 }
 
 function calcTPA(baf, dbh) { return baf / (0.005454 * dbh * dbh); }
@@ -3022,14 +2976,13 @@ function tallyPickProduct(p) {
   tallySelProduct = p;
   document.getElementById('tally-btn-saw').className = 'product-btn' + (p === 'sawtimber' ? ' sel-saw' : '');
   document.getElementById('tally-btn-pulp').className = 'product-btn' + (p === 'pulpwood' ? ' sel-pulp' : '');
-  document.getElementById('tally-logs-section').style.display = p === 'pulpwood' ? 'none' : 'block';
-  document.getElementById('tally-height-section').style.display = p === 'pulpwood' ? 'block' : 'none';
-  document.getElementById('tally-vol-lbl').textContent = p === 'pulpwood' ? 'Cords/Ac' : 'BF/Ac';
+  document.getElementById('tally-logs-section').style.display = 'block';
+  document.getElementById('tally-height-section').style.display = 'none';
+  document.getElementById('tally-vol-lbl').textContent = p === 'pulpwood' ? 'GT/Ac' : 'BF/Ac';
+  document.getElementById('tally-logs-label').textContent = p === 'pulpwood' ? '16-ft Pulpwood Logs (RGT16)' : '16-ft Merchantable Logs';
   tallySelDBH = p === 'pulpwood' ? 8 : 14;
-  if (p === 'pulpwood' && (tallySelHeight < 20 || tallySelHeight > 65)) tallySelHeight = 40;
   tallyBuildDBH();
-  if (p === 'sawtimber') tallyBuildLogs();
-  if (p === 'pulpwood') tallyBuildSticks();
+  tallyBuildLogs();
   tallyUpdateStats();
 }
 
@@ -3042,13 +2995,17 @@ function tallyBuildDBH() {
 function tallyPickDBH(d) {
   tallySelDBH = d;
   document.querySelectorAll('#tally-dbh-grid .dbh-btn').forEach(b => b.classList.toggle('sel', parseInt(b.dataset.dbh) === d));
-  if (tallySelProduct === 'pulpwood') tallyBuildHeight();
-  else tallyBuildLogs();
+  tallyBuildLogs();
 }
 
 function tallyBuildLogs() {
-  const rule = getJobLogRule();
-  const steps = getLogSteps(rule, tallySelDBH, getJobFormClass());
+  let steps;
+  if (tallySelProduct === 'pulpwood') {
+    steps = RGT16_LOGS.slice(); // [1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5]
+  } else {
+    const rule = getJobLogRule();
+    steps = getLogSteps(rule, tallySelDBH, getJobFormClass());
+  }
   // Reset selLogs if not in the new steps
   if (!steps.includes(tallySelLogs)) tallySelLogs = steps[Math.min(1, steps.length - 1)];
   document.getElementById('tally-logs-row').innerHTML = steps.map(l =>
@@ -3087,16 +3044,16 @@ function tallyAddTree() {
   const tree = {
     spp: spp,
     dbh: tallySelDBH,
-    logs: isPulp ? 0 : tallySelLogs,
+    logs: tallySelLogs,
     product: tallySelProduct,
-    height: isPulp ? tallySelHeight : 0
+    height: 0
   };
   tallyTrees.push(tree);
   tallyLastTree = { ...tree };
   tallyRenderTable();
   tallyUpdateStats();
   const label = isPulp
-    ? spp + ' ' + tallySelDBH + '" ' + tallySelHeight + "' Pulp"
+    ? spp + ' ' + tallySelDBH + '" ' + tallySelLogs + ' log Pulp'
     : spp + ' ' + tallySelDBH + '" ' + tallySelLogs + ' log';
   toast(label);
   vibrate([30]);
@@ -3131,15 +3088,15 @@ function tallyRenderTable() {
     const isPulp = t.product === 'pulpwood';
     let volDisplay, volUnit;
     if (isPulp) {
-      const cords = pulpwoodCords(t.dbh, t.height || 30) * tpa;
-      volDisplay = cords.toFixed(3);
-      volUnit = 'CD';
+      const tons = pulpwoodTons(t.dbh, t.logs || 1) * tpa;
+      volDisplay = tons.toFixed(2);
+      volUnit = 'GT';
     } else {
       volDisplay = Math.round(sawtimberVol(t.dbh, t.logs, rule) * tpa);
       volUnit = 'BF';
     }
     const prodLabel = isPulp ? '<span style="color:var(--blue)">PULP</span>' : '<span style="color:var(--accent)">SAW</span>';
-    const logsCell = isPulp ? (t.height || '') + "'" : t.logs;
+    const logsCell = t.logs;
     return '<tr>' +
       '<td>' + t.spp + '</td>' +
       '<td>' + t.dbh + '"</td>' +
@@ -3155,19 +3112,19 @@ function tallyRenderTable() {
 function tallyUpdateStats() {
   const baf = getJobCruiseConfig().baf;
   const rule = getJobLogRule();
-  let ba = 0, tpa = 0, sawVol = 0, pulpCords = 0, hasPulp = false, hasSaw = false;
+  let ba = 0, tpa = 0, sawVol = 0, pulpTons = 0, hasPulp = false, hasSaw = false;
   tallyTrees.forEach(t => {
     const tp = calcTPA(baf, t.dbh);
     ba += baf;
     tpa += tp;
-    if (t.product === 'pulpwood') { pulpCords += pulpwoodCords(t.dbh, t.height || 30) * tp; hasPulp = true; }
+    if (t.product === 'pulpwood') { pulpTons += pulpwoodTons(t.dbh, t.logs || 1) * tp; hasPulp = true; }
     else { sawVol += sawtimberVol(t.dbh, t.logs, rule) * tp; hasSaw = true; }
   });
   document.getElementById('tally-ba').textContent = ba;
   document.getElementById('tally-tpa').textContent = Math.round(tpa);
   if (tallySelProduct === 'pulpwood' || (!hasSaw && hasPulp)) {
-    document.getElementById('tally-vol').textContent = pulpCords.toFixed(2);
-    document.getElementById('tally-vol-lbl').textContent = 'Cords/Ac';
+    document.getElementById('tally-vol').textContent = pulpTons.toFixed(2);
+    document.getElementById('tally-vol-lbl').textContent = 'GT/Ac';
   } else {
     document.getElementById('tally-vol').textContent = Math.round(sawVol);
     document.getElementById('tally-vol-lbl').textContent = 'BF/Ac';
@@ -5563,8 +5520,6 @@ function buildNoticeSpeciesRows(speciesEntries, totalAcres) {
         sawBfAc: 0,
         totalSawBf: 0,
         totalSawMbf: 0,
-        pulpCdAc: 0,
-        totalPulpCd: 0,
         pulpGtAc: 0,
         totalPulpGt: 0
       };
@@ -5574,11 +5529,9 @@ function buildNoticeSpeciesRows(speciesEntries, totalAcres) {
     row.baAc += entry.baAc || 0;
     row.tpaAc += entry.tpaAc || 0;
     if (entry.product === 'pulpwood') {
-      row.pulpCdAc += entry.volAc || 0;
-      row.pulpGtAc += entry.tonsAc || 0;
+      row.pulpGtAc += entry.volAc || 0;
       if (totalAcres > 0) {
-        row.totalPulpCd += (entry.volAc || 0) * totalAcres;
-        row.totalPulpGt += (entry.tonsAc || 0) * totalAcres;
+        row.totalPulpGt += (entry.volAc || 0) * totalAcres;
       }
     } else {
       row.sawBfAc += entry.volAc || 0;
@@ -5608,8 +5561,6 @@ function renderNoticeVolumeTable(speciesRows, totalAcres, ruleName, formClass) {
           '<th>Saw BF/ac</th>' +
           '<th>Total BF</th>' +
           '<th>Total MBF</th>' +
-          '<th>Pulp CD/ac</th>' +
-          '<th>Total CD</th>' +
           '<th>Pulp GT/ac</th>' +
           '<th>Total GT</th>' +
         '</tr></thead><tbody>';
@@ -5624,15 +5575,13 @@ function renderNoticeVolumeTable(speciesRows, totalAcres, ruleName, formClass) {
       '<td>' + (row.sawBfAc > 0 ? Math.round(row.sawBfAc).toLocaleString() : '') + '</td>' +
       '<td>' + (row.totalSawBf > 0 ? Math.round(row.totalSawBf).toLocaleString() : '') + '</td>' +
       '<td>' + (row.totalSawMbf > 0 ? row.totalSawMbf.toFixed(1) : '') + '</td>' +
-      '<td>' + (row.pulpCdAc > 0 ? row.pulpCdAc.toFixed(2) : '') + '</td>' +
-      '<td>' + (row.totalPulpCd > 0 ? row.totalPulpCd.toFixed(1) : '') + '</td>' +
       '<td>' + (row.pulpGtAc > 0 ? row.pulpGtAc.toFixed(2) : '') + '</td>' +
       '<td>' + (row.totalPulpGt > 0 ? row.totalPulpGt.toFixed(1) : '') + '</td>' +
     '</tr>';
   });
 
   html += '</tbody></table></div>' +
-    '<div class="report-note">Notice-style estimate table using ' + escapeHtml(ruleName) + ' FC ' + escapeHtml(String(formClass || 78)) + ' for sawtimber. ' + escapeHtml(headerNote) + '</div>' +
+    '<div class="report-note">Notice-style estimate table using ' + escapeHtml(ruleName) + ' FC ' + escapeHtml(String(formClass || 78)) + ' for sawtimber, RGT16 for pulpwood. ' + escapeHtml(headerNote) + '</div>' +
   '</div>';
   return html;
 }
@@ -5686,25 +5635,20 @@ function generateCruiseReport() {
       sd[key].tpaT += tp;
       sd[key].count++;
       if ((t.product || 'sawtimber') === 'pulpwood') {
-        const cords = pulpwoodCords(t.dbh, t.height || 30) * tp;
-        sd[key].volT += cords;
-        if (!sd[key].tonsT) sd[key].tonsT = 0;
-        sd[key].tonsT += cords * getTonsPerCord(t.spp);
+        sd[key].volT += pulpwoodTons(t.dbh, t.logs || 1) * tp;
       }
       else sd[key].volT += sawtimberVol(t.dbh, t.logs, rule, formClass) * tp;
     });
   });
 
   let totSawBA = 0, totSawTPA = 0, totSawVol = 0;
-  let totPulpBA = 0, totPulpTPA = 0, totPulpVol = 0, totPulpTons = 0;
+  let totPulpBA = 0, totPulpTPA = 0, totPulpVol = 0;
   Object.values(sd).forEach(d => {
     d.baAc = d.baT / n;
     d.tpaAc = d.tpaT / n;
     d.volAc = d.volT / n;
     if (d.product === 'pulpwood') {
       totPulpBA += d.baAc; totPulpTPA += d.tpaAc; totPulpVol += d.volAc;
-      d.tonsAc = (d.tonsT || 0) / n;
-      totPulpTons += d.tonsAc;
     }
     else { totSawBA += d.baAc; totSawTPA += d.tpaAc; totSawVol += d.volAc; }
   });
@@ -5746,13 +5690,11 @@ function generateCruiseReport() {
 
   if (totPulpTPA > 0) {
     html += '<div class="report-card">' +
-      '<div class="report-card-title">Pulpwood, All Species</div>' +
+      '<div class="report-card-title">Pulpwood, All Species (RGT16)</div>' +
       '<div class="report-row"><span>BA / Acre</span><span class="rval">' + totPulpBA.toFixed(1) + ' sq ft</span></div>' +
       '<div class="report-row"><span>Trees / Acre</span><span class="rval">' + totPulpTPA.toFixed(1) + '</span></div>' +
-      '<div class="report-row"><span>Cords / Acre</span><span class="rval">' + totPulpVol.toFixed(2) + ' CD</span></div>' +
-      '<div class="report-row"><span>Tons / Acre</span><span class="rval">' + totPulpTons.toFixed(2) + ' GT</span></div>' +
-      (totalAcres > 0 ? '<div class="report-row"><span>Total Cords</span><span class="rval">' + (totPulpVol * totalAcres).toFixed(1) + ' CD</span></div>' : '') +
-      (totalAcres > 0 ? '<div class="report-row"><span>Total Tons</span><span class="rval">' + (totPulpTons * totalAcres).toFixed(1) + ' GT</span></div>' : '') +
+      '<div class="report-row"><span>Tons / Acre</span><span class="rval">' + totPulpVol.toFixed(2) + ' GT</span></div>' +
+      (totalAcres > 0 ? '<div class="report-row"><span>Total Tons</span><span class="rval">' + (totPulpVol * totalAcres).toFixed(1) + ' GT</span></div>' : '') +
     '</div>';
   }
 
@@ -5790,14 +5732,12 @@ function generateCruiseReport() {
 
     if (pulp) {
       html += '<div class="report-card">' +
-        '<div class="report-card-title">Pulpwood</div>' +
+        '<div class="report-card-title">Pulpwood (RGT16)</div>' +
         '<div class="report-row"><span>Trees Tallied</span><span class="rval">' + pulp.count + '</span></div>' +
         '<div class="report-row"><span>BA / Acre</span><span class="rval">' + pulp.baAc.toFixed(1) + ' sq ft</span></div>' +
         '<div class="report-row"><span>Trees / Acre</span><span class="rval">' + pulp.tpaAc.toFixed(1) + '</span></div>' +
-        '<div class="report-row"><span>Cords / Acre</span><span class="rval">' + pulp.volAc.toFixed(3) + ' CD</span></div>' +
-        '<div class="report-row"><span>Tons / Acre</span><span class="rval">' + (pulp.tonsAc || 0).toFixed(2) + ' GT</span></div>' +
-        (totalAcres > 0 ? '<div class="report-row"><span>Total Cords</span><span class="rval">' + (pulp.volAc * totalAcres).toFixed(1) + ' CD</span></div>' : '') +
-        (totalAcres > 0 ? '<div class="report-row"><span>Total Tons</span><span class="rval">' + ((pulp.tonsAc || 0) * totalAcres).toFixed(1) + ' GT</span></div>' : '') +
+        '<div class="report-row"><span>Tons / Acre</span><span class="rval">' + pulp.volAc.toFixed(2) + ' GT</span></div>' +
+        (totalAcres > 0 ? '<div class="report-row"><span>Total Tons</span><span class="rval">' + (pulp.volAc * totalAcres).toFixed(1) + ' GT</span></div>' : '') +
       '</div>';
     }
   });
@@ -5900,7 +5840,6 @@ function getPlotExportSummary(plot, baf, rule, formClass) {
   const trees = Array.isArray(plot && plot.trees) ? plot.trees : [];
   let totalTPA = 0;
   let sawBF = 0;
-  let pulpCords = 0;
   let pulpTons = 0;
   let sawCount = 0;
   let pulpCount = 0;
@@ -5910,9 +5849,7 @@ function getPlotExportSummary(plot, baf, rule, formClass) {
     totalTPA += tpa;
     if ((tree.product || 'sawtimber') === 'pulpwood') {
       pulpCount++;
-      const cords = pulpwoodCords(tree.dbh, tree.height || 30) * tpa;
-      pulpCords += cords;
-      pulpTons += cords * getTonsPerCord(tree.spp);
+      pulpTons += pulpwoodTons(tree.dbh, tree.logs || 1) * tpa;
     } else {
       sawCount++;
       sawBF += sawtimberVol(tree.dbh, tree.logs, rule, formClass) * tpa;
@@ -5925,7 +5862,6 @@ function getPlotExportSummary(plot, baf, rule, formClass) {
     pulpCount: pulpCount,
     totalTPA: totalTPA,
     sawBF: sawBF,
-    pulpCords: pulpCords,
     pulpTons: pulpTons
   };
 }
@@ -5980,7 +5916,7 @@ function exportCruiseCSV() {
 
   const speciesStats = {};
   let totSawBA = 0, totSawTPA = 0, totSawVol = 0;
-  let totPulpBA = 0, totPulpTPA = 0, totPulpVol = 0, totPulpTons = 0;
+  let totPulpBA = 0, totPulpTPA = 0, totPulpVol = 0;
 
   allDonePlots.forEach(plot => {
     (plot.trees || []).forEach(tree => {
@@ -5994,7 +5930,6 @@ function exportCruiseCSV() {
           baT: 0,
           tpaT: 0,
           volT: 0,
-          tonsT: 0,
           count: 0
         };
       }
@@ -6002,9 +5937,7 @@ function exportCruiseCSV() {
       speciesStats[key].tpaT += tpa;
       speciesStats[key].count++;
       if (product === 'pulpwood') {
-        const cords = pulpwoodCords(tree.dbh, tree.height || 30) * tpa;
-        speciesStats[key].volT += cords;
-        speciesStats[key].tonsT += cords * getTonsPerCord(tree.spp);
+        speciesStats[key].volT += pulpwoodTons(tree.dbh, tree.logs || 1) * tpa;
       } else {
         speciesStats[key].volT += sawtimberVol(tree.dbh, tree.logs, rule, formClass) * tpa;
       }
@@ -6016,12 +5949,10 @@ function exportCruiseCSV() {
     stat.baAc = stat.baT / plotCount;
     stat.tpaAc = stat.tpaT / plotCount;
     stat.volAc = stat.volT / plotCount;
-    stat.tonsAc = (stat.tonsT || 0) / plotCount;
     if (stat.product === 'pulpwood') {
       totPulpBA += stat.baAc;
       totPulpTPA += stat.tpaAc;
       totPulpVol += stat.volAc;
-      totPulpTons += stat.tonsAc;
     } else {
       totSawBA += stat.baAc;
       totSawTPA += stat.tpaAc;
@@ -6058,7 +5989,7 @@ function exportCruiseCSV() {
   rows.push([]);
 
   rows.push(['STAND SUMMARY']);
-  rows.push(['Category', 'BA_per_Acre_sqft', 'Trees_per_Acre', 'Saw_BF_per_Acre', 'Total_Saw_BF', 'Total_Saw_MBF', 'Pulp_Cords_per_Acre', 'Pulp_Tons_per_Acre', 'Total_Pulp_Cords', 'Total_Pulp_Tons']);
+  rows.push(['Category', 'BA_per_Acre_sqft', 'Trees_per_Acre', 'Saw_BF_per_Acre', 'Total_Saw_BF', 'Total_Saw_MBF', 'Pulp_Tons_per_Acre', 'Total_Pulp_Tons']);
   rows.push([
     'Sawtimber',
     totSawBA ? totSawBA.toFixed(1) : '',
@@ -6066,8 +5997,6 @@ function exportCruiseCSV() {
     totSawVol ? Math.round(totSawVol) : '',
     totalAcres > 0 && totSawVol ? Math.round(totSawVol * totalAcres) : '',
     totalAcres > 0 && totSawVol ? (totSawVol * totalAcres / 1000).toFixed(1) : '',
-    '',
-    '',
     '',
     ''
   ]);
@@ -6078,10 +6007,8 @@ function exportCruiseCSV() {
     '',
     '',
     '',
-    totPulpVol ? totPulpVol.toFixed(3) : '',
-    totPulpTons ? totPulpTons.toFixed(2) : '',
-    totalAcres > 0 && totPulpVol ? (totPulpVol * totalAcres).toFixed(1) : '',
-    totalAcres > 0 && totPulpTons ? (totPulpTons * totalAcres).toFixed(1) : ''
+    totPulpVol ? totPulpVol.toFixed(2) : '',
+    totalAcres > 0 && totPulpVol ? (totPulpVol * totalAcres).toFixed(1) : ''
   ]);
   rows.push([
     'Combined',
@@ -6090,17 +6017,15 @@ function exportCruiseCSV() {
     totSawVol ? Math.round(totSawVol) : '',
     totalAcres > 0 && totSawVol ? Math.round(totSawVol * totalAcres) : '',
     totalAcres > 0 && totSawVol ? (totSawVol * totalAcres / 1000).toFixed(1) : '',
-    totPulpVol ? totPulpVol.toFixed(3) : '',
-    totPulpTons ? totPulpTons.toFixed(2) : '',
-    totalAcres > 0 && totPulpVol ? (totPulpVol * totalAcres).toFixed(1) : '',
-    totalAcres > 0 && totPulpTons ? (totPulpTons * totalAcres).toFixed(1) : ''
+    totPulpVol ? totPulpVol.toFixed(2) : '',
+    totalAcres > 0 && totPulpVol ? (totPulpVol * totalAcres).toFixed(1) : ''
   ]);
   rows.push([]);
 
   rows.push(['SPECIES SUMMARY']);
-  rows.push(['Species_Code', 'Species_Name', 'Product', 'Trees_Tallied', 'BA_per_Acre_sqft', 'Trees_per_Acre', 'BF_per_Acre', 'Total_BF', 'Total_MBF', 'Cords_per_Acre', 'Tons_per_Acre', 'Total_Cords', 'Total_Tons']);
+  rows.push(['Species_Code', 'Species_Name', 'Product', 'Trees_Tallied', 'BA_per_Acre_sqft', 'Trees_per_Acre', 'BF_per_Acre', 'Total_BF', 'Total_MBF', 'Tons_per_Acre', 'Total_Tons']);
   if (Object.keys(speciesStats).length === 0) {
-    rows.push(['', '', '', '0', '', '', '', '', '', '', '', '', '']);
+    rows.push(['', '', '', '0', '', '', '', '', '', '', '']);
   } else {
     Object.values(speciesStats).sort((a, b) => {
       const bySpecies = String(a.spp || '').localeCompare(String(b.spp || ''));
@@ -6117,10 +6042,8 @@ function exportCruiseCSV() {
         stat.product === 'pulpwood' ? '' : Math.round(stat.volAc),
         stat.product === 'pulpwood' || totalAcres <= 0 ? '' : Math.round(stat.volAc * totalAcres),
         stat.product === 'pulpwood' || totalAcres <= 0 ? '' : (stat.volAc * totalAcres / 1000).toFixed(1),
-        stat.product === 'pulpwood' ? stat.volAc.toFixed(3) : '',
-        stat.product === 'pulpwood' ? stat.tonsAc.toFixed(2) : '',
-        stat.product === 'pulpwood' && totalAcres > 0 ? (stat.volAc * totalAcres).toFixed(1) : '',
-        stat.product === 'pulpwood' && totalAcres > 0 ? (stat.tonsAc * totalAcres).toFixed(1) : ''
+        stat.product === 'pulpwood' ? stat.volAc.toFixed(2) : '',
+        stat.product === 'pulpwood' && totalAcres > 0 ? (stat.volAc * totalAcres).toFixed(1) : ''
       ]);
     });
   }
@@ -6146,7 +6069,7 @@ function exportCruiseCSV() {
   rows.push([]);
 
   rows.push(['PLOTS']);
-  rows.push(['Plot_ID', 'Status', 'No_Tally', 'Cruiser', 'Tree_Count', 'Saw_Tree_Count', 'Pulp_Tree_Count', 'Total_TPA', 'Saw_BF_per_Acre', 'Pulp_Cords_per_Acre', 'Pulp_Tons_per_Acre', 'Lat', 'Lng']);
+  rows.push(['Plot_ID', 'Status', 'No_Tally', 'Cruiser', 'Tree_Count', 'Saw_Tree_Count', 'Pulp_Tree_Count', 'Total_TPA', 'Saw_BF_per_Acre', 'Pulp_Tons_per_Acre', 'Lat', 'Lng']);
   if (!rPlots.length) {
     rows.push(['', '', '', '', '', '', '', '', '', '', '', '', '']);
   } else {
@@ -6163,7 +6086,6 @@ function exportCruiseCSV() {
         summary.pulpCount,
         summary.totalTPA ? summary.totalTPA.toFixed(2) : '',
         summary.sawBF ? summary.sawBF.toFixed(1) : '',
-        summary.pulpCords ? summary.pulpCords.toFixed(3) : '',
         summary.pulpTons ? summary.pulpTons.toFixed(2) : '',
         Number.isFinite(plot.lat) ? Number(plot.lat).toFixed(6) : '',
         Number.isFinite(plot.lng) ? Number(plot.lng).toFixed(6) : ''
@@ -6173,9 +6095,9 @@ function exportCruiseCSV() {
   rows.push([]);
 
   rows.push(['TREES']);
-  rows.push(['Plot_ID', 'Plot_Status', 'Tree_Index', 'Cruiser', 'Species_Code', 'Species_Name', 'Product', 'DBH_in', 'Logs', 'Height_ft', 'BAF', 'Form_Class', 'TPA', 'BF_per_Acre', 'Cords_per_Acre', 'Tons_per_Acre', 'Volume_Unit', 'Lat', 'Lng']);
+  rows.push(['Plot_ID', 'Plot_Status', 'Tree_Index', 'Cruiser', 'Species_Code', 'Species_Name', 'Product', 'DBH_in', 'Logs', 'BAF', 'Form_Class', 'TPA', 'BF_per_Acre', 'Tons_per_Acre', 'Volume_Unit', 'Lat', 'Lng']);
   if (!allDonePlots.length) {
-    rows.push(['', 'No completed plots', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '']);
+    rows.push(['', 'No completed plots', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '']);
   } else {
     allDonePlots.forEach(plot => {
       const status = plot.noTally ? 'No Tally' : 'Completed';
@@ -6190,10 +6112,8 @@ function exportCruiseCSV() {
           '',
           '',
           '',
-          '',
           baf,
           formClass,
-          '',
           '',
           '',
           '',
@@ -6207,8 +6127,7 @@ function exportCruiseCSV() {
       (plot.trees || []).forEach((tree, index) => {
         const tpa = calcTPA(baf, tree.dbh);
         const isPulp = (tree.product || 'sawtimber') === 'pulpwood';
-        const cords = isPulp ? (pulpwoodCords(tree.dbh, tree.height || 30) * tpa) : 0;
-        const tons = isPulp ? (cords * getTonsPerCord(tree.spp)) : 0;
+        const tons = isPulp ? (pulpwoodTons(tree.dbh, tree.logs || 1) * tpa) : 0;
         const bf = isPulp ? 0 : (sawtimberVol(tree.dbh, tree.logs, rule, formClass) * tpa);
         rows.push([
           plot.id,
@@ -6220,14 +6139,12 @@ function exportCruiseCSV() {
           tree.product || 'sawtimber',
           tree.dbh,
           tree.logs || '',
-          tree.height || '',
           baf,
           formClass,
           tpa.toFixed(2),
           bf ? bf.toFixed(1) : '',
-          cords ? cords.toFixed(3) : '',
           tons ? tons.toFixed(2) : '',
-          isPulp ? 'CD/GT' : 'BF',
+          isPulp ? 'GT' : 'BF',
           Number.isFinite(plot.lat) ? Number(plot.lat).toFixed(6) : '',
           Number.isFinite(plot.lng) ? Number(plot.lng).toFixed(6) : ''
         ]);
@@ -8095,7 +8012,7 @@ document.addEventListener('visibilitychange', () => {
       <div class="dbh-grid" id="tally-dbh-grid"></div>
 
       <div id="tally-logs-section">
-        <div class="field-label">16-ft Merchantable Logs</div>
+        <div class="field-label" id="tally-logs-label">16-ft Merchantable Logs</div>
         <div class="logs-row" id="tally-logs-row"></div>
       </div>
 
