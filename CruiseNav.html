@@ -2066,8 +2066,8 @@
     <div class="field-label">Basal Area Factor (BAF)</div>
     <select class="field-input" id="setup-baf" onchange="updateJobBAF(this.value)">
       <option value="5">5</option>
-      <option value="10" selected>10</option>
-      <option value="20">20</option>
+      <option value="10">10</option>
+      <option value="20" selected>20</option>
       <option value="40">40</option>
     </select>
   </div>
@@ -2719,7 +2719,7 @@ function getVolumeRow(rule, formClass, dbh) {
 }
 
 function getDefaultCruiseSpecies() {
-  return DEFAULT_SPECIES.filter(s => ['LP','SP','RO','WO','YP','HK','GU','HW'].includes(s.code));
+  return DEFAULT_SPECIES.filter(s => ['LP','LL','SP','RO','WO','YP','HK','GU','RM','HW'].includes(s.code));
 }
 
 function normalizeJobCruiseSettings(job) {
@@ -2727,7 +2727,7 @@ function normalizeJobCruiseSettings(job) {
   if (!LOG_RULES[job.logRule]) job.logRule = 'scribner';
   job.formClass = normalizeFormClass(job.formClass);
   if (!Array.isArray(job.species) || job.species.length === 0) job.species = getDefaultCruiseSpecies();
-  if (!Number.isFinite(Number(job.baf)) || Number(job.baf) <= 0) job.baf = 10;
+  if (!Number.isFinite(Number(job.baf)) || Number(job.baf) <= 0) job.baf = 20;
   return job;
 }
 
@@ -2911,7 +2911,7 @@ let tallySelHeight = 50;
 function getJobCruiseConfig() {
   const job = normalizeJobCruiseSettings(allJobs.find(j => j.id === activeJobId));
   return {
-    baf: (job && job.baf) || 10,
+    baf: (job && job.baf) || 20,
     logRule: (job && job.logRule) || 'scribner',
     formClass: normalizeFormClass(job && job.formClass),
     species: (job && job.species) || getDefaultCruiseSpecies()
@@ -3504,7 +3504,7 @@ async function saveCruiseToCloud() {
       ownerEmail: getCurrentUserEmail(),
       shareCode: generateShareCode(),
       sharedWith: [],
-      baf: (activeJob && activeJob.baf) || 10,
+      baf: (activeJob && activeJob.baf) || 20,
       logRule: (activeJob && activeJob.logRule) || 'scribner',
       formClass: normalizeFormClass(activeJob && activeJob.formClass),
       species: (activeJob && activeJob.species) || [],
@@ -3521,7 +3521,7 @@ async function saveCruiseToCloud() {
       plotCount: plotMarkers.length,
       polyCount: allPolygons.length,
       completedCount: plotMarkers.filter(p => p.completed).length,
-      baf: (activeJob && activeJob.baf) || 10,
+      baf: (activeJob && activeJob.baf) || 20,
       logRule: (activeJob && activeJob.logRule) || 'scribner',
       formClass: normalizeFormClass(activeJob && activeJob.formClass),
       species: (activeJob && activeJob.species) || [],
@@ -3712,7 +3712,7 @@ async function manualCloudSync() {
           ownerEmail: getCurrentUserEmail(),
           shareCode: generateShareCode(),
           sharedWith: [],
-          baf: (activeJob && activeJob.baf) || 10,
+          baf: (activeJob && activeJob.baf) || 20,
           logRule: (activeJob && activeJob.logRule) || 'scribner',
           formClass: normalizeFormClass(activeJob && activeJob.formClass),
           species: (activeJob && activeJob.species) || [],
@@ -3973,7 +3973,7 @@ async function updateCruiseInCloud(cruiseId) {
       plotCount: plotMarkers.length,
       polyCount: allPolygons.length,
       completedCount: plotMarkers.filter(p => p.completed).length,
-      baf: (activeJob && activeJob.baf) || 10,
+      baf: (activeJob && activeJob.baf) || 20,
       logRule: (activeJob && activeJob.logRule) || 'scribner',
       formClass: normalizeFormClass(activeJob && activeJob.formClass),
       species: (activeJob && activeJob.species) || [],
@@ -4277,7 +4277,7 @@ async function loadCruiseFromCloud(cruiseId, options = {}) {
         name: d.name || 'Cloud Cruise',
         plots: [],
         polygons: [],
-        baf: d.baf || 10,
+        baf: d.baf || 20,
         logRule: d.logRule || 'scribner',
         formClass: normalizeFormClass(d.formClass),
         species: d.species || [],
@@ -5369,7 +5369,7 @@ function initCruiseSetupPanel() {
 
   // Set BAF selector
   const bafSel = document.getElementById('setup-baf');
-  bafSel.value = job.baf || 10;
+  bafSel.value = job.baf || 20;
 
   // Set log rule selector
   const ruleSel = document.getElementById('setup-logrule');
@@ -5424,7 +5424,7 @@ function updateJobSpecies() {
 function updateJobBAF(val) {
   const job = allJobs.find(j => j.id === activeJobId);
   if (!job) return;
-  job.baf = parseInt(val) || 10;
+  job.baf = parseInt(val) || 20;
   job.updatedAt = Date.now();
   saveSession();
 }
@@ -5600,7 +5600,7 @@ function generateCruiseReport() {
   const rPlots = rData.plots;
   const rPolygons = rData.polygons;
 
-  const baf = parseInt(document.getElementById('report-baf').value) || 10;
+  const baf = parseInt(document.getElementById('report-baf').value) || 20;
   const allDonePlots = rPlots.filter(p => p.completed);
   const n = allDonePlots.length;
   const totalPlotCount = rPlots.length;
@@ -5876,7 +5876,7 @@ function exportCruiseCSV() {
   const rPolygons = rData.polygons || [];
   if (!rPlots.length && !rPolygons.length) { toast('No cruise data to export'); return; }
 
-  const baf = parseInt(document.getElementById('report-baf').value) || 10;
+  const baf = parseInt(document.getElementById('report-baf').value) || 20;
   const rule = document.getElementById('report-logrule').value || 'scribner';
   const ruleName = (LOG_RULES[rule] || LOG_RULES.scribner).name;
   const formClass = normalizeFormClass(document.getElementById('report-formclass').value || 78);
@@ -6179,7 +6179,7 @@ function initReportPanel() {
 
   const job = normalizeJobCruiseSettings(allJobs.find(j => j.id === _reportJobId));
   const bafSel = document.getElementById('report-baf');
-  bafSel.value = (job && job.baf) || 10;
+  bafSel.value = (job && job.baf) || 20;
 
   const ruleSel = document.getElementById('report-logrule');
   ruleSel.value = (job && job.logRule) || 'scribner';
@@ -6205,7 +6205,7 @@ function switchReportJob(jobId) {
   const job = normalizeJobCruiseSettings(allJobs.find(j => j.id === jobId));
 
   const bafSel = document.getElementById('report-baf');
-  bafSel.value = (job && job.baf) || 10;
+  bafSel.value = (job && job.baf) || 20;
   const ruleSel = document.getElementById('report-logrule');
   ruleSel.value = (job && job.logRule) || 'scribner';
   const formClassSel = document.getElementById('report-formclass');
@@ -6254,7 +6254,7 @@ function updateReportBAF(val) {
   if (_reportJobId === activeJobId) {
     const job = allJobs.find(j => j.id === activeJobId);
     if (job) {
-      job.baf = parseInt(val) || 10;
+      job.baf = parseInt(val) || 20;
       job.updatedAt = Date.now();
       saveSession();
     }
@@ -7734,7 +7734,7 @@ async function createNewJob() {
     name: name.trim(),
     plots: [],
     polygons: [],
-    baf: 10,
+    baf: 20,
     logRule: 'scribner',
     formClass: 78,
     gridSpacingX: 5,
@@ -7878,7 +7878,7 @@ async function ensureActiveJob() {
     name: name.trim(),
     plots: [],
     polygons: [],
-    baf: 10,
+    baf: 20,
     logRule: 'scribner',
     formClass: 78,
     gridSpacingX: 5,
