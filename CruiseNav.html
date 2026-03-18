@@ -2131,7 +2131,10 @@
 <!-- Grid Generation Panel -->
 <div class="panel" id="panel-grid">
   <div class="panel-handle"></div>
-  <div class="panel-title">Generate Cruise Plots</div>
+  <div class="panel-head">
+    <div class="panel-title">Generate Cruise Plots</div>
+    <button class="panel-close" type="button" onclick="closePanel()" aria-label="Close panel">&#x2715;</button>
+  </div>
   <div class="field-group">
     <div class="field-label">Target Polygons</div>
     <div class="poly-checklist" id="poly-checklist">
@@ -2170,7 +2173,10 @@
 <!-- Plot List Panel -->
 <div class="panel" id="panel-plotlist">
   <div class="panel-handle"></div>
-  <div class="panel-title">Plot List</div>
+  <div class="panel-head">
+    <div class="panel-title">Plot List</div>
+    <button class="panel-close" type="button" onclick="closePanel()" aria-label="Close panel">&#x2715;</button>
+  </div>
   <div class="plot-list" id="plot-list-container"></div>
   <button class="btn btn-primary" onclick="navigateToNext()">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><polygon points="3,11 22,2 13,21 11,13 3,11"/></svg>
@@ -2183,7 +2189,10 @@
 <!-- Settings Panel -->
 <div class="panel" id="panel-settings">
   <div class="panel-handle"></div>
-  <div class="panel-title">Tools & Settings</div>
+  <div class="panel-head">
+    <div class="panel-title">Tools & Settings</div>
+    <button class="panel-close" type="button" onclick="closePanel()" aria-label="Close panel">&#x2715;</button>
+  </div>
   <div class="settings-grid">
     <div class="settings-card" onclick="closePanel(); startDrawBoundary()">
       <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><polygon points="12,2 22,20 2,20"/></svg>
@@ -2236,7 +2245,10 @@
 <!-- Cruise Setup Panel -->
 <div class="panel" id="panel-cruisesetup">
   <div class="panel-handle"></div>
-  <div class="panel-title">Cruise Setup</div>
+  <div class="panel-head">
+    <div class="panel-title">Cruise Setup</div>
+    <button class="panel-close" type="button" onclick="closePanel()" aria-label="Close panel">&#x2715;</button>
+  </div>
   <div class="field-group">
     <div class="field-label">Basal Area Factor (BAF)</div>
     <select class="field-input" id="setup-baf" onchange="updateJobBAF(this.value)">
@@ -2341,7 +2353,10 @@
 <!-- Jobs Panel -->
 <div class="panel" id="panel-jobs">
   <div class="panel-handle"></div>
-  <div class="panel-title">Jobs</div>
+  <div class="panel-head">
+    <div class="panel-title">Jobs</div>
+    <button class="panel-close" type="button" onclick="closePanel()" aria-label="Close panel">&#x2715;</button>
+  </div>
   <div style="display:flex;gap:8px;margin-bottom:14px;">
     <button class="btn btn-primary" style="flex:1;margin:0;" onclick="createNewJob()">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
@@ -2356,7 +2371,10 @@
 <!-- Account Panel -->
 <div class="panel" id="panel-account">
   <div class="panel-handle"></div>
-  <div class="panel-title">Account</div>
+  <div class="panel-head">
+    <div class="panel-title">Account</div>
+    <button class="panel-close" type="button" onclick="closePanel()" aria-label="Close panel">&#x2715;</button>
+  </div>
   <div id="auth-signed-out">
     <div style="text-align:center;padding:16px 0 20px;color:var(--text-secondary);font-size:0.75rem;line-height:1.6;">
       Sign in to save cruises to the cloud, access them on any device, and share with your crew.
@@ -2389,7 +2407,10 @@
 <!-- Cloud Cruises Panel (Unified) -->
 <div class="panel" id="panel-cloud">
   <div class="panel-handle"></div>
-  <div class="panel-title">Cloud Sync</div>
+  <div class="panel-head">
+    <div class="panel-title">Cloud Sync</div>
+    <button class="panel-close" type="button" onclick="closePanel()" aria-label="Close panel">&#x2715;</button>
+  </div>
   <!-- Signed-out state -->
   <div id="cloud-signed-out">
     <div style="text-align:center;padding:16px 0 20px;color:var(--text-secondary);font-size:0.75rem;line-height:1.6;">
@@ -2427,7 +2448,10 @@
 <!-- Share Cruise Panel -->
 <div class="panel" id="panel-share">
   <div class="panel-handle"></div>
-  <div class="panel-title">Share Cruise</div>
+  <div class="panel-head">
+    <div class="panel-title">Share Cruise</div>
+    <button class="panel-close" type="button" onclick="closePanel()" aria-label="Close panel">&#x2715;</button>
+  </div>
   <div id="share-cruise-name" style="font-size:0.85rem;font-weight:700;color:var(--accent);margin-bottom:14px;"></div>
   <div class="field-group">
     <div class="field-label">Share Code</div>
