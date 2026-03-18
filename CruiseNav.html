@@ -7147,10 +7147,10 @@ function updateLocationMarker() {
             '</svg>'
     });
     myLocationMarker = L.marker([myLocation.lat, myLocation.lng], { icon, zIndexOffset: 1000 }).addTo(map);
-    updateLocationHeading();
   } else {
     myLocationMarker.setLatLng([myLocation.lat, myLocation.lng]);
   }
+  updateLocationHeading();
 }
 
 function updateLocationHeading() {
