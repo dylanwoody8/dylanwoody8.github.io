@@ -917,6 +917,124 @@
     margin-bottom: 14px;
     letter-spacing: 0.5px;
   }
+  /* Limiting Distance */
+  .ld-bar {
+    display: flex;
+    flex-direction: column;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 8px 12px;
+    margin-bottom: 14px;
+    gap: 8px;
+  }
+  .ld-row-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .ld-row-bottom {
+    display: flex;
+    justify-content: center;
+  }
+  .ld-measure-toggle {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0;
+    border: 1px solid var(--border-bright);
+    border-radius: 6px;
+    overflow: hidden;
+    width: 100%;
+  }
+  .ld-measure-btn {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.62rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--text-muted);
+    padding: 5px 12px;
+    text-align: center;
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s;
+  }
+  .ld-measure-btn:first-child { border-right: 1px solid var(--border-bright); }
+  .ld-measure-btn.ld-sel {
+    background: rgba(106,191,75,0.15);
+    color: var(--accent);
+    font-weight: 700;
+  }
+  .ld-bar-left {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0;
+  }
+  .ld-bar-icon {
+    font-size: 1.1rem;
+    line-height: 1;
+  }
+  .ld-bar-label {
+    font-size: 0.6rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-weight: 600;
+    color: var(--text-muted);
+  }
+  .ld-input-group {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+  }
+  .ld-baf-select {
+    background: rgba(243,156,18,0.1);
+    border: 1px solid var(--border-bright);
+    border-radius: 6px;
+    color: var(--orange);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.75rem;
+    font-weight: 700;
+    padding: 5px 4px;
+    text-align: center;
+    margin-right: 4px;
+    -webkit-appearance: none;
+    appearance: none;
+    cursor: pointer;
+  }
+  .ld-baf-select:focus { outline: none; border-color: var(--orange); }
+  .ld-input {
+    width: 52px;
+    background: rgba(106,191,75,0.08);
+    border: 1px solid var(--border-bright);
+    border-radius: 6px;
+    color: var(--text-primary);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.85rem;
+    font-weight: 700;
+    padding: 5px 6px;
+    text-align: center;
+    -moz-appearance: textfield;
+  }
+  .ld-input::-webkit-inner-spin-button,
+  .ld-input::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+  .ld-input:focus { outline: none; border-color: var(--accent); }
+  .ld-equals {
+    color: var(--text-muted);
+    font-size: 0.85rem;
+    margin: 0 4px;
+  }
+  .ld-bar-val {
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 800;
+    font-size: 1.1rem;
+    color: var(--accent);
+  }
+  .ld-bar-unit {
+    font-size: 0.65rem;
+    color: var(--text-muted);
+    margin-left: 2px;
+  }
+
   .tally-add-row {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -2004,6 +2122,11 @@
     <div class="field-label">Grid Bearing (degrees)</div>
     <input class="field-input" id="grid-bearing" type="number" value="0" min="0" max="359" step="1"/>
   </div>
+  <div class="field-group">
+    <div class="field-label">Boundary Buffer (chains)</div>
+    <input class="field-input" id="grid-buffer" type="number" value="0.25" min="0" max="10" step="0.1"/>
+    <div style="font-size:0.55rem;color:var(--text-muted);margin-top:4px">Plots within this distance of a boundary edge will be excluded. 0.25 chains = 16.5 ft.</div>
+  </div>
   <button class="btn btn-primary" onclick="generatePlots()">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><circle cx="5" cy="5" r="1.5"/><circle cx="12" cy="5" r="1.5"/><circle cx="19" cy="5" r="1.5"/><circle cx="5" cy="12" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="19" cy="12" r="1.5"/></svg>
     Generate Grid
@@ -2945,6 +3068,41 @@ function getJobCruiseConfig() {
   };
 }
 
+// Limiting Distance Calculator
+function calcPRF(baf) { return 8.696 / Math.sqrt(baf); }
+function calcLimitingDist(dbhInches, baf) { return dbhInches * calcPRF(baf); }
+
+let ldMeasureMode = 'center';
+
+function ldPickMeasure(mode) {
+  ldMeasureMode = mode;
+  document.getElementById('ld-btn-center').className = 'ld-measure-btn' + (mode === 'center' ? ' ld-sel' : '');
+  document.getElementById('ld-btn-face').className = 'ld-measure-btn' + (mode === 'face' ? ' ld-sel' : '');
+  updateLDBar();
+}
+
+function updateLDBar(prefillDBH) {
+  var inp = document.getElementById('ld-dbh-input');
+  if (prefillDBH !== undefined) inp.value = prefillDBH;
+  var dbh = parseFloat(inp.value);
+  if (!dbh || dbh <= 0) { document.getElementById('ld-val').textContent = '--'; return; }
+  var baf = parseFloat(document.getElementById('ld-baf-select').value) || 20;
+  var dist = calcLimitingDist(dbh, baf);
+  if (ldMeasureMode === 'face') dist -= (dbh / 24);
+  document.getElementById('ld-val').textContent = dist.toFixed(1);
+}
+
+function syncLDBaf() {
+  var jobBaf = String(getJobCruiseConfig().baf);
+  var sel = document.getElementById('ld-baf-select');
+  sel.value = jobBaf;
+}
+
+function updateLDFromInput() {
+  updateLDBar();
+}
+
+
 // â”€â”€ Open tally modal for a plot â”€â”€
 function findPlotById(id) {
   return plotMarkers.find(p => String(p.id) === String(id)) || null;
@@ -2989,6 +3147,8 @@ function openTallyModal(plotOrId) {
   tallyBuildLogs();
   tallyRenderTable();
   tallyUpdateStats();
+  syncLDBaf();
+  updateLDBar(tallySelDBH);
 
   map.closePopup();
   document.getElementById('tally-overlay').classList.add('open');
@@ -3011,6 +3171,7 @@ function tallyPickProduct(p) {
   tallyBuildDBH();
   tallyBuildLogs();
   tallyUpdateStats();
+  updateLDBar(tallySelDBH);
 }
 
 function tallyBuildDBH() {
@@ -3023,6 +3184,7 @@ function tallyPickDBH(d) {
   tallySelDBH = d;
   document.querySelectorAll('#tally-dbh-grid .dbh-btn').forEach(b => b.classList.toggle('sel', parseInt(b.dataset.dbh) === d));
   tallyBuildLogs();
+  updateLDBar(tallySelDBH);
 }
 
 function tallyBuildLogs() {
@@ -5507,19 +5669,23 @@ function captureGridSettingsToJob(job) {
   const spacingX = parseFloat((document.getElementById('grid-spacing-x') || {}).value);
   const spacingY = parseFloat((document.getElementById('grid-spacing-y') || {}).value);
   const bearing = parseFloat((document.getElementById('grid-bearing') || {}).value);
+  const buffer = parseFloat((document.getElementById('grid-buffer') || {}).value);
   if (Number.isFinite(spacingX) && spacingX > 0) job.gridSpacingX = spacingX;
   if (Number.isFinite(spacingY) && spacingY > 0) job.gridSpacingY = spacingY;
   if (Number.isFinite(bearing)) job.gridBearing = bearing;
+  if (Number.isFinite(buffer) && buffer >= 0) job.gridBuffer = buffer;
 }
 
 function getJobGridSettings(job) {
   const spacingXInput = parseFloat((document.getElementById('grid-spacing-x') || {}).value);
   const spacingYInput = parseFloat((document.getElementById('grid-spacing-y') || {}).value);
   const bearingInput = parseFloat((document.getElementById('grid-bearing') || {}).value);
+  const bufferInput = parseFloat((document.getElementById('grid-buffer') || {}).value);
   return {
     spacingX: Number.isFinite(Number(job && job.gridSpacingX)) && Number(job.gridSpacingX) > 0 ? Number(job.gridSpacingX) : (Number.isFinite(spacingXInput) && spacingXInput > 0 ? spacingXInput : 5),
     spacingY: Number.isFinite(Number(job && job.gridSpacingY)) && Number(job.gridSpacingY) > 0 ? Number(job.gridSpacingY) : (Number.isFinite(spacingYInput) && spacingYInput > 0 ? spacingYInput : 5),
-    bearing: Number.isFinite(Number(job && job.gridBearing)) ? Number(job.gridBearing) : (Number.isFinite(bearingInput) ? bearingInput : 0)
+    bearing: Number.isFinite(Number(job && job.gridBearing)) ? Number(job.gridBearing) : (Number.isFinite(bearingInput) ? bearingInput : 0),
+    buffer: Number.isFinite(Number(job && job.gridBuffer)) && Number(job.gridBuffer) >= 0 ? Number(job.gridBuffer) : (Number.isFinite(bufferInput) && bufferInput >= 0 ? bufferInput : 0.25)
   };
 }
 
@@ -5528,9 +5694,11 @@ function applyJobGridSettings(job) {
   const spacingXEl = document.getElementById('grid-spacing-x');
   const spacingYEl = document.getElementById('grid-spacing-y');
   const bearingEl = document.getElementById('grid-bearing');
+  const bufferEl = document.getElementById('grid-buffer');
   if (spacingXEl) spacingXEl.value = settings.spacingX;
   if (spacingYEl) spacingYEl.value = settings.spacingY;
   if (bearingEl) bearingEl.value = settings.bearing;
+  if (bufferEl) bufferEl.value = settings.buffer;
 }
 
 function buildNoticeSpeciesRows(speciesEntries, totalAcres) {
@@ -5544,33 +5712,47 @@ function buildNoticeSpeciesRows(speciesEntries, totalAcres) {
         treeCount: 0,
         baAc: 0,
         tpaAc: 0,
+        dbhSum: 0,
         sawBfAc: 0,
         totalSawBf: 0,
         totalSawMbf: 0,
+        sawCount: 0,
+        sawRawVol: 0,
         cnsBfAc: 0,
         totalCnsBf: 0,
         totalCnsMbf: 0,
+        cnsCount: 0,
+        cnsRawVol: 0,
         pulpGtAc: 0,
-        totalPulpGt: 0
+        totalPulpGt: 0,
+        pulpCount: 0,
+        pulpRawVol: 0
       };
     }
     const row = rows[entry.spp];
     row.treeCount += entry.count || 0;
     row.baAc += entry.baAc || 0;
     row.tpaAc += entry.tpaAc || 0;
+    row.dbhSum += entry.dbhSum || 0;
     if (entry.product === 'pulpwood') {
       row.pulpGtAc += entry.volAc || 0;
+      row.pulpCount += entry.count || 0;
+      row.pulpRawVol += entry.rawVolSum || 0;
       if (totalAcres > 0) {
         row.totalPulpGt += (entry.volAc || 0) * totalAcres;
       }
     } else if (entry.product === 'cns') {
       row.cnsBfAc += entry.volAc || 0;
+      row.cnsCount += entry.count || 0;
+      row.cnsRawVol += entry.rawVolSum || 0;
       if (totalAcres > 0) {
         row.totalCnsBf += (entry.volAc || 0) * totalAcres;
         row.totalCnsMbf += ((entry.volAc || 0) * totalAcres) / 1000;
       }
     } else {
       row.sawBfAc += entry.volAc || 0;
+      row.sawCount += entry.count || 0;
+      row.sawRawVol += entry.rawVolSum || 0;
       if (totalAcres > 0) {
         row.totalSawBf += (entry.volAc || 0) * totalAcres;
         row.totalSawMbf += ((entry.volAc || 0) * totalAcres) / 1000;
@@ -5592,12 +5774,15 @@ function renderNoticeVolumeTable(speciesRows, totalAcres, ruleName, formClass) {
         '<thead><tr>' +
           '<th>Species</th>' +
           '<th>Trees</th>' +
+          '<th>Avg DBH</th>' +
           '<th>BA/ac</th>' +
           '<th>TPA</th>' +
           '<th>Saw BF/ac</th>' +
+          '<th>Avg BF/Tree (Saw)</th>' +
           '<th>Total BF</th>' +
           '<th>Total MBF</th>' +
           '<th>CNS BF/ac</th>' +
+          '<th>Avg BF/Tree (CNS)</th>' +
           '<th>CNS Total BF</th>' +
           '<th>CNS MBF</th>' +
           '<th>Pulp GT/ac</th>' +
@@ -5606,15 +5791,21 @@ function renderNoticeVolumeTable(speciesRows, totalAcres, ruleName, formClass) {
 
   speciesRows.forEach(row => {
     const speciesLabel = row.label ? (row.spp + ' (' + row.label + ')') : row.spp;
+    const avgDbh = row.treeCount > 0 ? (row.dbhSum / row.treeCount).toFixed(1) + '"' : '';
+    const avgSawBf = row.sawCount > 0 ? Math.round(row.sawRawVol / row.sawCount).toLocaleString() : '';
+    const avgCnsBf = row.cnsCount > 0 ? Math.round(row.cnsRawVol / row.cnsCount).toLocaleString() : '';
     html += '<tr>' +
       '<td><strong>' + escapeHtml(speciesLabel) + '</strong></td>' +
       '<td>' + row.treeCount + '</td>' +
+      '<td>' + avgDbh + '</td>' +
       '<td>' + row.baAc.toFixed(1) + '</td>' +
       '<td>' + row.tpaAc.toFixed(1) + '</td>' +
       '<td>' + (row.sawBfAc > 0 ? Math.round(row.sawBfAc).toLocaleString() : '') + '</td>' +
+      '<td>' + avgSawBf + '</td>' +
       '<td>' + (row.totalSawBf > 0 ? Math.round(row.totalSawBf).toLocaleString() : '') + '</td>' +
       '<td>' + (row.totalSawMbf > 0 ? row.totalSawMbf.toFixed(1) : '') + '</td>' +
       '<td>' + (row.cnsBfAc > 0 ? Math.round(row.cnsBfAc).toLocaleString() : '') + '</td>' +
+      '<td>' + avgCnsBf + '</td>' +
       '<td>' + (row.totalCnsBf > 0 ? Math.round(row.totalCnsBf).toLocaleString() : '') + '</td>' +
       '<td>' + (row.totalCnsMbf > 0 ? row.totalCnsMbf.toFixed(1) : '') + '</td>' +
       '<td>' + (row.pulpGtAc > 0 ? row.pulpGtAc.toFixed(2) : '') + '</td>' +
@@ -5672,15 +5863,22 @@ function generateCruiseReport() {
       totalTreeCount++;
       const rp = getReportProduct(t);
       const key = t.spp + '|' + rp;
-      if (!sd[key]) sd[key] = { spp: t.spp, product: rp, baT: 0, tpaT: 0, volT: 0, count: 0 };
+      if (!sd[key]) sd[key] = { spp: t.spp, product: rp, baT: 0, tpaT: 0, volT: 0, count: 0, dbhSum: 0, rawVolSum: 0 };
       const tp = calcTPA(baf, t.dbh);
       sd[key].baT += baf;
       sd[key].tpaT += tp;
       sd[key].count++;
+      sd[key].dbhSum += t.dbh;
       if (rp === 'pulpwood') {
-        sd[key].volT += pulpwoodTons(t.dbh, t.logs || 1) * tp;
+        const treeVol = pulpwoodTons(t.dbh, t.logs || 1);
+        sd[key].volT += treeVol * tp;
+        sd[key].rawVolSum += treeVol;
       }
-      else sd[key].volT += sawtimberVol(t.dbh, t.logs, rule, formClass) * tp;
+      else {
+        const treeVol = sawtimberVol(t.dbh, t.logs, rule, formClass);
+        sd[key].volT += treeVol * tp;
+        sd[key].rawVolSum += treeVol;
+      }
     });
   });
 
@@ -5691,6 +5889,8 @@ function generateCruiseReport() {
     d.baAc = d.baT / n;
     d.tpaAc = d.tpaT / n;
     d.volAc = d.volT / n;
+    d.avgDbh = d.count > 0 ? d.dbhSum / d.count : 0;
+    d.avgVolPerTree = d.count > 0 ? d.rawVolSum / d.count : 0;
     if (d.product === 'pulpwood') {
       totPulpBA += d.baAc; totPulpTPA += d.tpaAc; totPulpVol += d.volAc;
     } else if (d.product === 'cns') {
@@ -5773,12 +5973,18 @@ function generateCruiseReport() {
     const sawKey = spp + '|sawtimber', cnsKey = spp + '|cns', pulpKey = spp + '|pulpwood';
     const saw = sd[sawKey], cns = sd[cnsKey], pulp = sd[pulpKey];
     const fullName = DEFAULT_SPECIES.find(s => s.code === spp);
-    html += '<div class="report-species-hdr">' + spp + (fullName ? ' (' + fullName.label + ')' : '') + '</div>';
+    // Compute avg DBH across all products for this species
+    let sppDbhSum = 0, sppCount = 0;
+    [saw, cns, pulp].forEach(d => { if (d) { sppDbhSum += d.dbhSum; sppCount += d.count; } });
+    const sppAvgDbh = sppCount > 0 ? (sppDbhSum / sppCount).toFixed(1) : '--';
+    html += '<div class="report-species-hdr">' + spp + (fullName ? ' (' + fullName.label + ')' : '') + '<span style="float:right;font-size:0.7rem;color:var(--accent);font-weight:700">Avg DBH: ' + sppAvgDbh + '"</span></div>';
 
     if (saw) {
       html += '<div class="report-card">' +
         '<div class="report-card-title">Sawtimber (' + sawtimberLabel + ')</div>' +
         '<div class="report-row"><span>Trees Tallied</span><span class="rval">' + saw.count + '</span></div>' +
+        '<div class="report-row"><span>Avg DBH</span><span class="rval">' + saw.avgDbh.toFixed(1) + '"</span></div>' +
+        '<div class="report-row"><span>Avg BF / Tree</span><span class="rval">' + Math.round(saw.avgVolPerTree).toLocaleString() + ' BF</span></div>' +
         '<div class="report-row"><span>BA / Acre</span><span class="rval">' + saw.baAc.toFixed(1) + ' sq ft</span></div>' +
         '<div class="report-row"><span>Trees / Acre</span><span class="rval">' + saw.tpaAc.toFixed(1) + '</span></div>' +
         '<div class="report-row"><span>Volume / Acre</span><span class="rval">' + Math.round(saw.volAc).toLocaleString() + ' BF</span></div>' +
@@ -5791,6 +5997,8 @@ function generateCruiseReport() {
       html += '<div class="report-card">' +
         '<div class="report-card-title">CNS / Chip-N-Saw (' + sawtimberLabel + ')</div>' +
         '<div class="report-row"><span>Trees Tallied</span><span class="rval">' + cns.count + '</span></div>' +
+        '<div class="report-row"><span>Avg DBH</span><span class="rval">' + cns.avgDbh.toFixed(1) + '"</span></div>' +
+        '<div class="report-row"><span>Avg BF / Tree</span><span class="rval">' + Math.round(cns.avgVolPerTree).toLocaleString() + ' BF</span></div>' +
         '<div class="report-row"><span>BA / Acre</span><span class="rval">' + cns.baAc.toFixed(1) + ' sq ft</span></div>' +
         '<div class="report-row"><span>Trees / Acre</span><span class="rval">' + cns.tpaAc.toFixed(1) + '</span></div>' +
         '<div class="report-row"><span>Volume / Acre</span><span class="rval">' + Math.round(cns.volAc).toLocaleString() + ' BF</span></div>' +
@@ -5803,6 +6011,8 @@ function generateCruiseReport() {
       html += '<div class="report-card">' +
         '<div class="report-card-title">Pulpwood (RGT16)</div>' +
         '<div class="report-row"><span>Trees Tallied</span><span class="rval">' + pulp.count + '</span></div>' +
+        '<div class="report-row"><span>Avg DBH</span><span class="rval">' + pulp.avgDbh.toFixed(1) + '"</span></div>' +
+        '<div class="report-row"><span>Avg GT / Tree</span><span class="rval">' + pulp.avgVolPerTree.toFixed(3) + ' GT</span></div>' +
         '<div class="report-row"><span>BA / Acre</span><span class="rval">' + pulp.baAc.toFixed(1) + ' sq ft</span></div>' +
         '<div class="report-row"><span>Trees / Acre</span><span class="rval">' + pulp.tpaAc.toFixed(1) + '</span></div>' +
         '<div class="report-row"><span>Tons / Acre</span><span class="rval">' + pulp.volAc.toFixed(2) + ' GT</span></div>' +
@@ -6904,11 +7114,14 @@ function generatePlots() {
   const spacingX = parseFloat(document.getElementById('grid-spacing-x').value) || 5;
   const spacingY = parseFloat(document.getElementById('grid-spacing-y').value) || 5;
   const bearing = parseFloat(document.getElementById('grid-bearing').value) || 0;
+  const bufferChains = parseFloat(document.getElementById('grid-buffer').value) || 0;
+  const bufferM = bufferChains * 20.1168;
   const activeJob = allJobs.find(j => j.id === activeJobId);
   if (activeJob) {
     activeJob.gridSpacingX = spacingX;
     activeJob.gridSpacingY = spacingY;
     activeJob.gridBearing = bearing;
+    activeJob.gridBuffer = bufferChains;
     activeJob.updatedAt = Date.now();
   }
 
@@ -6939,6 +7152,7 @@ function generatePlots() {
         const lng = centerLng + (rx / (111320 * Math.cos(centerLat * Math.PI / 180)));
 
         if (pointInPolygon(lat, lng, lls)) {
+          if (bufferM > 0 && minDistToPolyBoundary(lat, lng, lls) < bufferM) continue;
           allPoints.push({ id: 0, lat, lng, iy, ix });
         }
       }
@@ -6984,6 +7198,36 @@ function sortByLineOrder(points) {
   });
 
   return result;
+}
+
+// Distance from a point to the nearest edge of a polygon boundary (in meters)
+function minDistToPolyBoundary(lat, lng, polygon) {
+  var minD = Infinity;
+  var pt = L.latLng(lat, lng);
+  for (var i = 0, j = polygon.length - 1; i < polygon.length; j = i++) {
+    var a = polygon[j];
+    var b = polygon[i];
+    var d = distPointToSegment(pt, L.latLng(a.lat, a.lng), L.latLng(b.lat, b.lng));
+    if (d < minD) minD = d;
+  }
+  return minD;
+}
+
+function distPointToSegment(p, a, b) {
+  // Project point p onto line segment a-b in meter space relative to a
+  var ax = 0, ay = 0;
+  var bx = a.distanceTo(L.latLng(a.lat, b.lng)) * (b.lng >= a.lng ? 1 : -1);
+  var by = a.distanceTo(L.latLng(b.lat, a.lng)) * (b.lat >= a.lat ? 1 : -1);
+  var px = a.distanceTo(L.latLng(a.lat, p.lng)) * (p.lng >= a.lng ? 1 : -1);
+  var py = a.distanceTo(L.latLng(p.lat, a.lng)) * (p.lat >= a.lat ? 1 : -1);
+  var dx = bx - ax, dy = by - ay;
+  var lenSq = dx * dx + dy * dy;
+  if (lenSq === 0) return Math.sqrt(px * px + py * py);
+  var t = Math.max(0, Math.min(1, ((px - ax) * dx + (py - ay) * dy) / lenSq));
+  var projX = ax + t * dx;
+  var projY = ay + t * dy;
+  var ex = px - projX, ey = py - projY;
+  return Math.sqrt(ex * ex + ey * ey);
 }
 
 function pointInPolygon(lat, lng, polygon) {
@@ -7704,7 +7948,7 @@ async function restoreSession() {
           polygons: oldData.polygons || [],
           gridSpacingX: 5,
           gridSpacingY: 5,
-          gridBearing: 0,
+          gridBearing: 0, gridBuffer: 0.25,
           logRule: 'scribner',
           formClass: 78,
           createdAt: Date.now(),
@@ -7837,7 +8081,7 @@ async function createNewJob() {
     formClass: 78,
     gridSpacingX: 5,
     gridSpacingY: 5,
-    gridBearing: 0,
+    gridBearing: 0, gridBuffer: 0.25,
     species: getDefaultCruiseSpecies(),
     createdAt: Date.now(),
     updatedAt: Date.now()
@@ -7981,7 +8225,7 @@ async function ensureActiveJob() {
     formClass: 78,
     gridSpacingX: 5,
     gridSpacingY: 5,
-    gridBearing: 0,
+    gridBearing: 0, gridBuffer: 0.25,
     species: getDefaultCruiseSpecies(),
     createdAt: Date.now(),
     updatedAt: Date.now()
@@ -8188,6 +8432,33 @@ buildThemeSwatches();
 
       <div class="field-label">DBH Class</div>
       <div class="dbh-grid" id="tally-dbh-grid"></div>
+
+      <div class="ld-bar" id="ld-bar">
+        <div class="ld-row-top">
+          <div class="ld-bar-left">
+            <span class="ld-bar-icon">&#x1F4CF;</span>
+            <div class="ld-bar-label">Limiting Dist</div>
+          </div>
+          <div class="ld-input-group">
+            <select class="ld-baf-select" id="ld-baf-select" onchange="updateLDFromInput()">
+              <option value="5">5</option>
+              <option value="10">10</option>
+              <option value="20">20</option>
+              <option value="40">40</option>
+            </select>
+            <input type="number" class="ld-input" id="ld-dbh-input" inputmode="decimal" step="0.1" min="1" placeholder="DBH" oninput="updateLDFromInput()">
+            <span class="ld-bar-unit">"</span>
+            <span class="ld-equals">=</span>
+            <span class="ld-bar-val" id="ld-val">--</span><span class="ld-bar-unit">ft</span>
+          </div>
+        </div>
+        <div class="ld-row-bottom">
+          <div class="ld-measure-toggle">
+            <div class="ld-measure-btn ld-sel" id="ld-btn-center" onclick="ldPickMeasure('center')">Center</div>
+            <div class="ld-measure-btn" id="ld-btn-face" onclick="ldPickMeasure('face')">Face</div>
+          </div>
+        </div>
+      </div>
 
       <div id="tally-logs-section">
         <div class="field-label" id="tally-logs-label">16-ft Merchantable Logs</div>
