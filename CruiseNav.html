@@ -2597,14 +2597,15 @@ function escapeJsString(value) {
 }
 const NAV_HEADING_MODE_DEVICE = 'device';
 const NAV_HEADING_MODE_MOVEMENT = 'movement';
-const MOVEMENT_HEADING_MIN_DISTANCE_METERS = 4;
-const MOVEMENT_HEADING_MIN_SPEED_MPS = 0.5;
-const MOVEMENT_HEADING_SMOOTHING = 0.35;
-const MOVEMENT_SAMPLE_REFRESH_MS = 4000;
+const MOVEMENT_HEADING_MIN_DISTANCE_METERS = 1.5;
+const MOVEMENT_HEADING_MIN_SPEED_MPS = 0.15;
+const MOVEMENT_HEADING_SMOOTHING = 0.4;
+const MOVEMENT_HEADING_MIN_SAMPLE_AGE_MS = 750;
+const MOVEMENT_HISTORY_WINDOW_MS = 12000;
 let deviceHeading = null;
 let movementHeading = null;
 let navHeadingMode = NAV_HEADING_MODE_DEVICE;
-let lastMovementSample = null;
+let movementSamples = [];
 let headingListenersAttached = false;
 let distUnit = 'ft';            // 'ft' or 'm'
 let wakeLock = null;
@@ -7006,7 +7007,7 @@ function setNavHeadingMode(mode, options) {
   if (select && select.value !== navHeadingMode) select.value = navHeadingMode;
   if (navHeadingMode !== NAV_HEADING_MODE_MOVEMENT) {
     movementHeading = null;
-    lastMovementSample = null;
+    movementSamples = [];
   }
   syncHeadingTracking();
   updateLocationHeading();
@@ -7023,36 +7024,31 @@ function updateMovementHeading(position) {
   const reportedHeading = normalizeDegrees(position.coords.heading);
   const minDistance = Math.max(
     MOVEMENT_HEADING_MIN_DISTANCE_METERS,
-    accuracy != null ? Math.min(Math.max(accuracy * 0.35, 0), 12) : 0
+    accuracy != null ? Math.min(Math.max(accuracy * 0.18, 0.8), 6) : 0
   );
   let nextHeading = null;
-  let sampleDistance = null;
-  let sampleAgeMs = null;
+  movementSamples.push({ lat, lng, timestamp });
+  movementSamples = movementSamples.filter(sample => (timestamp - sample.timestamp) <= MOVEMENT_HISTORY_WINDOW_MS);
 
   if (reportedHeading != null && (reportedSpeed == null || reportedSpeed >= MOVEMENT_HEADING_MIN_SPEED_MPS)) {
     nextHeading = reportedHeading;
   }
 
-  if (nextHeading == null && lastMovementSample) {
-    sampleDistance = getDistance(lastMovementSample.lat, lastMovementSample.lng, lat, lng);
-    sampleAgeMs = Math.max(timestamp - lastMovementSample.timestamp, 0);
-    const derivedSpeed = sampleAgeMs > 0 ? sampleDistance / (sampleAgeMs / 1000) : 0;
-    if (sampleDistance >= minDistance && derivedSpeed >= MOVEMENT_HEADING_MIN_SPEED_MPS) {
-      nextHeading = getBearing(lastMovementSample.lat, lastMovementSample.lng, lat, lng);
+  if (nextHeading == null && movementSamples.length > 1) {
+    for (let i = 0; i < movementSamples.length - 1; i++) {
+      const sample = movementSamples[i];
+      const sampleAgeMs = Math.max(timestamp - sample.timestamp, 0);
+      if (sampleAgeMs < MOVEMENT_HEADING_MIN_SAMPLE_AGE_MS) continue;
+      const sampleDistance = getDistance(sample.lat, sample.lng, lat, lng);
+      if (sampleDistance >= minDistance) {
+        nextHeading = getBearing(sample.lat, sample.lng, lat, lng);
+        break;
+      }
     }
   }
 
   if (nextHeading != null) {
     movementHeading = blendHeading(movementHeading, nextHeading, MOVEMENT_HEADING_SMOOTHING);
-  }
-
-  if (
-    !lastMovementSample ||
-    nextHeading != null ||
-    (sampleDistance != null && sampleDistance >= minDistance * 0.5) ||
-    (sampleAgeMs != null && sampleAgeMs >= MOVEMENT_SAMPLE_REFRESH_MS)
-  ) {
-    lastMovementSample = { lat, lng, timestamp };
   }
 }
 
@@ -7077,7 +7073,7 @@ function startLocating() {
   isLocating = true;
   pendingFlyToLocation = true;
   movementHeading = null;
-  lastMovementSample = null;
+  movementSamples = [];
 
   locationWatchId = navigator.geolocation.watchPosition(
     pos => {
@@ -7126,7 +7122,7 @@ function stopLocating() {
   detachHeadingListeners();
   deviceHeading = null;
   movementHeading = null;
-  lastMovementSample = null;
+  movementSamples = [];
 }
 
 function updateLocationMarker() {
