@@ -210,6 +210,139 @@
   }
   .cruise-info span { color: var(--lime); }
 
+  .gps-panel {
+    position: absolute;
+    right: 312px;
+    top: 70px;
+    width: 290px;
+    max-height: calc(100vh - 140px);
+    background: var(--bark);
+    border: 1px solid var(--leaf);
+    border-top: 3px solid #f59e0b;
+    z-index: 1000;
+    padding: 14px;
+    display: none;
+    flex-direction: column;
+    gap: 10px;
+    overflow-y: auto;
+  }
+  .gps-panel.open { display: flex; }
+  .gps-panel h3 {
+    font-family: 'Syne', sans-serif;
+    font-size: 0.8rem;
+    font-weight: 800;
+    color: #f7c66a;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 2px;
+  }
+  .gps-note {
+    font-size: 0.6rem;
+    color: var(--sand);
+    line-height: 1.5;
+    opacity: 0.8;
+  }
+  .gps-metric {
+    min-height: 32px;
+    display: flex;
+    align-items: center;
+    padding: 6px 8px;
+    border: 1px solid var(--leaf);
+    background: var(--forest);
+    color: var(--cream);
+    font-size: 0.72rem;
+  }
+  .gps-session-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    max-height: 270px;
+    overflow-y: auto;
+    padding-right: 4px;
+  }
+  .gps-session-list::-webkit-scrollbar { width: 4px; }
+  .gps-session-list::-webkit-scrollbar-thumb { background: var(--leaf); }
+  .gps-session {
+    border: 1px solid #3d563f;
+    background: rgba(15, 35, 24, 0.6);
+    padding: 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .gps-session.active {
+    border-color: #f59e0b;
+    box-shadow: 0 0 0 1px rgba(245, 158, 11, 0.2);
+  }
+  .gps-session-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+  }
+  .gps-session-name {
+    font-size: 0.72rem;
+    color: var(--cream);
+    font-weight: 700;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .gps-session-badge {
+    flex-shrink: 0;
+    padding: 2px 6px;
+    border: 1px solid #f59e0b;
+    color: #f7c66a;
+    font-size: 0.55rem;
+    letter-spacing: 0.6px;
+    text-transform: uppercase;
+  }
+  .gps-session-meta {
+    font-size: 0.62rem;
+    color: var(--sand);
+    line-height: 1.5;
+  }
+  .gps-session-meta strong { color: var(--cream); font-weight: 700; }
+  .gps-session-actions {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 6px;
+  }
+  .gps-session-actions button {
+    padding: 7px 4px;
+    font-family: 'Space Mono', monospace;
+    font-size: 0.58rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    cursor: pointer;
+    border: 1px solid var(--leaf);
+    background: var(--forest);
+    color: var(--cream);
+    letter-spacing: 0.5px;
+  }
+  .gps-session-actions button:hover {
+    border-color: var(--lime);
+    background: var(--moss);
+  }
+  .gps-session-actions button.danger {
+    border-color: #c0392b;
+    color: #ff8b80;
+  }
+  .gps-session-actions button.danger:hover {
+    background: #c0392b;
+    color: #fff;
+  }
+  .gps-session-empty {
+    border: 1px dashed #3d563f;
+    padding: 10px 8px;
+    color: var(--sand);
+    opacity: 0.7;
+    font-size: 0.65rem;
+    font-style: italic;
+    text-align: center;
+  }
+
   .notification {
     position: fixed;
     bottom: 40px;
@@ -305,6 +438,9 @@
   .locate-btn { background: transparent; border-color: #1976d2; color: #64b5f6; }
   .locate-btn:hover  { background: #1565c0; border-color: #2196f3; color: #fff; }
   .locate-btn.active { background: #1565c0; border-color: #2196f3; color: #fff; }
+  .gps-btn { background: transparent; border-color: #f59e0b; color: #f7c66a; }
+  .gps-btn:hover { background: #c77700; border-color: #f59e0b; color: #fff; }
+  .gps-btn.active { background: #c77700; border-color: #f59e0b; color: #fff; }
 
   .loc-dot {
     width: 14px; height: 14px;
@@ -625,6 +761,7 @@
 
   @media (max-width: 768px) {
     .layer-panel { left: 8px; right: 8px; width: auto; top: 52px; }
+    .gps-panel { right: 8px; left: 8px; width: auto; top: 52px; max-height: calc(100vh - 130px); }
     .geopdf-preview-bar { left: 8px; right: 8px; transform: none; flex-wrap: wrap; justify-content: center; }
   }
 
@@ -921,6 +1058,10 @@
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/><circle cx="12" cy="12" r="7" stroke-opacity="0.35"/></svg>
       Locate Me
     </button>
+    <button class="tool-btn gps-btn" id="btn-gps" onclick="toggleGpsPanel()" title="GPS capture tools">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v4M12 17v4M3 12h4M17 12h4"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1.5" fill="currentColor"/></svg>
+      GPS Capture
+    </button>
     <div class="sep"></div>
     <button class="tool-btn" id="btn-cruise" onclick="toggleCruisePanel()">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="5" cy="5" r="1.5" fill="currentColor"/><circle cx="12" cy="5" r="1.5" fill="currentColor"/><circle cx="19" cy="5" r="1.5" fill="currentColor"/><circle cx="5" cy="12" r="1.5" fill="currentColor"/><circle cx="12" cy="12" r="1.5" fill="currentColor"/><circle cx="19" cy="12" r="1.5" fill="currentColor"/><circle cx="5" cy="19" r="1.5" fill="currentColor"/><circle cx="12" cy="19" r="1.5" fill="currentColor"/><circle cx="19" cy="19" r="1.5" fill="currentColor"/></svg>
@@ -978,6 +1119,53 @@
   <div class="cruise-info" id="cruise-info">No grid generated yet.</div>
 </div>
 
+<!-- GPS Capture Panel -->
+<div class="gps-panel" id="gps-panel">
+  <h3>◎ GPS Capture</h3>
+  <div class="field-group">
+    <div class="field-label">Feature Name</div>
+    <input class="cruise-input" id="gps-session-name" type="text" placeholder="Property Boundary"/>
+  </div>
+  <div class="cruise-row">
+    <div class="field-group">
+      <div class="field-label">Geometry</div>
+      <select class="cruise-input" id="gps-feature-type" onchange="updateGpsMethodUI()">
+        <option value="polygon" selected>Polygon</option>
+        <option value="polyline">Line</option>
+        <option value="point">Point</option>
+      </select>
+    </div>
+    <div class="field-group">
+      <div class="field-label">Logging</div>
+      <select class="cruise-input" id="gps-log-mode" onchange="updateGpsMethodUI()">
+        <option value="distance" selected>Distance</option>
+        <option value="time">Time</option>
+        <option value="vertex">Every Fix</option>
+      </select>
+    </div>
+  </div>
+  <div class="cruise-row">
+    <div class="field-group" id="gps-interval-group">
+      <div class="field-label" id="gps-interval-label">Interval (ft)</div>
+      <input class="cruise-input" id="gps-log-interval" type="number" value="15" min="1" step="1"/>
+    </div>
+    <div class="field-group">
+      <div class="field-label">Current Accuracy</div>
+      <div class="gps-metric" id="gps-panel-accuracy">Waiting for GPS fix…</div>
+    </div>
+  </div>
+  <div class="cruise-actions">
+    <button class="btn-generate" onclick="createGpsSession()">Start New</button>
+    <button class="btn-clear-grid" onclick="pauseActiveGpsSession()">Pause Active</button>
+  </div>
+  <div class="gps-note" id="gps-note">SOLO-style interval logging: capture every fix, every set distance, or every set time while you walk the feature.</div>
+  <div class="field-label">Open Sessions</div>
+  <div class="gps-session-list" id="gps-session-list">
+    <div class="gps-session-empty">No GPS sessions yet.</div>
+  </div>
+  <div class="cruise-info" id="gps-info">No GPS capture running.</div>
+</div>
+
 <!-- Layer Style Manager -->
 <div class="layer-panel" id="layer-panel">
   <h3>■ Layers</h3>
@@ -1008,6 +1196,7 @@
   <div>Features: <span id="feat-count">0</span></div>
   <div id="acres-display" style="display:none">Stand Area: <span id="acres-val" style="color:var(--lime)">—</span> ac</div>
   <div>Active tool: <span id="active-tool">None</span></div>
+  <div>GPS: <span id="gps-status">Idle</span></div>
   <div>CRS: <span>WGS84 / EPSG:4326</span></div>
   <div id="coords-display"></div>
 </div>
@@ -1046,6 +1235,10 @@
     <button class="mob-drawer-btn" onclick="closeMobileMenu(); toggleCruisePanel()">
       <svg viewBox="0 0 24 24" fill="none" stroke-width="1.5"><circle cx="5" cy="5" r="1.5" fill="currentColor" stroke="none"/><circle cx="12" cy="5" r="1.5" fill="currentColor" stroke="none"/><circle cx="19" cy="5" r="1.5" fill="currentColor" stroke="none"/><circle cx="5" cy="12" r="1.5" fill="currentColor" stroke="none"/><circle cx="12" cy="12" r="1.5" fill="currentColor" stroke="none"/><circle cx="19" cy="12" r="1.5" fill="currentColor" stroke="none"/><circle cx="5" cy="19" r="1.5" fill="currentColor" stroke="none"/><circle cx="12" cy="19" r="1.5" fill="currentColor" stroke="none"/><circle cx="19" cy="19" r="1.5" fill="currentColor" stroke="none"/></svg>
       Cruise Grid
+    </button>
+    <button class="mob-drawer-btn" onclick="closeMobileMenu(); toggleGpsPanel()">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M12 3v4M12 17v4M3 12h4M17 12h4"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1.5" fill="currentColor" stroke="none"/></svg>
+      GPS Capture
     </button>
     <button class="mob-drawer-btn" onclick="closeMobileMenu(); toggleEdit()">
       <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
@@ -1177,6 +1370,10 @@
       <div class="splash-item">
         <span class="splash-key">Locate Me</span>
         <div class="splash-desc">Uses your device GPS to show a blue dot with accuracy ring on the map. Great for ground-truthing in the field.</div>
+      </div>
+      <div class="splash-item">
+        <span class="splash-key">GPS Capture</span>
+        <div class="splash-desc">Stream GPS points into point, line, or polygon features. Pause one feature, start another, then resume the first. Supports every-fix, distance, and time logging modes.</div>
       </div>
       <div class="splash-item">
         <span class="splash-key">Clear</span>
@@ -1401,6 +1598,12 @@ map.addControl(drawControl);
 
 map.on(L.Draw.Event.CREATED, e => {
   drawnItems.addLayer(e.layer);
+  applyDrawnLayerDefaults(e.layer, {
+    source: 'manual',
+    capture: 'manual',
+    status: 'finished',
+    logMode: 'manual'
+  });
   const st = getDrawnStyle(e.layer);
   // Apply tracked style immediately so it matches imported layer look
   if (e.layer.setStyle) {
@@ -1425,7 +1628,9 @@ map.on(L.Draw.Event.EDITED, () => {
       layer.setStyle({ color: st.color, fillColor: st.fillColor, fillOpacity: st.fillOpacity, weight: st.weight, opacity: 1, fill: st.fillOpacity > 0 });
     }
   });
+  syncGpsSessionsWithDrawnLayers();
   updateCount(); refreshPolySelect(); updateAcres();
+  refreshGpsPanel();
 });
 map.on(L.Draw.Event.DELETED, () => {
   // Clean up styles for deleted features
@@ -1434,7 +1639,9 @@ map.on(L.Draw.Event.DELETED, () => {
   for (const id of drawnFeatureStyles.keys()) {
     if (!remaining.has(id)) drawnFeatureStyles.delete(id);
   }
+  syncGpsSessionsWithDrawnLayers();
   updateCount(); refreshPolySelect(); updateAcres(); refreshLayerPanel();
+  refreshGpsPanel();
 });
 
 function updateCount() {
@@ -1464,7 +1671,7 @@ function updateAcres() {
   let totalAcres = 0;
   let polyCount = 0;
   drawnItems.eachLayer(layer => {
-    if (layer instanceof L.Polygon) {
+    if (isPolygonLayerReady(layer)) {
       totalAcres += calcAcres(layer);
       polyCount++;
     }
@@ -1477,6 +1684,70 @@ function updateAcres() {
   } else {
     display.style.display = 'none';
   }
+}
+
+function getLayerTypeKey(layer) {
+  if (layer instanceof L.Polygon) return 'polygon';
+  if (layer instanceof L.Polyline) return 'polyline';
+  return 'point';
+}
+
+function getLayerTypeLabel(layerOrType) {
+  const type = typeof layerOrType === 'string' ? layerOrType : getLayerTypeKey(layerOrType);
+  if (type === 'polygon') return 'Polygon';
+  if (type === 'polyline') return 'Line';
+  return 'Point';
+}
+
+function getPrimaryLatLngs(layer) {
+  if (!(layer instanceof L.Polyline)) return [];
+  const latlngs = layer.getLatLngs();
+  if (!Array.isArray(latlngs) || !latlngs.length) return [];
+  return Array.isArray(latlngs[0]) ? latlngs[0] : latlngs;
+}
+
+function getLayerVertexCount(layer) {
+  if (layer instanceof L.Marker) return 1;
+  return getPrimaryLatLngs(layer).length;
+}
+
+function isPolygonLayerReady(layer) {
+  return layer instanceof L.Polygon && getLayerVertexCount(layer) >= 3;
+}
+
+function ensureClosedRing(coords) {
+  if (!coords.length) return [];
+  const ring = coords.map(([x, y]) => [x, y]);
+  const [fx, fy] = ring[0];
+  const [lx, ly] = ring[ring.length - 1];
+  if (fx !== lx || fy !== ly) ring.push([fx, fy]);
+  return ring;
+}
+
+function findDrawnLayerById(leafletId) {
+  let found = null;
+  drawnItems.eachLayer(layer => {
+    if (!found && L.Util.stamp(layer) === leafletId) found = layer;
+  });
+  return found;
+}
+
+function applyDrawnLayerDefaults(layer, overrides = {}) {
+  const type = getLayerTypeKey(layer);
+  const existing = layer._wfMeta || {};
+  layer._wfMeta = {
+    source: existing.source || 'manual',
+    capture: existing.capture || 'manual',
+    status: existing.status || 'finished',
+    logMode: existing.logMode || 'manual',
+    logInterval: existing.logInterval ?? null,
+    sessionId: existing.sessionId || null,
+    name: existing.name || '',
+    type,
+    ...existing,
+    ...overrides,
+    type
+  };
 }
 
 // ── Draw tool wrappers ─────────────────────────────────────────────────────
@@ -1524,13 +1795,20 @@ function toggleEdit() {
 }
 
 function clearAll() {
-  if (!drawnItems.getLayers().length) return;
+  if (!drawnItems.getLayers().length && !gpsSessions.length) return;
   if (confirm('Clear all features?')) {
     drawnItems.clearLayers();
     drawnFeatureStyles.clear();
     drawnFeatureCounter = 0;
+    gpsSessions = [];
+    activeGpsSessionId = null;
     updateCount();
+    refreshPolySelect();
+    updateAcres();
     refreshLayerPanel();
+    refreshGpsPanel();
+    updateGpsStatus();
+    updateGpsTrackingState();
     notify('All features cleared');
   }
 }
@@ -1598,36 +1876,23 @@ function doExport() {
   const prjContent = 'GEOGCS["GCS_WGS_1984",DATUM["D_WGS_1984",SPHEROID["WGS_1984",6378137.0,298.257223563]],PRIMEM["Greenwich",0.0],UNIT["Degree",0.0174532925199433]]';
 
   if (inclDrawn) {
-    const points = [], lines = [], polygons = [];
-    drawnItems.getLayers().forEach(layer => {
-      if (layer instanceof L.Marker) {
-        points.push({ type: 'Point', coordinates: [layer.getLatLng().lng, layer.getLatLng().lat] });
-      } else if (layer instanceof L.Polyline && !(layer instanceof L.Polygon)) {
-        const lls = layer.getLatLngs();
-        lines.push({ type: 'LineString', coordinates: lls.map(ll => [ll.lng, ll.lat]) });
-      } else if (layer instanceof L.Polygon) {
-        const lls = layer.getLatLngs()[0];
-        const ring = lls.map(ll => [ll.lng, ll.lat]);
-        ring.push(ring[0]);
-        polygons.push({ type: 'Polygon', coordinates: [ring] });
-      }
-    });
-    if (points.length) {
-      zip.file('points.shp', buildPointShp(points));
-      zip.file('points.shx', buildPointShx(points));
-      zip.file('points.dbf', buildDbf(points.length));
+    const drawnExport = collectDrawnExportRows();
+    if (drawnExport.points.length) {
+      zip.file('points.shp', buildPointShp(drawnExport.points));
+      zip.file('points.shx', buildPointShx(drawnExport.points));
+      zip.file('points.dbf', buildAttrDbf(drawnExport.pointProps));
       zip.file('points.prj', prjContent);
     }
-    if (lines.length) {
-      zip.file('lines.shp', buildPolylineShp(lines));
-      zip.file('lines.shx', buildPolylineShx(lines));
-      zip.file('lines.dbf', buildDbf(lines.length));
+    if (drawnExport.lines.length) {
+      zip.file('lines.shp', buildPolylineShp(drawnExport.lines));
+      zip.file('lines.shx', buildPolylineShx(drawnExport.lines));
+      zip.file('lines.dbf', buildAttrDbf(drawnExport.lineProps));
       zip.file('lines.prj', prjContent);
     }
-    if (polygons.length) {
-      zip.file('polygons.shp', buildPolygonShp(polygons));
-      zip.file('polygons.shx', buildPolygonShx(polygons));
-      zip.file('polygons.dbf', buildDbf(polygons.length));
+    if (drawnExport.polygons.length) {
+      zip.file('polygons.shp', buildPolygonShp(drawnExport.polygons));
+      zip.file('polygons.shx', buildPolygonShx(drawnExport.polygons));
+      zip.file('polygons.dbf', buildAttrDbf(drawnExport.polyProps));
       zip.file('polygons.prj', prjContent);
     }
   }
@@ -1703,6 +1968,61 @@ function doExport() {
     a.click();
     notify('Shapefile exported!');
   });
+}
+
+function collectDrawnExportRows() {
+  const rows = {
+    points: [],
+    lines: [],
+    polygons: [],
+    pointProps: [],
+    lineProps: [],
+    polyProps: []
+  };
+
+  drawnItems.getLayers().forEach((layer, idx) => {
+    const props = getDrawnExportProps(layer, idx + 1);
+    if (layer instanceof L.Marker) {
+      rows.points.push({ type: 'Point', coordinates: [layer.getLatLng().lng, layer.getLatLng().lat] });
+      rows.pointProps.push(props);
+      return;
+    }
+
+    const coords = getPrimaryLatLngs(layer).map(ll => [ll.lng, ll.lat]);
+    if (layer instanceof L.Polygon) {
+      if (coords.length < 3) return;
+      rows.polygons.push({ type: 'Polygon', coordinates: [ensureClosedRing(coords)] });
+      rows.polyProps.push(props);
+      return;
+    }
+
+    if (layer instanceof L.Polyline && coords.length >= 2) {
+      rows.lines.push({ type: 'LineString', coordinates: coords });
+      rows.lineProps.push(props);
+    }
+  });
+
+  return rows;
+}
+
+function getDrawnExportProps(layer, fid) {
+  const meta = layer._wfMeta || {};
+  const st = getDrawnStyle(layer);
+  const props = {
+    FID: fid,
+    NAME: meta.name || st.name || `${getLayerTypeLabel(layer)} ${fid}`,
+    GEOMTYPE: getLayerTypeLabel(layer),
+    SOURCE: meta.source || 'manual',
+    CAPTURE: meta.capture || 'manual',
+    STATUS: meta.status || 'finished',
+    LOGMODE: meta.logMode || 'manual'
+  };
+
+  if (meta.logInterval !== null && meta.logInterval !== undefined && meta.logInterval !== '') props.INTERVAL = meta.logInterval;
+  if (meta.lastAccuracy !== null && meta.lastAccuracy !== undefined) props.ACCUR_M = Number(meta.lastAccuracy).toFixed(1);
+  if (meta.sessionId) props.SESSION = meta.sessionId;
+
+  return props;
 }
 
 // ── Shapefile binary writers ───────────────────────────────────────────────
@@ -1837,12 +2157,12 @@ function buildPolylineShx(lines) {
 // ── POLYGON shapefile ──────────────────────────────────────────────────────
 function buildPolygonShp(polygons) {
   const parts = polygons.map(poly => {
-    const pts = poly.coordinates[0];
+    const pts = ensureClosedRing(poly.coordinates[0]);
     const contentLen = 4 + 32 + 4 + 4 + 4 * 1 + pts.length * 16;
     return { pts, contentLen };
   });
   const fileLen = 100 + parts.reduce((s, p) => s + 8 + p.contentLen, 0);
-  const allPts = polygons.flatMap(p => p.coordinates[0]);
+  const allPts = parts.flatMap(p => p.pts);
   const bbox = calcBbox(allPts);
 
   const buf = new ArrayBuffer(fileLen);
@@ -1876,7 +2196,7 @@ function buildPolygonShp(polygons) {
 
 function buildPolygonShx(polygons) {
   const fileLen = 100 + polygons.length * 8;
-  const allPts = polygons.flatMap(p => p.coordinates[0]);
+  const allPts = polygons.flatMap(p => ensureClosedRing(p.coordinates[0]));
   const bbox = calcBbox(allPts);
   const buf = new ArrayBuffer(fileLen);
   const view = new DataView(buf);
@@ -1885,7 +2205,8 @@ function buildPolygonShx(polygons) {
   let offset = 100;
   let recordOffset = 100;
   polygons.forEach(poly => {
-    const contentLen = 4 + 32 + 4 + 4 + 4 + poly.coordinates[0].length * 16;
+    const ring = ensureClosedRing(poly.coordinates[0]);
+    const contentLen = 4 + 32 + 4 + 4 + 4 + ring.length * 16;
     writeInt32BE(view, offset, recordOffset / 2);
     writeInt32BE(view, offset + 4, contentLen / 2);
     recordOffset += 8 + contentLen;
@@ -1931,6 +2252,99 @@ function buildCruiseDbf(points) {
   return buf;
 }
 
+function buildAttrDbf(records) {
+  if (!records.length) return buildDbf(0);
+
+  const usedNames = new Set(['FID']);
+  const fieldDefs = [{ sourceKey: 'FID', name: 'FID', len: 10, type: 'N' }];
+  const sourceKeys = [];
+
+  records.forEach(rec => {
+    Object.keys(rec || {}).forEach(key => {
+      if (!sourceKeys.includes(key) && key !== 'FID') sourceKeys.push(key);
+    });
+  });
+
+  sourceKeys.forEach(key => {
+    const values = records.map(rec => stringifyDbfValue((rec || {})[key]));
+    const len = Math.max(1, Math.min(80, Math.max(...values.map(v => v.length), key.length)));
+    fieldDefs.push({
+      sourceKey: key,
+      name: sanitizeDbfFieldName(key, usedNames),
+      len,
+      type: 'C'
+    });
+  });
+
+  const headerSize = 32 + fieldDefs.length * 32 + 1;
+  const recordSize = 1 + fieldDefs.reduce((sum, field) => sum + field.len, 0);
+  const totalSize = headerSize + records.length * recordSize;
+  const buf = new ArrayBuffer(totalSize);
+  const view = new DataView(buf);
+  const bytes = new Uint8Array(buf);
+  const enc = new TextEncoder();
+
+  bytes[0] = 3;
+  const now = new Date();
+  bytes[1] = now.getFullYear() - 1900;
+  bytes[2] = now.getMonth() + 1;
+  bytes[3] = now.getDate();
+  view.setInt32(4, records.length, true);
+  view.setInt16(8, headerSize, true);
+  view.setInt16(10, recordSize, true);
+
+  fieldDefs.forEach((field, index) => {
+    const off = 32 + index * 32;
+    const nameBytes = enc.encode(field.name.padEnd(10, ' '));
+    for (let i = 0; i < Math.min(10, nameBytes.length); i++) bytes[off + i] = nameBytes[i];
+    bytes[off + 11] = field.type.charCodeAt(0);
+    bytes[off + 16] = field.len;
+    bytes[off + 17] = 0;
+  });
+  bytes[32 + fieldDefs.length * 32] = 0x0D;
+
+  let recordOffset = headerSize;
+  records.forEach((record, index) => {
+    bytes[recordOffset] = 0x20;
+    let fieldOffset = recordOffset + 1;
+
+    fieldDefs.forEach(field => {
+      const raw = field.sourceKey === 'FID'
+        ? String(index + 1).padStart(field.len, ' ')
+        : stringifyDbfValue((record || {})[field.sourceKey]).slice(0, field.len).padEnd(field.len, ' ');
+      const valueBytes = enc.encode(raw);
+      for (let i = 0; i < field.len; i++) bytes[fieldOffset + i] = valueBytes[i] || 32;
+      fieldOffset += field.len;
+    });
+
+    recordOffset += recordSize;
+  });
+
+  return buf;
+}
+
+function sanitizeDbfFieldName(name, usedNames) {
+  let cleaned = String(name || 'FIELD').toUpperCase().replace(/[^A-Z0-9_]/g, '_');
+  if (!cleaned) cleaned = 'FIELD';
+  cleaned = cleaned.slice(0, 10);
+  let candidate = cleaned;
+  let i = 1;
+  while (usedNames.has(candidate)) {
+    const suffix = String(i++);
+    candidate = cleaned.slice(0, Math.max(1, 10 - suffix.length)) + suffix;
+  }
+  usedNames.add(candidate);
+  return candidate;
+}
+
+function stringifyDbfValue(value) {
+  if (value === null || value === undefined) return '';
+  if (typeof value === 'number' && Number.isFinite(value)) return String(value);
+  if (value instanceof Date) return value.toISOString();
+  if (typeof value === 'boolean') return value ? 'true' : 'false';
+  return String(value);
+}
+
 // ── DBF (minimal, no attributes) ──────────────────────────────────────────
 function buildDbf(count) {
   // 1 field: FID
@@ -1973,12 +2387,19 @@ function buildDbf(count) {
 // ── Cruise Grid ────────────────────────────────────────────────────────────
 
 const CHAIN_METERS = 20.1168; // 1 chain = 20.1168 meters
+const FEET_TO_METERS = 0.3048;
 
 let cruiseLayer = null;
 let cruisePoints = []; // [{lat, lng, id}]
 let polygonLayers = []; // track drawn polygons for select dropdown
 let uploadedPolygons = []; // [{layer: L.Polygon, name: string}] from uploaded shapefiles
 let importedShapefiles = []; // [{name: string, features: GeoJSON[], leafletLayer: L.GeoJSON}]
+let gpsSessions = [];
+let activeGpsSessionId = null;
+let lastGpsFix = null;
+let gpsWatchActive = false;
+let gpsCenterOnNextFix = false;
+let gpsSessionCounter = 0;
 
 // Per-feature style tracking for drawn features
 let drawnFeatureCounter = 0;
@@ -1986,19 +2407,556 @@ const drawnFeatureStyles = new Map(); // leaflet_id -> {name, color, fillColor, 
 
 function getDrawnStyle(layer) {
   const id = L.Util.stamp(layer);
+  const metaName = layer._wfMeta && layer._wfMeta.name;
   if (!drawnFeatureStyles.has(id)) {
     drawnFeatureCounter++;
-    const type = (layer instanceof L.Polygon) ? 'Polygon' :
-                 (layer instanceof L.Polyline) ? 'Line' : 'Point';
+    const type = getLayerTypeLabel(layer);
     drawnFeatureStyles.set(id, {
-      name: type + ' ' + drawnFeatureCounter,
+      name: metaName || (type + ' ' + drawnFeatureCounter),
       color: '#e53935',
       fillColor: '#e53935',
       weight: 4,
       fillOpacity: 0
     });
   }
-  return drawnFeatureStyles.get(id);
+  const st = drawnFeatureStyles.get(id);
+  if (metaName && st.name !== metaName) st.name = metaName;
+  return st;
+}
+
+function toggleGpsPanel() {
+  const panel = document.getElementById('gps-panel');
+  panel.classList.toggle('open');
+  updateGpsMethodUI();
+  refreshGpsPanel();
+  syncGpsButtonState();
+}
+
+function syncGpsButtonState() {
+  const btn = document.getElementById('btn-gps');
+  if (!btn) return;
+  const panelOpen = document.getElementById('gps-panel')?.classList.contains('open');
+  btn.classList.toggle('active', panelOpen || !!activeGpsSessionId);
+}
+
+function updateGpsMethodUI() {
+  const typeSel = document.getElementById('gps-feature-type');
+  const modeSel = document.getElementById('gps-log-mode');
+  const intervalGroup = document.getElementById('gps-interval-group');
+  const intervalLabel = document.getElementById('gps-interval-label');
+  const intervalInput = document.getElementById('gps-log-interval');
+  const note = document.getElementById('gps-note');
+  if (!typeSel || !modeSel || !intervalGroup || !intervalLabel || !intervalInput || !note) return;
+
+  const type = typeSel.value;
+  const mode = modeSel.value;
+
+  modeSel.disabled = type === 'point';
+
+  if (type === 'point') {
+    intervalGroup.style.display = 'none';
+    note.textContent = 'Point capture records the next GPS fix from your device and stores the fix accuracy with the exported feature.';
+    return;
+  }
+
+  if (mode === 'vertex') {
+    intervalGroup.style.display = 'none';
+    note.textContent = 'Every Fix logs each GPS update as a new vertex. Distance and Time modes mirror SOLO FOREST interval logging workflows.';
+    return;
+  }
+
+  intervalGroup.style.display = 'flex';
+  if (mode === 'distance') {
+    intervalLabel.textContent = 'Interval (ft)';
+    intervalInput.min = '1';
+    intervalInput.step = '1';
+    if (!intervalInput.value || Number(intervalInput.value) <= 0) intervalInput.value = '15';
+    note.textContent = 'Distance mode adds a new vertex each time you move the selected number of feet, which is ideal for walking tract boundaries.';
+  } else {
+    intervalLabel.textContent = 'Interval (sec)';
+    intervalInput.min = '1';
+    intervalInput.step = '1';
+    if (!intervalInput.value || Number(intervalInput.value) <= 0) intervalInput.value = '5';
+    note.textContent = 'Time mode adds a new vertex at a fixed second interval. Use this when movement is slow or you want evenly timed observations.';
+  }
+}
+
+function getGpsSessionById(id) {
+  return gpsSessions.find(session => session.id === id) || null;
+}
+
+function getActiveGpsSession() {
+  return activeGpsSessionId ? getGpsSessionById(activeGpsSessionId) : null;
+}
+
+function defaultGpsSessionName(type) {
+  const count = gpsSessions.filter(session => session.type === type).length + 1;
+  return `GPS ${getLayerTypeLabel(type)} ${count}`;
+}
+
+function createGpsSession() {
+  const type = document.getElementById('gps-feature-type').value;
+  const requestedMode = document.getElementById('gps-log-mode').value;
+  const effectiveMode = type === 'point' ? 'vertex' : requestedMode;
+  const intervalRaw = document.getElementById('gps-log-interval').value;
+  const interval = effectiveMode === 'vertex' ? null : Number(intervalRaw);
+  const nameInput = document.getElementById('gps-session-name');
+  const name = (nameInput.value || '').trim() || defaultGpsSessionName(type);
+
+  if (effectiveMode !== 'vertex' && (!Number.isFinite(interval) || interval <= 0)) {
+    notify('Enter a valid GPS interval');
+    return;
+  }
+
+  if (activeGpsSessionId) pauseGpsSession(activeGpsSessionId, true);
+
+  gpsSessionCounter++;
+  const session = {
+    id: `gps-${Date.now().toString(36)}-${gpsSessionCounter.toString(36)}`,
+    name,
+    type,
+    logMode: effectiveMode,
+    logInterval: interval,
+    status: 'active',
+    points: [],
+    layer: null,
+    createdAt: Date.now(),
+    lastAccuracy: null,
+    lastLoggedAt: null
+  };
+
+  if (type !== 'point') {
+    session.layer = type === 'polygon'
+      ? L.polygon([], { color: '#f59e0b', fillColor: '#f59e0b', fillOpacity: 0.14, weight: 4 })
+      : L.polyline([], { color: '#f59e0b', weight: 4 });
+    drawnItems.addLayer(session.layer);
+    applyDrawnLayerDefaults(session.layer, {
+      name: session.name,
+      source: 'gps',
+      capture: 'stream',
+      status: session.status,
+      logMode: session.logMode,
+      logInterval: session.logInterval,
+      sessionId: session.id
+    });
+    const st = getDrawnStyle(session.layer);
+    st.name = session.name;
+    st.color = '#f59e0b';
+    st.fillColor = '#f59e0b';
+    st.weight = 4;
+    st.fillOpacity = session.type === 'polygon' ? 0.14 : 0;
+    if (session.layer.setStyle) {
+      session.layer.setStyle({
+        color: st.color,
+        fillColor: st.fillColor,
+        fillOpacity: st.fillOpacity,
+        weight: st.weight,
+        opacity: 1,
+        fill: st.fillOpacity > 0
+      });
+    }
+  }
+
+  gpsSessions.push(session);
+  activeGpsSessionId = session.id;
+  gpsCenterOnNextFix = true;
+  if (nameInput) nameInput.value = '';
+  updateActiveToolIndicator();
+  updateCount();
+  refreshPolySelect();
+  updateAcres();
+  refreshLayerPanel();
+  refreshGpsPanel();
+  updateGpsTrackingState();
+  updateGpsStatus();
+  notify(type === 'point' ? `GPS point "${session.name}" is waiting for a fix` : `GPS ${getLayerTypeLabel(type).toLowerCase()} "${session.name}" started`);
+
+  if (lastGpsFix) processGpsFix(lastGpsFix, { forceForActive: true });
+}
+
+function pauseActiveGpsSession() {
+  if (!activeGpsSessionId) {
+    notify('No active GPS feature');
+    return;
+  }
+  pauseGpsSession(activeGpsSessionId);
+}
+
+function pauseGpsSession(id, silent = false) {
+  const session = getGpsSessionById(id);
+  if (!session) return;
+  if (session.status === 'active' && lastGpsFix && session.type !== 'point') {
+    logGpsFixToSession(session, lastGpsFix, { force: true });
+  }
+  session.status = 'paused';
+  if (session.layer) syncSessionLayerMeta(session);
+  if (activeGpsSessionId === id) activeGpsSessionId = null;
+  updateActiveToolIndicator();
+  updateCount();
+  refreshPolySelect();
+  updateAcres();
+  refreshGpsPanel();
+  refreshLayerPanel();
+  updateGpsTrackingState();
+  updateGpsStatus();
+  if (!silent) notify(`${session.name} paused`);
+}
+
+function resumeGpsSession(id) {
+  const session = getGpsSessionById(id);
+  if (!session) return;
+  if (activeGpsSessionId && activeGpsSessionId !== id) pauseGpsSession(activeGpsSessionId, true);
+  if (session.layer && session.type !== 'point') syncSessionPointsFromLayer(session);
+  session.status = 'active';
+  if (session.layer) syncSessionLayerMeta(session);
+  activeGpsSessionId = session.id;
+  gpsCenterOnNextFix = true;
+  updateActiveToolIndicator();
+  updateCount();
+  refreshPolySelect();
+  updateAcres();
+  refreshGpsPanel();
+  refreshLayerPanel();
+  updateGpsTrackingState();
+  updateGpsStatus();
+  notify(`${session.name} resumed`);
+  if (lastGpsFix) processGpsFix(lastGpsFix, { forceForActive: true });
+}
+
+function finishGpsSession(id) {
+  const session = getGpsSessionById(id);
+  if (!session) return;
+  if (session.status === 'active' && lastGpsFix) {
+    logGpsFixToSession(session, lastGpsFix, { force: true });
+  }
+  const pointCount = session.points.length;
+  if (session.type === 'point' && pointCount < 1) {
+    notify('Wait for a GPS fix before finishing');
+    return;
+  }
+  if (session.type === 'polyline' && pointCount < 2) {
+    notify('Need at least 2 GPS points for a line');
+    return;
+  }
+  if (session.type === 'polygon' && pointCount < 3) {
+    notify('Need at least 3 GPS points for a polygon');
+    return;
+  }
+  session.status = 'finished';
+  if (session.layer) syncSessionLayerMeta(session);
+  if (activeGpsSessionId === id) activeGpsSessionId = null;
+  updateActiveToolIndicator();
+  updateCount();
+  refreshPolySelect();
+  updateAcres();
+  refreshGpsPanel();
+  refreshLayerPanel();
+  updateGpsTrackingState();
+  updateGpsStatus();
+  notify(`${session.name} finished`);
+}
+
+function deleteGpsSession(id) {
+  const session = getGpsSessionById(id);
+  if (!session) return;
+  if (session.layer && drawnItems.hasLayer(session.layer)) {
+    drawnItems.removeLayer(session.layer);
+  }
+  gpsSessions = gpsSessions.filter(entry => entry.id !== id);
+  if (activeGpsSessionId === id) activeGpsSessionId = null;
+  updateActiveToolIndicator();
+  syncGpsSessionsWithDrawnLayers();
+  updateCount();
+  refreshPolySelect();
+  updateAcres();
+  refreshLayerPanel();
+  refreshGpsPanel();
+  updateGpsTrackingState();
+  updateGpsStatus();
+  notify(`${session.name} removed`);
+}
+
+function refreshGpsPanel() {
+  const list = document.getElementById('gps-session-list');
+  const info = document.getElementById('gps-info');
+  const accuracy = document.getElementById('gps-panel-accuracy');
+  if (!list || !info || !accuracy) return;
+
+  if (lastGpsFix) {
+    accuracy.textContent = `${formatAccuracy(lastGpsFix.accuracy)}${lastGpsFix.speed ? ` • ${lastGpsFix.speed.toFixed(1)} m/s` : ''}`;
+  } else {
+    accuracy.textContent = 'Waiting for GPS fix…';
+  }
+
+  if (!gpsSessions.length) {
+    list.innerHTML = '<div class="gps-session-empty">No GPS sessions yet.</div>';
+    info.textContent = lastGpsFix ? `Last fix ${formatAccuracy(lastGpsFix.accuracy)}` : 'No GPS capture running.';
+    syncGpsButtonState();
+    return;
+  }
+
+  list.innerHTML = gpsSessions.map(session => {
+    const vertexWord = session.type === 'point' ? 'fix' : (session.points.length === 1 ? 'vertex' : 'vertices');
+    const countLabel = `${session.points.length} ${vertexWord}`;
+    const accuracyLabel = session.lastAccuracy !== null && session.lastAccuracy !== undefined
+      ? formatAccuracy(session.lastAccuracy)
+      : 'no accuracy yet';
+    const intervalLabel = describeGpsLogMode(session);
+    const badge = session.status === 'active' ? 'Active' : session.status === 'paused' ? 'Paused' : 'Finished';
+    const activeClass = session.status === 'active' ? ' active' : '';
+    return `
+      <div class="gps-session${activeClass}">
+        <div class="gps-session-head">
+          <div class="gps-session-name" title="${escapeHtml(session.name)}">${escapeHtml(session.name)}</div>
+          <div class="gps-session-badge">${badge}</div>
+        </div>
+        <div class="gps-session-meta">
+          <strong>${getLayerTypeLabel(session.type)}</strong> · ${escapeHtml(intervalLabel)}<br>
+          ${countLabel} · ${accuracyLabel}
+        </div>
+        <div class="gps-session-actions">
+          ${session.status === 'active'
+            ? `<button onclick="pauseGpsSession('${session.id}')">Pause</button>`
+            : `<button onclick="resumeGpsSession('${session.id}')">Resume</button>`}
+          <button onclick="finishGpsSession('${session.id}')">Finish</button>
+          <button class="danger" onclick="deleteGpsSession('${session.id}')">Delete</button>
+        </div>
+      </div>
+    `;
+  }).join('');
+
+  const active = getActiveGpsSession();
+  if (active) {
+    const noun = active.type === 'point' ? 'fix' : 'vertices';
+    info.innerHTML = `<span>${escapeHtml(active.name)}</span> active · <span>${active.points.length}</span> ${noun} · <span>${active.lastAccuracy !== null && active.lastAccuracy !== undefined ? formatAccuracy(active.lastAccuracy) : (lastGpsFix ? formatAccuracy(lastGpsFix.accuracy) : 'waiting for fix')}</span>`;
+  } else {
+    info.textContent = lastGpsFix ? `Last fix ${formatAccuracy(lastGpsFix.accuracy)}` : 'No GPS capture running.';
+  }
+
+  syncGpsButtonState();
+}
+
+function describeGpsLogMode(session) {
+  if (session.type === 'point') return 'single GPS fix';
+  if (session.logMode === 'distance') return `every ${session.logInterval} ft`;
+  if (session.logMode === 'time') return `every ${session.logInterval} sec`;
+  return 'every fix';
+}
+
+function escapeHtml(value) {
+  return String(value)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+function formatAccuracy(accuracy) {
+  return accuracy || accuracy === 0 ? `±${Math.round(accuracy)} m` : 'accuracy n/a';
+}
+
+function updateGpsStatus() {
+  const statusEl = document.getElementById('gps-status');
+  if (!statusEl) return;
+  const active = getActiveGpsSession();
+  if (active) {
+    const accuracy = active.lastAccuracy !== null && active.lastAccuracy !== undefined
+      ? formatAccuracy(active.lastAccuracy)
+      : (lastGpsFix ? formatAccuracy(lastGpsFix.accuracy) : 'waiting');
+    statusEl.textContent = `${active.name} · ${accuracy}`;
+    return;
+  }
+  if (locateActive && lastGpsFix) {
+    statusEl.textContent = `Locate · ${formatAccuracy(lastGpsFix.accuracy)}`;
+    return;
+  }
+  if (lastGpsFix) {
+    statusEl.textContent = `Last fix ${formatAccuracy(lastGpsFix.accuracy)}`;
+    return;
+  }
+  statusEl.textContent = 'Idle';
+}
+
+function updateActiveToolIndicator() {
+  const activeTool = document.getElementById('active-tool');
+  if (!activeTool) return;
+  if (activeGpsSessionId) {
+    activeTool.textContent = 'GPS Capture';
+    return;
+  }
+  if (locateActive) {
+    activeTool.textContent = 'Locating';
+    return;
+  }
+  if (editEnabled) {
+    activeTool.textContent = 'Edit';
+    return;
+  }
+  if (currentHandler) return;
+  activeTool.textContent = 'None';
+}
+
+function updateGpsTrackingState() {
+  const needsWatch = locateActive || !!activeGpsSessionId;
+  if (needsWatch && !gpsWatchActive) {
+    map.locate({ watch: true, setView: false, enableHighAccuracy: true, maximumAge: 0 });
+    gpsWatchActive = true;
+  } else if (!needsWatch && gpsWatchActive) {
+    map.stopLocate();
+    gpsWatchActive = false;
+    clearLiveLocation();
+  } else if (!needsWatch) {
+    clearLiveLocation();
+  }
+  syncGpsButtonState();
+}
+
+function processGpsFix(fix, opts = {}) {
+  const active = getActiveGpsSession();
+  if (!active) return;
+  const captured = logGpsFixToSession(active, fix, { force: !!opts.forceForActive });
+  if (!captured) return;
+  refreshGpsPanel();
+  refreshLayerPanel();
+  refreshPolySelect();
+  updateCount();
+  updateAcres();
+  updateGpsStatus();
+}
+
+function logGpsFixToSession(session, fix, opts = {}) {
+  if (!session || !fix) return false;
+
+  const timestamp = fix.timestamp || Date.now();
+  const point = {
+    lat: fix.lat,
+    lng: fix.lng,
+    accuracy: fix.accuracy,
+    timestamp
+  };
+
+  if (!opts.force && !shouldLogGpsPoint(session, point)) return false;
+  if (session.points.length) {
+    const prev = session.points[session.points.length - 1];
+    const dist = distanceBetweenGpsPoints(prev, point);
+    const dt = Math.abs(point.timestamp - prev.timestamp);
+    if (dist < 0.5 && dt < 1000) return false;
+  }
+
+  session.lastAccuracy = point.accuracy;
+  session.lastLoggedAt = point.timestamp;
+
+  if (session.type === 'point') {
+    session.points = [point];
+    if (!session.layer) {
+      session.layer = L.marker([point.lat, point.lng]);
+      drawnItems.addLayer(session.layer);
+      applyDrawnLayerDefaults(session.layer, {
+        name: session.name,
+        source: 'gps',
+        capture: 'point',
+        status: 'finished',
+        logMode: 'vertex',
+        logInterval: null,
+        sessionId: session.id,
+        lastAccuracy: point.accuracy
+      });
+    }
+    session.layer.setLatLng([point.lat, point.lng]);
+    syncSessionLayerMeta(session);
+    session.status = 'finished';
+    if (activeGpsSessionId === session.id) activeGpsSessionId = null;
+    updateActiveToolIndicator();
+    updateGpsTrackingState();
+    notify(`${session.name} captured`);
+    return true;
+  }
+
+  session.points.push(point);
+  if (session.layer) session.layer.setLatLngs(session.points.map(entry => [entry.lat, entry.lng]));
+  syncSessionLayerMeta(session);
+  return true;
+}
+
+function shouldLogGpsPoint(session, point) {
+  if (!session.points.length) return true;
+  const lastPoint = session.points[session.points.length - 1];
+  if (session.logMode === 'distance') {
+    return distanceBetweenGpsPoints(lastPoint, point) >= session.logInterval * FEET_TO_METERS;
+  }
+  if (session.logMode === 'time') {
+    return (point.timestamp - lastPoint.timestamp) >= session.logInterval * 1000;
+  }
+  return true;
+}
+
+function distanceBetweenGpsPoints(a, b) {
+  return map.distance([a.lat, a.lng], [b.lat, b.lng]);
+}
+
+function syncSessionLayerMeta(session) {
+  if (!session.layer) return;
+  applyDrawnLayerDefaults(session.layer, {
+    name: session.name,
+    source: 'gps',
+    capture: session.type === 'point' ? 'point' : 'stream',
+    status: session.status,
+    logMode: session.logMode,
+    logInterval: session.logInterval,
+    sessionId: session.id,
+    lastAccuracy: session.lastAccuracy
+  });
+  const st = getDrawnStyle(session.layer);
+  st.name = session.name;
+  if (session.layer.setStyle) {
+    st.color = '#f59e0b';
+    st.fillColor = '#f59e0b';
+    st.weight = 4;
+    st.fillOpacity = session.type === 'polygon' ? 0.14 : 0;
+    session.layer.setStyle({
+      color: st.color,
+      fillColor: st.fillColor,
+      fillOpacity: st.fillOpacity,
+      weight: st.weight,
+      opacity: 1,
+      fill: st.fillOpacity > 0
+    });
+  }
+}
+
+function syncSessionPointsFromLayer(session) {
+  if (!session.layer) return;
+  if (session.layer instanceof L.Marker) {
+    const ll = session.layer.getLatLng();
+    session.points = [{ lat: ll.lat, lng: ll.lng, accuracy: session.lastAccuracy, timestamp: Date.now() }];
+    return;
+  }
+  session.points = getPrimaryLatLngs(session.layer).map(ll => ({
+    lat: ll.lat,
+    lng: ll.lng,
+    accuracy: session.lastAccuracy,
+    timestamp: Date.now()
+  }));
+}
+
+function syncGpsSessionsWithDrawnLayers() {
+  const currentIds = new Set();
+  drawnItems.eachLayer(layer => currentIds.add(L.Util.stamp(layer)));
+  let removedActive = false;
+
+  gpsSessions = gpsSessions.filter(session => {
+    if (!session.layer) return true;
+    const exists = currentIds.has(L.Util.stamp(session.layer));
+    if (!exists && activeGpsSessionId === session.id) removedActive = true;
+    return exists;
+  });
+
+  if (removedActive) activeGpsSessionId = null;
+  gpsSessions.forEach(session => {
+    if (session.layer && session.status !== 'active') syncSessionPointsFromLayer(session);
+  });
+  updateGpsTrackingState();
 }
 
 function toggleCruisePanel() {
@@ -2027,9 +2985,10 @@ function refreshPolySelect() {
   // Drawn polygons
   let drawnCount = 0;
   drawnItems.eachLayer(layer => {
-    if (layer instanceof L.Polygon) {
+    if (isPolygonLayerReady(layer)) {
       drawnCount++;
-      addItem(layer, `Stand Polygon ${drawnCount}`);
+      const meta = layer._wfMeta || {};
+      addItem(layer, meta.name || `Stand Polygon ${drawnCount}`);
     }
   });
 
@@ -2383,7 +3342,6 @@ let locateLayer  = null;
 let locateMarker = null;
 let locateRing   = null;
 let locateActive = false;
-let locateFirst  = true;
 
 function toggleLocate() {
   locateActive ? stopLocate() : startLocate();
@@ -2391,25 +3349,24 @@ function toggleLocate() {
 
 function startLocate() {
   locateActive = true;
-  locateFirst  = true;
   document.getElementById('btn-locate').classList.add('active');
   const ml = document.getElementById('mob-btn-locate');
   if (ml) ml.classList.add('active');
-  document.getElementById('active-tool').textContent = 'Locating…';
+  gpsCenterOnNextFix = true;
+  document.getElementById('active-tool').textContent = activeGpsSessionId ? 'GPS Capture' : 'Locating…';
   notify('Finding your location…');
-  map.locate({ watch: true, setView: false, enableHighAccuracy: true });
+  updateGpsTrackingState();
+  updateGpsStatus();
 }
 
 function stopLocate() {
   locateActive = false;
-  map.stopLocate();
   document.getElementById('btn-locate').classList.remove('active');
   const ml = document.getElementById('mob-btn-locate');
   if (ml) ml.classList.remove('active');
-  document.getElementById('active-tool').textContent = 'None';
-  if (locateLayer) { map.removeLayer(locateLayer); locateLayer = null; }
-  locateMarker = null;
-  locateRing   = null;
+  document.getElementById('active-tool').textContent = activeGpsSessionId ? 'GPS Capture' : 'None';
+  updateGpsTrackingState();
+  updateGpsStatus();
 }
 
 function openMobileMenu() {
@@ -2422,16 +3379,53 @@ function closeMobileMenu() {
 }
 
 map.on('locationfound', e => {
-  if (!locateActive) return;
-  const { latlng, accuracy } = e;
+  const fix = {
+    lat: e.latlng.lat,
+    lng: e.latlng.lng,
+    accuracy: e.accuracy,
+    speed: Number.isFinite(e.speed) ? e.speed : null,
+    timestamp: Date.now()
+  };
 
+  lastGpsFix = fix;
+
+  if (locateActive || activeGpsSessionId) renderLiveLocation(fix);
+  if (gpsCenterOnNextFix) {
+    map.setView([fix.lat, fix.lng], Math.max(map.getZoom(), 17));
+    gpsCenterOnNextFix = false;
+    notify(`Location found · ${formatAccuracy(fix.accuracy)}`);
+  }
+
+  processGpsFix(fix);
+  if (locateActive && !activeGpsSessionId) {
+    document.getElementById('active-tool').textContent = 'Locating';
+  }
+  refreshGpsPanel();
+  updateGpsStatus();
+});
+
+map.on('locationerror', e => {
+  const message = e.code === 1 ? 'Location permission denied' : 'Location unavailable';
+  if (e.code === 1 && activeGpsSessionId) pauseGpsSession(activeGpsSessionId, true);
+  if (locateActive) stopLocate();
+  if (!locateActive && !activeGpsSessionId) {
+    clearLiveLocation();
+    updateGpsStatus();
+  }
+  notify(message);
+});
+
+function renderLiveLocation(fix) {
+  const latlng = L.latLng(fix.lat, fix.lng);
   if (!locateLayer) {
     locateLayer = L.layerGroup().addTo(map);
 
     locateRing = L.circle(latlng, {
-      radius: accuracy,
-      color: '#2196f3', fillColor: '#2196f3',
-      fillOpacity: 0.1, weight: 1.5,
+      radius: fix.accuracy,
+      color: '#2196f3',
+      fillColor: '#2196f3',
+      fillOpacity: 0.1,
+      weight: 1.5,
       interactive: false
     });
 
@@ -2450,22 +3444,18 @@ map.on('locationfound', e => {
     locateLayer.addLayer(locateMarker);
   } else {
     locateMarker.setLatLng(latlng);
-    locateRing.setLatLng(latlng).setRadius(accuracy);
+    locateRing.setLatLng(latlng).setRadius(fix.accuracy);
   }
+}
 
-  if (locateFirst) {
-    map.setView(latlng, Math.max(map.getZoom(), 17));
-    locateFirst = false;
-    notify(`Location found · ±${Math.round(accuracy)} m`);
-    document.getElementById('active-tool').textContent = 'Locating';
+function clearLiveLocation() {
+  if (locateLayer) {
+    map.removeLayer(locateLayer);
+    locateLayer = null;
   }
-});
-
-map.on('locationerror', e => {
-  if (!locateActive) return;
-  stopLocate();
-  notify(e.code === 1 ? 'Location permission denied' : 'Location unavailable');
-});
+  locateMarker = null;
+  locateRing = null;
+}
 
 // ── Notification helper ────────────────────────────────────────────────────
 function notify(msg) {
@@ -3098,6 +4088,11 @@ async function confirmGeoPDFExport() {
     if (geoPDFRect) geoPDFRect.setStyle({ opacity: 1, fillOpacity: 0.08 });
   }
 }
+
+updateGpsMethodUI();
+refreshGpsPanel();
+updateGpsStatus();
+
 // ── Splash / Help Screen ──────────────────────────────────────────────────
 function dismissSplash() {
   document.getElementById('splash-overlay').classList.add('hidden');
