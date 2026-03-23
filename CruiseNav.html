@@ -2604,14 +2604,11 @@
   @media (max-width: 768px) {
     .geopdf-preview-bar { left: 8px; right: 8px; transform: none; flex-wrap: wrap; justify-content: center; white-space: normal; text-align: center; }
   }
-
-
 </style>
 </head>
 <body>
 
 <div id="app">
-
   <!-- Loading Screen -->
   <div class="loading-screen" id="loading-screen">
     <div class="loading-title">CruiseNav</div>
@@ -3136,12 +3133,22 @@
     <div class="panel-title">Jobs</div>
     <button class="panel-close" type="button" onclick="closePanel()" aria-label="Close panel">&#x2715;</button>
   </div>
-  <div style="display:flex;gap:8px;margin-bottom:14px;">
+  <div style="display:flex;gap:8px;margin-bottom:8px;">
     <button class="btn btn-primary" style="flex:1;margin:0;" onclick="createNewJob()">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
       New Job
     </button>
   </div>
+  <div style="display:flex;gap:8px;margin-bottom:10px;">
+    <button class="btn btn-secondary" style="flex:1;margin:0;padding:12px 10px;font-size:0.68rem;" onclick="exportOfflineBackup()">
+      Export Offline Backup
+    </button>
+    <button class="btn btn-secondary" style="flex:1;margin:0;padding:12px 10px;font-size:0.68rem;" onclick="promptImportOfflineBackup()">
+      Import Backup
+    </button>
+  </div>
+  <div class="field-help" style="margin-bottom:14px">Jobs, plots, trees, and cruise settings are saved on this device for offline cruising. Export a backup file if you want an extra copy before moving to another phone or tablet.</div>
+  <input type="file" id="offline-backup-input" accept=".json,application/json" style="display:none" onchange="importOfflineBackupFromFile(event)">
   <div id="jobs-list" style="display:flex;flex-direction:column;gap:6px;max-height:55vh;overflow-y:auto;">
     <div style="text-align:center;padding:20px;color:var(--text-muted);font-size:0.72rem;">No jobs yet. Create one to get started.</div>
   </div>
@@ -9255,11 +9262,10 @@ function updateNavigation() {
     color: '#3498db', weight: 3, dashArray: '8 8', opacity: 0.8, className: 'nav-line'
   }).addTo(map);
 
-  // Auto-arrive: if within 15 ft (~4.57m), vibrate + beep and open plot popup
+  // Auto-arrive: if within 15 ft (~4.57m), vibrate and open plot popup
   if (dist < 4.57 && !arrivedAtPlot[plot.id]) {
     arrivedAtPlot[plot.id] = true;
     vibrate([100, 50, 100, 50, 200]);
-    playArrivalBeep();
     map.setView([plot.lat, plot.lng], Math.max(map.getZoom(), 17), { animate: true });
     setTimeout(() => openPlotPopup(plot), 300);
   } else if (dist >= 10) {
@@ -9592,6 +9598,53 @@ function exportProject() {
   toast('Project exported');
 }
 
+function exportOfflineBackup() {
+  try {
+    const payload = buildOfflineBackupPayload();
+    const stamp = new Date().toISOString().replace(/[:.]/g, '-');
+    const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'CruiseNav_offline_backup_' + stamp + '.json';
+    a.click();
+    setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+    toast('Offline backup exported');
+  } catch (e) {
+    console.error('Offline backup export failed:', e);
+    toast('Backup export failed');
+  }
+}
+
+function promptImportOfflineBackup() {
+  const input = document.getElementById('offline-backup-input');
+  if (!input) return;
+  input.value = '';
+  input.click();
+}
+
+async function importOfflineBackupFromFile(event) {
+  const file = event && event.target && event.target.files ? event.target.files[0] : null;
+  if (!file) return;
+
+  try {
+    const text = await file.text();
+    const payload = JSON.parse(text);
+    if (!payload || !Array.isArray(payload.jobs)) throw new Error('Invalid backup file');
+
+    const ok = await showConfirm('Import offline backup "' + file.name + '"? This will replace the jobs currently stored on this device.');
+    if (!ok) return;
+
+    await applyOfflineBackupPayload(payload);
+    closePanel();
+    toast('Offline backup imported');
+  } catch (e) {
+    console.error('Offline backup import failed:', e);
+    toast('Backup import failed');
+  } finally {
+    if (event && event.target) event.target.value = '';
+  }
+}
+
 async function clearEverything() {
   if (!activeJobId) {
     toast('No active job');
@@ -9730,38 +9783,6 @@ function vibrate(pattern) {
   if (navigator.vibrate) navigator.vibrate(pattern);
 }
 
-// â"€â"€ Arrival Beep (Web Audio API) â"€â"€
-let _arrivalAudioCtx = null;
-function _getAudioCtx() {
-  if (!_arrivalAudioCtx) _arrivalAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
-  if (_arrivalAudioCtx.state === 'suspended') _arrivalAudioCtx.resume();
-  return _arrivalAudioCtx;
-}
-function playArrivalBeep() {
-  try {
-    const ctx = _getAudioCtx();
-    const now = ctx.currentTime;
-    // Two-tone chime: short high beep, pause, longer lower beep
-    [[880, now, 0.12], [660, now + 0.18, 0.22]].forEach(([freq, start, dur]) => {
-      const osc = ctx.createOscillator();
-      const gain = ctx.createGain();
-      osc.type = 'sine';
-      osc.frequency.value = freq;
-      gain.gain.setValueAtTime(0.35, start);
-      gain.gain.exponentialRampToValueAtTime(0.001, start + dur);
-      osc.connect(gain);
-      gain.connect(ctx.destination);
-      osc.start(start);
-      osc.stop(start + dur);
-    });
-  } catch (e) { /* audio not available */ }
-}
-// Unlock AudioContext on first user interaction (required for iOS Safari)
-document.addEventListener('touchstart', function _unlockAudio() {
-  _getAudioCtx();
-  document.removeEventListener('touchstart', _unlockAudio, true);
-}, { once: true, capture: true });
-
 // â”€â”€ Auto-save to IndexedDB â”€â”€
 function openDB() {
   return new Promise((resolve, reject) => {
@@ -9774,6 +9795,162 @@ function openDB() {
     req.onsuccess = e => resolve(e.target.result);
     req.onerror = () => reject();
   });
+}
+
+const LOCAL_OFFLINE_BACKUP_KEY = 'cruisenav-offline-backup-v1';
+const LOCAL_OFFLINE_BACKUP_VERSION = 1;
+
+function buildOfflineBackupPayload() {
+  const clonedJobs = JSON.parse(JSON.stringify(allJobs || []));
+  if (activeJobId) {
+    const activeJob = clonedJobs.find(job => job.id === activeJobId);
+    if (activeJob) {
+      const currentData = getCurrentJobData();
+      activeJob.plots = currentData.plots;
+      activeJob.polygons = currentData.polygons;
+      activeJob.updatedAt = Date.now();
+    }
+  }
+  return {
+    app: 'CruiseNav',
+    kind: 'offline-backup',
+    version: LOCAL_OFFLINE_BACKUP_VERSION,
+    savedAt: Date.now(),
+    session: {
+      activeJobId: activeJobId,
+      distUnit: distUnit,
+      navHeadingMode: navHeadingMode,
+      basemap: currentBasemap,
+      cloudCruiseId: window._activeCloudCruiseId || null,
+      cloudCruiseOwner: window._activeCloudCruiseOwner || null,
+      localSharedAccess: Object.values(_localSharedAccess || {})
+    },
+    jobs: clonedJobs.map(job => normalizeJobCruiseSettings(job))
+  };
+}
+
+function saveOfflineBackupMirror() {
+  try {
+    localStorage.setItem(LOCAL_OFFLINE_BACKUP_KEY, JSON.stringify(buildOfflineBackupPayload()));
+    return true;
+  } catch (e) {
+    console.warn('Offline backup mirror failed:', e);
+    return false;
+  }
+}
+
+function getOfflineBackupMirror() {
+  try {
+    const raw = localStorage.getItem(LOCAL_OFFLINE_BACKUP_KEY);
+    if (!raw) return null;
+    const data = JSON.parse(raw);
+    return data && Array.isArray(data.jobs) ? data : null;
+  } catch (e) {
+    console.warn('Offline backup mirror read failed:', e);
+    return null;
+  }
+}
+
+function applyBackupSessionState(session) {
+  const nextBasemap = Number(session && session.basemap);
+  if (Number.isFinite(nextBasemap) && nextBasemap !== currentBasemap && basemapOrder[nextBasemap] != null) {
+    const currentLayer = basemaps[basemapOrder[currentBasemap]];
+    if (currentLayer && map.hasLayer(currentLayer)) map.removeLayer(currentLayer);
+    currentBasemap = nextBasemap;
+    const nextLayer = basemaps[basemapOrder[currentBasemap]];
+    if (nextLayer) nextLayer.addTo(map);
+  }
+  if (session && session.distUnit) {
+    distUnit = session.distUnit;
+    const toggle = document.getElementById('unit-toggle');
+    if (toggle) toggle.textContent = distUnit;
+  }
+  setNavHeadingMode(session && session.navHeadingMode, { skipSave: true });
+  _localSharedAccess = {};
+  if (Array.isArray(session && session.localSharedAccess)) {
+    session.localSharedAccess.forEach(entry => {
+      const key = getLocalSharedAccessKey(entry && entry.cruiseId, entry && entry.email);
+      if (key) _localSharedAccess[key] = entry;
+    });
+  }
+  window._activeCloudCruiseId = session && session.cloudCruiseId ? session.cloudCruiseId : null;
+  window._activeCloudCruiseOwner = session && session.cloudCruiseOwner ? session.cloudCruiseOwner : null;
+}
+
+function clearLoadedJobState() {
+  tractLayer.clearLayers();
+  tractBoundary = null;
+  allPolygons = [];
+  plotMarkers.forEach(p => plotLayer.removeLayer(p.marker));
+  plotMarkers = [];
+  stopNavigation();
+  activeJobId = null;
+}
+
+async function applyOfflineBackupPayload(payload) {
+  if (!payload || !Array.isArray(payload.jobs)) throw new Error('Invalid backup file');
+
+  const session = payload.session || {};
+  const jobs = payload.jobs.map(job => normalizeJobCruiseSettings(job));
+
+  try {
+    const db = await openDB();
+
+    const clearTx = db.transaction('jobs', 'readwrite');
+    clearTx.objectStore('jobs').clear();
+    await new Promise((res, rej) => { clearTx.oncomplete = res; clearTx.onerror = rej; });
+
+    const putTx = db.transaction('jobs', 'readwrite');
+    const jobStore = putTx.objectStore('jobs');
+    jobs.forEach(job => jobStore.put(job));
+    await new Promise((res, rej) => { putTx.oncomplete = res; putTx.onerror = rej; });
+
+    const stateTx = db.transaction('state', 'readwrite');
+    stateTx.objectStore('state').put({
+      activeJobId: session.activeJobId || null,
+      distUnit: session.distUnit || distUnit,
+      navHeadingMode: session.navHeadingMode || navHeadingMode,
+      basemap: Number.isFinite(Number(session.basemap)) ? Number(session.basemap) : currentBasemap,
+      cloudCruiseId: session.cloudCruiseId || null,
+      cloudCruiseOwner: session.cloudCruiseOwner || null,
+      localSharedAccess: Array.isArray(session.localSharedAccess) ? session.localSharedAccess : []
+    }, 'session');
+    await new Promise((res, rej) => { stateTx.oncomplete = res; stateTx.onerror = rej; });
+  } catch (e) {
+    console.warn('IndexedDB restore from offline backup failed:', e);
+  }
+
+  allJobs = jobs;
+  applyBackupSessionState(session);
+
+  const nextActiveId = session.activeJobId && jobs.find(job => job.id === session.activeJobId)
+    ? session.activeJobId
+    : (jobs[0] ? jobs[0].id : null);
+
+  if (nextActiveId) {
+    loadJob(nextActiveId, true);
+  } else {
+    clearLoadedJobState();
+    updateEmptyHint();
+    updateStats();
+    updateTractInfo();
+    updateJobLabel();
+  }
+
+  refreshJobsList();
+  updateEmptyHint();
+  updateStats();
+  updateSyncButton();
+  updateJobLabel();
+  saveOfflineBackupMirror();
+  return true;
+}
+
+async function restoreOfflineBackupMirror() {
+  const payload = getOfflineBackupMirror();
+  if (!payload || !Array.isArray(payload.jobs) || payload.jobs.length === 0) return false;
+  await applyOfflineBackupPayload(payload);
+  return true;
 }
 
 // â"€â"€ Debounced cloud sync â"€â"€
@@ -9836,6 +10013,7 @@ async function saveSession() {
     // Schedule debounced cloud sync instead of immediate write
     scheduleCloudSync();
   } catch(e) { console.warn('Save error:', e); }
+  saveOfflineBackupMirror();
 }
 
 function getCurrentJobData() {
@@ -9904,6 +10082,7 @@ async function restoreSession() {
           window._activeCloudCruiseId = restoredJob.cloudCruiseId;
           window._activeCloudCruiseOwner = data.cloudCruiseOwner || null;
         }
+        saveOfflineBackupMirror();
         return true;
       }
     }
@@ -9935,12 +10114,16 @@ async function restoreSession() {
         txM.objectStore('jobs').put(migJob);
         await new Promise((res, rej) => { txM.oncomplete = res; txM.onerror = rej; });
         loadJob(migJob.id, true);
+        saveOfflineBackupMirror();
         return true;
       }
     }
 
-    return false;
-  } catch(e) { console.warn('Restore error:', e); return false; }
+    return await restoreOfflineBackupMirror();
+  } catch(e) {
+    console.warn('Restore error:', e);
+    return await restoreOfflineBackupMirror().catch(() => false);
+  }
 }
 
 // â”€â”€ Job Management â”€â”€
@@ -10101,6 +10284,7 @@ async function renameJob(jobId) {
 
   updateJobLabel();
   refreshJobsList();
+  saveOfflineBackupMirror();
   toast('Renamed to: ' + name.trim());
 }
 
@@ -10139,6 +10323,7 @@ async function deleteJob(jobId) {
     saveSession();
   }
   refreshJobsList();
+  saveOfflineBackupMirror();
   toast('Job deleted');
 }
 
@@ -10217,6 +10402,7 @@ async function ensureActiveJob() {
     tx.objectStore('jobs').put(job);
     await new Promise((res, rej) => { tx.oncomplete = res; tx.onerror = rej; });
   } catch(e) {}
+  saveSession();
   toast('Job created: ' + name.trim());
   return true;
 }
