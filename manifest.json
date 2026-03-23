@@ -1,0 +1,40 @@
+{
+  "id": "./",
+  "name": "CruiseNav Timber Cruise Field App",
+  "short_name": "CruiseNav",
+  "description": "Offline-capable timber cruising field app for drawing tract boundaries, managing jobs, navigating to plots, tallying trees, and generating cruise reports.",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#0d1a0d",
+  "theme_color": "#1a2e1a",
+  "lang": "en-US",
+  "dir": "ltr",
+  "categories": [
+    "productivity",
+    "utilities",
+    "navigation"
+  ],
+  "prefer_related_applications": false,
+  "icons": [
+    {
+      "src": "icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icons/icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}
