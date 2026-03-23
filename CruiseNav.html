@@ -2605,151 +2605,13 @@
     .geopdf-preview-bar { left: 8px; right: 8px; transform: none; flex-wrap: wrap; justify-content: center; white-space: normal; text-align: center; }
   }
 
-  /* === LOGIN GATE === */
-  #login-gate {
-    position: fixed;
-    inset: 0;
-    z-index: 99999;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    background: var(--bg-deep);
-    font-family: 'Plus Jakarta Sans', 'JetBrains Mono', sans-serif;
-  }
-  #login-gate.hidden { display: none; }
-  .login-box {
-    background: var(--bg-card);
-    border: 1px solid var(--border);
-    border-radius: 16px;
-    padding: 40px 32px 32px;
-    width: min(360px, 90vw);
-    text-align: center;
-    box-shadow: 0 8px 32px rgba(0,0,0,0.4);
-  }
-  .login-box h1 {
-    font-size: 1.6rem;
-    font-weight: 800;
-    color: var(--accent);
-    margin-bottom: 4px;
-    letter-spacing: -0.5px;
-  }
-  .login-box p {
-    color: var(--text-muted);
-    font-size: 0.8rem;
-    margin-bottom: 24px;
-  }
-  .login-box input {
-    width: 100%;
-    padding: 12px 16px;
-    border-radius: 10px;
-    border: 1px solid var(--border);
-    background: var(--bg-deep);
-    color: var(--text-primary);
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 1rem;
-    outline: none;
-    transition: border-color 0.2s;
-  }
-  .login-box input:focus { border-color: var(--accent); }
-  .login-box input.shake {
-    animation: loginShake 0.4s ease;
-    border-color: var(--red);
-  }
-  .login-btn {
-    width: 100%;
-    margin-top: 16px;
-    padding: 12px;
-    border: none;
-    border-radius: 10px;
-    background: var(--accent);
-    color: var(--bg-deep);
-    font-family: 'Plus Jakarta Sans', sans-serif;
-    font-weight: 700;
-    font-size: 1rem;
-    cursor: pointer;
-    transition: background 0.2s;
-  }
-  .login-btn:hover { background: var(--accent-glow); }
-  .login-error {
-    color: var(--red);
-    font-size: 0.8rem;
-    margin-top: 12px;
-    min-height: 1.2em;
-  }
-  @keyframes loginShake {
-    0%, 100% { transform: translateX(0); }
-    20%, 60% { transform: translateX(-8px); }
-    40%, 80% { transform: translateX(8px); }
-  }
 
-  #app.locked { visibility: hidden; pointer-events: none; position: fixed; inset: 0; }
 </style>
 </head>
 <body>
 
-<!-- LOGIN GATE -->
-<div id="login-gate">
-  <div class="login-box">
-    <h1>CruiseNav</h1>
-    <p>Enter password to continue</p>
-    <input type="password" id="login-password" placeholder="Password" autocomplete="off" />
-    <button class="login-btn" id="login-submit">Sign In</button>
-    <div class="login-error" id="login-error"></div>
-  </div>
-</div>
+<div id="app">
 
-<div id="app" class="locked">
-
-<script>
-(function() {
-  // ===== PASSWORD CONFIG =====
-  // Change this to set your password
-  const APP_PASSWORD = 'cruisenav2026';
-  // ============================
-
-  const gate = document.getElementById('login-gate');
-  const app = document.getElementById('app');
-  const pwInput = document.getElementById('login-password');
-  const submitBtn = document.getElementById('login-submit');
-  const errorMsg = document.getElementById('login-error');
-
-  function unlock() {
-    gate.classList.add('hidden');
-    app.classList.remove('locked');
-    sessionStorage.setItem('cn_auth', '1');
-    // Leaflet needs to recalculate size after container becomes visible
-    setTimeout(function() {
-      if (typeof map !== 'undefined' && map.invalidateSize) {
-        map.invalidateSize();
-      }
-    }, 100);
-  }
-
-  // Check if already authenticated this session
-  if (sessionStorage.getItem('cn_auth') === '1') {
-    unlock();
-  }
-
-  function attemptLogin() {
-    if (pwInput.value === APP_PASSWORD) {
-      unlock();
-    } else {
-      errorMsg.textContent = 'Incorrect password';
-      pwInput.classList.add('shake');
-      setTimeout(() => pwInput.classList.remove('shake'), 400);
-      pwInput.value = '';
-      pwInput.focus();
-    }
-  }
-
-  submitBtn.addEventListener('click', attemptLogin);
-  pwInput.addEventListener('keydown', function(e) {
-    if (e.key === 'Enter') attemptLogin();
-    errorMsg.textContent = '';
-  });
-})();
-</script>
   <!-- Loading Screen -->
   <div class="loading-screen" id="loading-screen">
     <div class="loading-title">CruiseNav</div>
@@ -9393,10 +9255,11 @@ function updateNavigation() {
     color: '#3498db', weight: 3, dashArray: '8 8', opacity: 0.8, className: 'nav-line'
   }).addTo(map);
 
-  // Auto-arrive: if within 15 ft (~4.57m), vibrate and open plot popup
+  // Auto-arrive: if within 15 ft (~4.57m), vibrate + beep and open plot popup
   if (dist < 4.57 && !arrivedAtPlot[plot.id]) {
     arrivedAtPlot[plot.id] = true;
     vibrate([100, 50, 100, 50, 200]);
+    playArrivalBeep();
     map.setView([plot.lat, plot.lng], Math.max(map.getZoom(), 17), { animate: true });
     setTimeout(() => openPlotPopup(plot), 300);
   } else if (dist >= 10) {
@@ -9866,6 +9729,38 @@ function releaseWakeLock() {
 function vibrate(pattern) {
   if (navigator.vibrate) navigator.vibrate(pattern);
 }
+
+// â"€â"€ Arrival Beep (Web Audio API) â"€â"€
+let _arrivalAudioCtx = null;
+function _getAudioCtx() {
+  if (!_arrivalAudioCtx) _arrivalAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  if (_arrivalAudioCtx.state === 'suspended') _arrivalAudioCtx.resume();
+  return _arrivalAudioCtx;
+}
+function playArrivalBeep() {
+  try {
+    const ctx = _getAudioCtx();
+    const now = ctx.currentTime;
+    // Two-tone chime: short high beep, pause, longer lower beep
+    [[880, now, 0.12], [660, now + 0.18, 0.22]].forEach(([freq, start, dur]) => {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = 'sine';
+      osc.frequency.value = freq;
+      gain.gain.setValueAtTime(0.35, start);
+      gain.gain.exponentialRampToValueAtTime(0.001, start + dur);
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start(start);
+      osc.stop(start + dur);
+    });
+  } catch (e) { /* audio not available */ }
+}
+// Unlock AudioContext on first user interaction (required for iOS Safari)
+document.addEventListener('touchstart', function _unlockAudio() {
+  _getAudioCtx();
+  document.removeEventListener('touchstart', _unlockAudio, true);
+}, { once: true, capture: true });
 
 // â”€â”€ Auto-save to IndexedDB â”€â”€
 function openDB() {
