@@ -4769,7 +4769,8 @@ function parseJsonObject(value) {
 }
 
 function getPolygonSignature(name, coords) {
-  return (name || '') + '::' + (coords || []).map(c => {
+  const flatCoords = flattenPolygonCoordinatePairs(coords);
+  return getPolygonBaseName(name || '') + '::' + flatCoords.map(c => {
     const lat = Number(c[0]);
     const lng = Number(c[1]);
     return (Number.isFinite(lat) ? lat.toFixed(6) : '0.000000') + ',' +
@@ -4777,9 +4778,147 @@ function getPolygonSignature(name, coords) {
   }).join('|');
 }
 
+function getPolygonBaseName(name) {
+  return String(name || '').replace(/\s*\((?:NaN|[-+]?\d[\d,]*(?:\.\d+)?)\s*ac\)\s*$/i, '').trim();
+}
+
+function isLeafletLatLng(value) {
+  return !!(value && Number.isFinite(value.lat) && Number.isFinite(value.lng));
+}
+
+function isCoordinatePair(value) {
+  return Array.isArray(value) &&
+    value.length >= 2 &&
+    !Array.isArray(value[0]) &&
+    Number.isFinite(Number(value[0])) &&
+    Number.isFinite(Number(value[1]));
+}
+
+function flattenPolygonCoordinatePairs(coords, out = []) {
+  if (isCoordinatePair(coords)) {
+    out.push([Number(coords[0]), Number(coords[1])]);
+    return out;
+  }
+  if (!Array.isArray(coords)) return out;
+  coords.forEach(item => flattenPolygonCoordinatePairs(item, out));
+  return out;
+}
+
+function serializePolygonCoordsFromLatLngs(latlngs) {
+  if (!Array.isArray(latlngs) || !latlngs.length) return [];
+  if (isLeafletLatLng(latlngs[0])) {
+    return latlngs.map(ll => [Number(ll.lat), Number(ll.lng)]);
+  }
+  return latlngs
+    .map(serializePolygonCoordsFromLatLngs)
+    .filter(item => Array.isArray(item) && item.length);
+}
+
+function getLayerCoordinateData(layer) {
+  if (!layer || !layer.getLatLngs) return [];
+  return serializePolygonCoordsFromLatLngs(layer.getLatLngs());
+}
+
+function deserializePolygonCoordsToLatLngs(coords) {
+  if (!Array.isArray(coords) || !coords.length) return [];
+  if (isCoordinatePair(coords[0])) {
+    return coords.map(c => L.latLng(Number(c[0]), Number(c[1])));
+  }
+  return coords
+    .map(deserializePolygonCoordsToLatLngs)
+    .filter(item => Array.isArray(item) && item.length);
+}
+
+function getPolygonPartsFromLatLngs(latlngs) {
+  if (!Array.isArray(latlngs) || !latlngs.length) return [];
+  if (isLeafletLatLng(latlngs[0])) {
+    return [[latlngs]];
+  }
+  if (Array.isArray(latlngs[0]) && latlngs[0].length && isLeafletLatLng(latlngs[0][0])) {
+    return [latlngs];
+  }
+  if (
+    Array.isArray(latlngs[0]) &&
+    latlngs[0].length &&
+    Array.isArray(latlngs[0][0]) &&
+    latlngs[0][0].length &&
+    isLeafletLatLng(latlngs[0][0][0])
+  ) {
+    return latlngs;
+  }
+  return [];
+}
+
+function getPolygonParts(layer) {
+  return layer && layer.getLatLngs ? getPolygonPartsFromLatLngs(layer.getLatLngs()) : [];
+}
+
+function getPrimaryOuterRing(layer) {
+  const parts = getPolygonParts(layer);
+  return parts.length && parts[0].length ? parts[0][0] : [];
+}
+
+function getPolygonSerializableData(poly) {
+  return {
+    name: getPolygonBaseName(poly && poly.name),
+    coords: getLayerCoordinateData(poly && poly.layer)
+  };
+}
+
+function convertCoordinateDataToGeoJson(coords) {
+  if (isCoordinatePair(coords)) {
+    return [Number(coords[1]), Number(coords[0])];
+  }
+  if (!Array.isArray(coords)) return [];
+  return coords
+    .map(convertCoordinateDataToGeoJson)
+    .filter(item => Array.isArray(item) && item.length);
+}
+
+function getLayerGeoJsonGeometry(layer) {
+  const coords = getLayerCoordinateData(layer);
+  if (!Array.isArray(coords) || !coords.length) return null;
+  const geoJsonCoords = convertCoordinateDataToGeoJson(coords);
+  if (isCoordinatePair(coords[0])) {
+    return { type: 'Polygon', coordinates: [geoJsonCoords] };
+  }
+  if (Array.isArray(coords[0]) && coords[0].length && isCoordinatePair(coords[0][0])) {
+    return { type: 'Polygon', coordinates: geoJsonCoords };
+  }
+  if (
+    Array.isArray(coords[0]) &&
+    coords[0].length &&
+    Array.isArray(coords[0][0]) &&
+    coords[0][0].length &&
+    isCoordinatePair(coords[0][0][0])
+  ) {
+    return { type: 'MultiPolygon', coordinates: geoJsonCoords };
+  }
+  return null;
+}
+
+function getLayerOuterRings(layer) {
+  return getPolygonParts(layer)
+    .map(part => Array.isArray(part) && part.length ? part[0] : [])
+    .filter(ring => Array.isArray(ring) && ring.length);
+}
+
+function getPolygonDisplayName(poly, index) {
+  const fallback = 'Boundary ' + (index + 1);
+  const baseName = getPolygonBaseName(poly && poly.name) || fallback;
+  try {
+    const acres = calcAcres(poly && poly.layer);
+    if (Number.isFinite(acres) && acres > 0) {
+      return baseName + ' (' + acres.toFixed(1) + ' ac)';
+    }
+  } catch (e) {}
+  return baseName;
+}
+
 function addPolygonToMap(name, coords) {
   if (!Array.isArray(coords) || coords.length === 0) return null;
-  const latlngs = coords.map(c => L.latLng(c[0], c[1]));
+  const latlngs = deserializePolygonCoordsToLatLngs(coords);
+  if (!Array.isArray(latlngs) || !latlngs.length) return null;
   const layer = L.polygon(latlngs, { color: '#e53935', fillOpacity: 0, opacity: 1, fill: false, weight: 4 });
   tractLayer.addLayer(layer);
   if (!tractBoundary) tractBoundary = layer;
@@ -5059,10 +5198,7 @@ async function saveCruiseToCloud() {
       createdAt: firebase.firestore.FieldValue.serverTimestamp(),
       updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
       // Polygons/boundaries stored on main doc (shared by all)
-      polygonsJson: JSON.stringify(allPolygons.map(p => {
-        const lls = p.layer.getLatLngs()[0];
-        return { name: p.name, coords: lls.map(ll => [ll.lat, ll.lng]) };
-      })),
+      polygonsJson: JSON.stringify(allPolygons.map(getPolygonSerializableData)),
       // All plot locations stored on main doc (shared by all)
       plotsJson: JSON.stringify(plotMarkers.map(p => ({ id: p.id, lat: p.lat, lng: p.lng }))),
       // Summary counts for list display
@@ -5272,10 +5408,7 @@ async function manualCloudSync() {
           species: (activeJob && activeJob.species) || [],
           createdAt: firebase.firestore.FieldValue.serverTimestamp(),
           updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
-          polygonsJson: JSON.stringify(allPolygons.map(p => {
-            const lls = p.layer.getLatLngs()[0];
-            return { name: p.name, coords: lls.map(ll => [ll.lat, ll.lng]) };
-          })),
+          polygonsJson: JSON.stringify(allPolygons.map(getPolygonSerializableData)),
           plotsJson: JSON.stringify(plotMarkers.map(p => ({ id: p.id, lat: p.lat, lng: p.lng }))),
           plotCount: plotMarkers.length,
           polyCount: allPolygons.length,
@@ -5380,8 +5513,7 @@ async function pullOtherUsersPlotData(cruiseId, options = {}) {
     if (d.polygonsJson) {
       const cloudPolys = parseJsonArray(d.polygonsJson);
       const existingPolySigs = new Set(allPolygons.map(p => {
-        const lls = p.layer.getLatLngs()[0] || [];
-        return getPolygonSignature(p.name, lls.map(ll => [ll.lat, ll.lng]));
+        return getPolygonSignature(p.name, getLayerCoordinateData(p.layer));
       }));
       cloudPolys.forEach(pd => {
         const sig = getPolygonSignature(pd.name, pd.coords || []);
@@ -5519,10 +5651,7 @@ async function updateCruiseInCloud(cruiseId) {
     // Update shared cruise metadata (polygons, plot locations, settings)
     await fb_db.collection('cruises').doc(cruiseId).update({
       updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
-      polygonsJson: JSON.stringify(allPolygons.map(p => {
-        const lls = p.layer.getLatLngs()[0];
-        return { name: p.name, coords: lls.map(ll => [ll.lat, ll.lng]) };
-      })),
+      polygonsJson: JSON.stringify(allPolygons.map(getPolygonSerializableData)),
       plotsJson: JSON.stringify(plotMarkers.map(p => ({ id: p.id, lat: p.lat, lng: p.lng }))),
       plotCount: plotMarkers.length,
       polyCount: allPolygons.length,
@@ -5856,8 +5985,7 @@ async function loadCruiseFromCloud(cruiseId, options = {}) {
       trees: p.trees || [], noTally: p.noTally || false, cruiser: p.cruiser || ''
     }));
     localJob.polygons = allPolygons.map(p => {
-      const lls = p.layer.getLatLngs()[0];
-      return { name: p.name, coords: lls.map(ll => [ll.lat, ll.lng]) };
+      return getPolygonSerializableData(p);
     });
     localJob.updatedAt = Date.now();
     normalizeJobCruiseSettings(localJob);
@@ -6350,15 +6478,19 @@ function exportShapefile() {
   if (allPolygons.length) {
     const polygons = [];
     allPolygons.forEach(p => {
-      const lls = p.layer.getLatLngs()[0];
-      const ring = lls.map(ll => [ll.lng, ll.lat]);
-      ring.push(ring[0]); // close the ring
-      polygons.push({ type: 'Polygon', coordinates: [ring] });
+      getLayerOuterRings(p.layer).forEach(lls => {
+        const ring = lls.map(ll => [ll.lng, ll.lat]);
+        if (!ring.length) return;
+        ring.push(ring[0]); // close the ring
+        polygons.push({ type: 'Polygon', coordinates: [ring] });
+      });
     });
-    zip.file('boundaries.shp', buildPolygonShp(polygons));
-    zip.file('boundaries.shx', buildPolygonShx(polygons));
-    zip.file('boundaries.dbf', buildDbf(polygons.length));
-    zip.file('boundaries.prj', prjContent);
+    if (polygons.length) {
+      zip.file('boundaries.shp', buildPolygonShp(polygons));
+      zip.file('boundaries.shx', buildPolygonShx(polygons));
+      zip.file('boundaries.dbf', buildDbf(polygons.length));
+      zip.file('boundaries.prj', prjContent);
+    }
   }
 
   // Export cruise plots as points
@@ -6758,10 +6890,12 @@ async function confirmGeoPDFExport() {
 
     // Draw boundaries
     allPolygons.forEach(p => {
-      const lls = p.layer.getLatLngs()[0];
-      const ring = lls.map(ll => [ll.lng, ll.lat]);
-      ring.push(ring[0]);
-      drawPoly(ring, { color: '#e53935', weight: 4 });
+      getLayerOuterRings(p.layer).forEach(lls => {
+        const ring = lls.map(ll => [ll.lng, ll.lat]);
+        if (!ring.length) return;
+        ring.push(ring[0]);
+        drawPoly(ring, { color: '#e53935', weight: 4 });
+      });
     });
 
     // Draw cruise plots
@@ -6819,9 +6953,12 @@ async function confirmGeoPDFExport() {
       // Redraw vectors on fallback canvas
       fctx.scale(scale, scale);
       allPolygons.forEach(p => {
-        const lls = p.layer.getLatLngs()[0];
-        const ring = lls.map(ll => [ll.lng, ll.lat]); ring.push(ring[0]);
-        drawPoly(ring, { color: '#e53935', weight: 4 });
+        getLayerOuterRings(p.layer).forEach(lls => {
+          const ring = lls.map(ll => [ll.lng, ll.lat]);
+          if (!ring.length) return;
+          ring.push(ring[0]);
+          drawPoly(ring, { color: '#e53935', weight: 4 });
+        });
       });
       if (plotMarkers.length) {
         plotMarkers.forEach(p => {
@@ -7954,7 +8091,7 @@ function downloadCsvRows(rows, fileName) {
 
 function getBoundaryCoordinateText(poly) {
   if (!poly || !poly.layer || !poly.layer.getLatLngs) return '';
-  const latlngs = poly.layer.getLatLngs()[0] || [];
+  const latlngs = getPrimaryOuterRing(poly.layer);
   return latlngs.map(ll => {
     const lat = Number(ll.lat);
     const lng = Number(ll.lng);
@@ -8170,11 +8307,11 @@ function exportCruiseCSV() {
     rows.push(['', '', '', '']);
   } else {
     rPolygons.forEach((poly, index) => {
-      const latlngs = poly && poly.layer && poly.layer.getLatLngs ? (poly.layer.getLatLngs()[0] || []) : [];
+      const latlngs = getPrimaryOuterRing(poly && poly.layer);
       let acres = '';
       try { acres = calcAcres(poly.layer).toFixed(2); } catch (e) {}
       rows.push([
-        poly.name || ('Boundary ' + (index + 1)),
+        getPolygonBaseName(poly.name) || ('Boundary ' + (index + 1)),
         acres,
         latlngs.length,
         getBoundaryCoordinateText(poly)
@@ -8587,7 +8724,7 @@ function finishDraw() {
   const acres = calcAcres(polygon);
   polygon.bindPopup('<div class="plot-popup"><div class="plot-popup-title">Drawn Boundary</div><div class="plot-popup-info">' + acres.toFixed(2) + ' acres</div></div>');
 
-  allPolygons.push({ layer: polygon, name: 'Drawn boundary (' + acres.toFixed(1) + ' ac)' });
+  allPolygons.push({ layer: polygon, name: 'Drawn boundary' });
   refreshPolyChecklist();
   updateTractInfo();
   updateEmptyHint();
@@ -8625,7 +8762,7 @@ map.on(L.Draw.Event.CREATED, function(e) {
     tractBoundary.bindPopup('<div class="plot-popup"><div class="plot-popup-title">Drawn Boundary</div><div class="plot-popup-info">' + acres.toFixed(2) + ' acres</div></div>');
 
     // Register in allPolygons
-    allPolygons.push({ layer: tractBoundary, name: 'Drawn boundary (' + acres.toFixed(1) + ' ac)' });
+    allPolygons.push({ layer: tractBoundary, name: 'Drawn boundary' });
     refreshPolyChecklist();
 
     updateTractInfo();
@@ -9085,7 +9222,7 @@ function refreshPolyChecklist() {
     html += '<div class="poly-check">' +
       '<label class="poly-check-main">' +
         '<input type="checkbox" checked data-poly-idx="' + i + '">' +
-        '<span class="poly-check-name">' + escapeHtml(p.name || ('Boundary ' + (i + 1))) + '</span>' +
+        '<span class="poly-check-name">' + escapeHtml(getPolygonDisplayName(p, i)) + '</span>' +
       '</label>' +
       '<button type="button" class="poly-check-delete" onclick="deletePolygonAt(' + i + ')">Delete</button>' +
     '</div>';
@@ -9164,7 +9301,8 @@ function generatePlots() {
   const allPoints = [];
 
   selectedPolygons.forEach(poly => {
-    const lls = poly.layer.getLatLngs()[0];
+    const polygonParts = getPolygonParts(poly.layer);
+    if (!polygonParts.length) return;
     const bounds = poly.layer.getBounds();
     const centerLat = bounds.getCenter().lat;
     const centerLng = bounds.getCenter().lng;
@@ -9183,8 +9321,8 @@ function generatePlots() {
         const lat = centerLat + (ry / 111320);
         const lng = centerLng + (rx / (111320 * Math.cos(centerLat * Math.PI / 180)));
 
-        if (pointInPolygon(lat, lng, lls)) {
-          if (bufferM > 0 && minDistToPolyBoundary(lat, lng, lls) < bufferM) continue;
+        if (pointInPolygonParts(lat, lng, polygonParts)) {
+          if (bufferM > 0 && minDistToPolygonPartsBoundary(lat, lng, polygonParts) < bufferM) continue;
           allPoints.push({ id: 0, lat, lng, iy, ix });
         }
       }
@@ -9230,6 +9368,30 @@ function sortByLineOrder(points) {
   });
 
   return result;
+}
+
+function pointInPolygonRings(lat, lng, rings) {
+  if (!Array.isArray(rings) || !rings.length || !pointInPolygon(lat, lng, rings[0])) return false;
+  for (let i = 1; i < rings.length; i++) {
+    if (pointInPolygon(lat, lng, rings[i])) return false;
+  }
+  return true;
+}
+
+function pointInPolygonParts(lat, lng, polygonParts) {
+  if (!Array.isArray(polygonParts) || !polygonParts.length) return false;
+  return polygonParts.some(part => pointInPolygonRings(lat, lng, part));
+}
+
+function minDistToPolygonPartsBoundary(lat, lng, polygonParts) {
+  let minD = Infinity;
+  (polygonParts || []).forEach(part => {
+    (part || []).forEach(ring => {
+      const ringDist = minDistToPolyBoundary(lat, lng, ring);
+      if (ringDist < minD) minD = ringDist;
+    });
+  });
+  return minD;
 }
 
 // Distance from a point to the nearest edge of a polygon boundary (in meters)
@@ -9573,6 +9735,13 @@ function buildProj4FromPrjWkt(prjWkt) {
   const unitName = extractWktQuotedValue(wkt, 'UNIT').toLowerCase();
   const toMeter = extractWktNumericValue(wkt, 'UNIT');
 
+  if (
+    projectionName === 'MERCATOR_AUXILIARY_SPHERE' ||
+    projectionName === 'POPULAR_VISUALISATION_PSEUDO_MERCATOR'
+  ) {
+    return 'EPSG:3857';
+  }
+
   const zoneMatch = wkt.match(/UTM[_ ]ZONE[_ ](\d+)([NS])/i);
   if (zoneMatch) {
     const zone = Number(zoneMatch[1]);
@@ -9741,12 +9910,7 @@ function loadGeoJSON(geojson, name) {
         polyIdx++;
         const firstProp = p ? Object.values(p).find(v => v && String(v).trim()) : null;
         const label = firstProp ? name + ': ' + firstProp : name + ' #' + polyIdx;
-        try {
-          const ac = calcAcres(lyr);
-          allPolygons.push({ layer: lyr, name: label + ' (' + ac.toFixed(1) + ' ac)' });
-        } catch(e) {
-          allPolygons.push({ layer: lyr, name: label });
-        }
+        allPolygons.push({ layer: lyr, name: label });
       }
     }
   });
@@ -9860,14 +10024,14 @@ function exportProject() {
 
   // Boundary
   if (tractBoundary) {
-    const lls = tractBoundary.getLatLngs()[0];
-    const ring = lls.map(ll => [ll.lng, ll.lat]);
-    ring.push(ring[0]);
-    data.features.push({
-      type: 'Feature',
-      properties: { type: 'boundary', acres: calcAcres(tractBoundary).toFixed(2) },
-      geometry: { type: 'Polygon', coordinates: [ring] }
-    });
+    const geometry = getLayerGeoJsonGeometry(tractBoundary);
+    if (geometry) {
+      data.features.push({
+        type: 'Feature',
+        properties: { type: 'boundary', acres: calcAcres(tractBoundary).toFixed(2) },
+        geometry: geometry
+      });
+    }
   }
 
   // Plots
@@ -9960,20 +10124,31 @@ async function clearEverything() {
 }
 
 // â”€â”€ Calculations â”€â”€
-function calcAcres(layer) {
-  const lls = layer.getLatLngs()[0];
+function calcRingAcres(ring) {
+  if (!Array.isArray(ring) || ring.length < 3) return 0;
   const R = 6378137;
   let area = 0;
-  const n = lls.length;
+  const n = ring.length;
   for (let i = 0; i < n; i++) {
     const j = (i + 1) % n;
-    const xi = lls[i].lng * Math.PI / 180 * R * Math.cos(lls[i].lat * Math.PI / 180);
-    const yi = lls[i].lat * Math.PI / 180 * R;
-    const xj = lls[j].lng * Math.PI / 180 * R * Math.cos(lls[j].lat * Math.PI / 180);
-    const yj = lls[j].lat * Math.PI / 180 * R;
+    const xi = ring[i].lng * Math.PI / 180 * R * Math.cos(ring[i].lat * Math.PI / 180);
+    const yi = ring[i].lat * Math.PI / 180 * R;
+    const xj = ring[j].lng * Math.PI / 180 * R * Math.cos(ring[j].lat * Math.PI / 180);
+    const yj = ring[j].lat * Math.PI / 180 * R;
     area += xi * yj - xj * yi;
   }
   return Math.abs(area / 2) * 0.000247105;
+}
+
+function calcAcres(layer) {
+  const parts = getPolygonParts(layer);
+  if (!parts.length) return 0;
+  return parts.reduce((total, part) => {
+    if (!Array.isArray(part) || !part.length) return total;
+    const outerArea = calcRingAcres(part[0]);
+    const holeArea = part.slice(1).reduce((sum, ring) => sum + calcRingAcres(ring), 0);
+    return total + Math.max(0, outerArea - holeArea);
+  }, 0);
 }
 
 function getDistance(lat1, lng1, lat2, lng2) {
@@ -10314,10 +10489,7 @@ function getCurrentJobData() {
       noTally: p.noTally || false,
       cruiser: p.cruiser || ''
     })),
-    polygons: allPolygons.map(p => {
-      const lls = p.layer.getLatLngs()[0];
-      return { name: p.name, coords: lls.map(ll => [ll.lat, ll.lng]) };
-    })
+    polygons: allPolygons.map(getPolygonSerializableData)
   };
 }
 
