@@ -666,6 +666,173 @@
   }
   .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 
+  .sync-debug-banner {
+    position: fixed;
+    left: 12px;
+    right: 12px;
+    bottom: calc(94px + var(--safe-bottom));
+    z-index: 10002;
+    display: none;
+    background: var(--bg-deep);
+    border: 1px solid rgba(243, 156, 18, 0.5);
+    border-left: 4px solid var(--orange);
+    border-radius: 12px;
+    padding: 10px 12px;
+    box-shadow: 0 14px 30px rgba(0,0,0,0.32);
+  }
+  .sync-debug-banner.show { display: block; }
+  .sync-debug-banner.warn {
+    border-color: rgba(231, 76, 60, 0.55);
+    border-left-color: var(--red);
+    background: linear-gradient(180deg, rgba(58, 26, 26, 0.92), rgba(13, 26, 13, 0.96));
+  }
+  .sync-debug-banner-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+  }
+  .sync-debug-banner-title {
+    font-size: 0.66rem;
+    color: var(--orange);
+    text-transform: uppercase;
+    letter-spacing: 0.9px;
+    font-weight: 800;
+  }
+  .sync-debug-banner.warn .sync-debug-banner-title {
+    color: #ff9f93;
+  }
+  .sync-debug-banner-close {
+    width: 28px;
+    height: 28px;
+    border: none;
+    border-radius: 50%;
+    background: transparent;
+    color: var(--text-muted);
+    font-size: 1rem;
+    cursor: pointer;
+    line-height: 1;
+  }
+  .sync-debug-banner-text {
+    margin-top: 6px;
+    font-size: 0.74rem;
+    line-height: 1.5;
+    color: var(--text-primary);
+    font-weight: 700;
+  }
+  .sync-debug-banner-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 10px;
+  }
+  .sync-debug-banner-btn {
+    flex: 1;
+    padding: 8px 10px;
+    background: rgba(255,255,255,0.03);
+    border: 1px solid var(--border-bright);
+    border-radius: 8px;
+    color: var(--text-secondary);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.66rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    cursor: pointer;
+  }
+  .sync-debug-banner-btn:active { transform: scale(0.97); }
+  .sync-debug-banner-btn.primary {
+    border-color: var(--orange);
+    color: var(--orange);
+  }
+
+  .sync-debug-log {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    max-height: 52vh;
+    overflow-y: auto;
+    padding-right: 2px;
+  }
+  .sync-debug-empty {
+    padding: 18px 14px;
+    border: 1px dashed var(--border);
+    border-radius: 10px;
+    text-align: center;
+    color: var(--text-muted);
+    font-size: 0.72rem;
+    line-height: 1.6;
+  }
+  .sync-debug-actions {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 12px;
+  }
+  .sync-debug-actions .btn {
+    margin: 0;
+    padding: 11px 14px;
+    font-size: 0.7rem;
+  }
+  .sync-debug-entry {
+    background: var(--bg-deep);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 10px 12px;
+  }
+  .sync-debug-entry.warn {
+    border-color: rgba(231, 76, 60, 0.48);
+    background: rgba(58, 26, 26, 0.36);
+  }
+  .sync-debug-entry-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+  }
+  .sync-debug-entry-kind {
+    font-size: 0.62rem;
+    color: var(--orange);
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    font-weight: 800;
+  }
+  .sync-debug-entry.warn .sync-debug-entry-kind {
+    color: #ff9f93;
+  }
+  .sync-debug-entry-time {
+    font-size: 0.62rem;
+    color: var(--text-muted);
+    font-weight: 600;
+  }
+  .sync-debug-entry-msg {
+    margin-top: 6px;
+    font-size: 0.78rem;
+    line-height: 1.55;
+    color: var(--text-primary);
+    font-weight: 700;
+  }
+  .sync-debug-entry-detail {
+    margin-top: 8px;
+    padding: 8px 10px;
+    border-radius: 8px;
+    background: rgba(255,255,255,0.03);
+    color: var(--text-secondary);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.64rem;
+    line-height: 1.55;
+    white-space: pre-wrap;
+    word-break: break-word;
+    overflow-x: auto;
+  }
+  @media (max-width: 768px) {
+    .sync-debug-banner {
+      bottom: calc(84px + var(--safe-bottom));
+    }
+    .sync-debug-banner-actions,
+    .sync-debug-actions {
+      flex-direction: column;
+    }
+  }
+
   /* â•â•â• TRACT INFO BAR â•â•â• */
   .tract-info-bar {
     position: absolute;
@@ -3066,10 +3233,32 @@
     </label>
     <div class="field-help">Use the Help Guide tile above to reopen the full walkthrough at any time.</div>
   </div>
+  <button class="btn btn-secondary" style="border-color:var(--orange);color:var(--orange);" onclick="closePanel(); openPanel('syncdebug')">
+    View Sync Trace
+  </button>
   <button class="btn btn-danger" onclick="clearEverything()">Clear All Data</button>
   <div class="theme-picker">
     <div class="theme-picker-label">Theme Color</div>
     <div class="theme-swatches" id="theme-swatches"></div>
+  </div>
+</div>
+
+<!-- Sync Trace Panel -->
+<div class="panel" id="panel-syncdebug">
+  <div class="panel-handle"></div>
+  <div class="panel-head">
+    <div class="panel-title">Sync Trace</div>
+    <button class="panel-close" type="button" onclick="closePanel()" aria-label="Close panel">&#x2715;</button>
+  </div>
+  <div class="field-help" style="margin-bottom:12px">
+    This temporary trace records where plots are being recreated from: local job storage, cloud `plotsJson`, or the offline backup restore path.
+  </div>
+  <div class="sync-debug-actions">
+    <button class="btn btn-secondary" type="button" onclick="copySyncDebugLog()">Copy Trace</button>
+    <button class="btn btn-danger" type="button" onclick="clearSyncDebugLog()">Clear Trace</button>
+  </div>
+  <div class="sync-debug-log" id="sync-debug-log">
+    <div class="sync-debug-empty">No sync trace yet.</div>
   </div>
 </div>
 
@@ -3315,6 +3504,19 @@
 <!-- Toast -->
 <div class="toast" id="toast"></div>
 
+<!-- Sync Debug Banner -->
+<div class="sync-debug-banner" id="sync-debug-banner">
+  <div class="sync-debug-banner-top">
+    <div class="sync-debug-banner-title">Sync Trace</div>
+    <button class="sync-debug-banner-close" type="button" onclick="dismissSyncDebugBanner()" aria-label="Dismiss sync trace">&#x2715;</button>
+  </div>
+  <div class="sync-debug-banner-text" id="sync-debug-banner-text"></div>
+  <div class="sync-debug-banner-actions">
+    <button class="sync-debug-banner-btn primary" type="button" onclick="dismissSyncDebugBanner(); openPanel('syncdebug')">Details</button>
+    <button class="sync-debug-banner-btn" type="button" onclick="copySyncDebugLog()">Copy</button>
+  </div>
+</div>
+
 <!-- Undo Toast -->
 <div class="toast-undo" id="toast-undo">
   <div class="toast-undo-text" id="undo-text"></div>
@@ -3390,6 +3592,230 @@ function escapeJsString(value) {
     .replace(/\n/g, '\\n')
     .replace(/<\//g, '<\\/');
 }
+
+const SYNC_DEBUG_STORAGE_KEY = 'cruisenav-sync-debug-v1';
+const SYNC_DEBUG_LOG_LIMIT = 80;
+const SYNC_DEBUG_RECENT_DELETE_WINDOW_MS = 12 * 60 * 60 * 1000;
+let syncDebugLog = [];
+let recentDeletedPlotTraceMap = {};
+let _syncDebugBannerTimer = null;
+
+function summarizeIdList(ids, limit = 10) {
+  const list = Array.from(new Set((Array.isArray(ids) ? ids : [])
+    .map(id => String(id == null ? '' : id).trim())
+    .filter(Boolean)))
+    .sort((a, b) => a.localeCompare(b, undefined, { numeric: true }));
+  if (!list.length) return 'none';
+  if (list.length <= limit) return list.join(', ');
+  return list.slice(0, limit).join(', ') + ' +' + (list.length - limit) + ' more';
+}
+
+function formatSyncDebugTime(ts) {
+  if (!ts) return '--';
+  try {
+    return new Date(ts).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit', second: '2-digit' });
+  } catch (e) {
+    return '--';
+  }
+}
+
+function getSyncDebugContextKeys(options = {}) {
+  const keys = [];
+  const jobId = options.jobId != null ? options.jobId : activeJobId;
+  const cruiseId = options.cruiseId != null ? options.cruiseId : window._activeCloudCruiseId;
+  if (jobId) keys.push('job:' + String(jobId));
+  if (cruiseId) keys.push('cruise:' + String(cruiseId));
+  if (!keys.length) keys.push('session');
+  return Array.from(new Set(keys));
+}
+
+function pruneRecentDeletedPlotTraceMap() {
+  const cutoff = Date.now() - SYNC_DEBUG_RECENT_DELETE_WINDOW_MS;
+  Object.keys(recentDeletedPlotTraceMap || {}).forEach(key => {
+    const record = recentDeletedPlotTraceMap[key];
+    if (!record || !record.deletedAt || record.deletedAt < cutoff) {
+      delete recentDeletedPlotTraceMap[key];
+    }
+  });
+}
+
+function saveSyncDebugState() {
+  try {
+    pruneRecentDeletedPlotTraceMap();
+    localStorage.setItem(SYNC_DEBUG_STORAGE_KEY, JSON.stringify({
+      log: syncDebugLog.slice(0, SYNC_DEBUG_LOG_LIMIT),
+      recentDeleted: recentDeletedPlotTraceMap
+    }));
+  } catch (e) {}
+}
+
+function renderSyncDebugLog() {
+  const container = document.getElementById('sync-debug-log');
+  if (!container) return;
+  if (!syncDebugLog.length) {
+    container.innerHTML = '<div class="sync-debug-empty">No sync trace yet.</div>';
+    return;
+  }
+  container.innerHTML = syncDebugLog.map(entry => {
+    const levelClass = entry.level === 'warn' ? ' warn' : '';
+    const detailText = entry.detail ? JSON.stringify(entry.detail, null, 2) : '{}';
+    return '' +
+      '<div class="sync-debug-entry' + levelClass + '">' +
+        '<div class="sync-debug-entry-top">' +
+          '<div class="sync-debug-entry-kind">' + escapeHtml(entry.kind || 'trace') + '</div>' +
+          '<div class="sync-debug-entry-time">' + escapeHtml(formatSyncDebugTime(entry.at)) + '</div>' +
+        '</div>' +
+        '<div class="sync-debug-entry-msg">' + escapeHtml(entry.message || '') + '</div>' +
+        '<pre class="sync-debug-entry-detail">' + escapeHtml(detailText) + '</pre>' +
+      '</div>';
+  }).join('');
+}
+
+function loadSyncDebugState() {
+  try {
+    const raw = localStorage.getItem(SYNC_DEBUG_STORAGE_KEY);
+    if (!raw) {
+      syncDebugLog = [];
+      recentDeletedPlotTraceMap = {};
+      renderSyncDebugLog();
+      return;
+    }
+    const parsed = JSON.parse(raw);
+    syncDebugLog = Array.isArray(parsed && parsed.log) ? parsed.log.slice(0, SYNC_DEBUG_LOG_LIMIT) : [];
+    recentDeletedPlotTraceMap = parsed && parsed.recentDeleted && typeof parsed.recentDeleted === 'object'
+      ? parsed.recentDeleted
+      : {};
+    pruneRecentDeletedPlotTraceMap();
+  } catch (e) {
+    syncDebugLog = [];
+    recentDeletedPlotTraceMap = {};
+  }
+  renderSyncDebugLog();
+}
+
+function showSyncDebugBanner(entry, options = {}) {
+  const banner = document.getElementById('sync-debug-banner');
+  const text = document.getElementById('sync-debug-banner-text');
+  if (!banner || !text || !entry) return;
+  banner.classList.toggle('warn', entry.level === 'warn');
+  text.textContent = entry.message || 'Sync trace updated';
+  banner.classList.add('show');
+  if (_syncDebugBannerTimer) clearTimeout(_syncDebugBannerTimer);
+  if (!options.persistent) {
+    _syncDebugBannerTimer = setTimeout(() => dismissSyncDebugBanner(), 9000);
+  }
+}
+
+function dismissSyncDebugBanner() {
+  const banner = document.getElementById('sync-debug-banner');
+  if (banner) banner.classList.remove('show', 'warn');
+  if (_syncDebugBannerTimer) {
+    clearTimeout(_syncDebugBannerTimer);
+    _syncDebugBannerTimer = null;
+  }
+}
+
+function addSyncDebugEvent(kind, message, detail = {}, options = {}) {
+  const entry = {
+    id: 'sync_' + Date.now() + '_' + Math.random().toString(36).slice(2, 7),
+    at: Date.now(),
+    kind: kind,
+    level: options.level || 'info',
+    message: message,
+    detail: detail || {}
+  };
+  syncDebugLog.unshift(entry);
+  if (syncDebugLog.length > SYNC_DEBUG_LOG_LIMIT) {
+    syncDebugLog.length = SYNC_DEBUG_LOG_LIMIT;
+  }
+  saveSyncDebugState();
+  renderSyncDebugLog();
+  console.log('[SYNC TRACE][' + kind + '] ' + message, detail || {});
+  if (options.banner || entry.level === 'warn') {
+    showSyncDebugBanner(entry, options);
+  }
+  return entry;
+}
+
+function clearSyncDebugLog() {
+  syncDebugLog = [];
+  recentDeletedPlotTraceMap = {};
+  saveSyncDebugState();
+  renderSyncDebugLog();
+  dismissSyncDebugBanner();
+  toast('Sync trace cleared');
+}
+
+async function copySyncDebugLog() {
+  if (!syncDebugLog.length) {
+    toast('No sync trace to copy');
+    return;
+  }
+  const text = syncDebugLog
+    .slice()
+    .reverse()
+    .map(entry => '[' + formatSyncDebugTime(entry.at) + '][' + (entry.kind || 'trace') + '] ' + (entry.message || '') +
+      '\n' + JSON.stringify(entry.detail || {}, null, 2))
+    .join('\n\n');
+  try {
+    await navigator.clipboard.writeText(text);
+    toast('Sync trace copied');
+  } catch (e) {
+    console.warn('Copy sync trace failed:', e);
+    toast('Copy failed');
+  }
+}
+
+function rememberRecentDeletedPlotTrace(plotId, options = {}) {
+  const normalizedPlotId = String(plotId == null ? '' : plotId).trim();
+  if (!normalizedPlotId) return null;
+  const job = normalizeJobCruiseSettings(allJobs.find(j => j.id === (options.jobId || activeJobId)));
+  const record = {
+    plotId: normalizedPlotId,
+    deletedAt: Date.now(),
+    jobId: options.jobId || activeJobId || null,
+    cruiseId: options.cruiseId || window._activeCloudCruiseId || null,
+    jobName: options.jobName || (job ? job.name : '')
+  };
+  getSyncDebugContextKeys({ jobId: record.jobId, cruiseId: record.cruiseId }).forEach(ctxKey => {
+    recentDeletedPlotTraceMap[ctxKey + '::' + normalizedPlotId] = record;
+  });
+  saveSyncDebugState();
+  return record;
+}
+
+function getRecentDeletedPlotTrace(plotId, options = {}) {
+  const normalizedPlotId = String(plotId == null ? '' : plotId).trim();
+  if (!normalizedPlotId) return null;
+  pruneRecentDeletedPlotTraceMap();
+  const keys = getSyncDebugContextKeys(options);
+  for (const ctxKey of keys) {
+    const record = recentDeletedPlotTraceMap[ctxKey + '::' + normalizedPlotId];
+    if (record) return record;
+  }
+  return null;
+}
+
+function tracePlotRestoreSource(plotId, source, options = {}) {
+  const recentDelete = getRecentDeletedPlotTrace(plotId, options);
+  if (!recentDelete) return;
+  addSyncDebugEvent(
+    'plot-restore',
+    'Plot ' + plotId + ' reappeared from ' + source,
+    {
+      plotId: String(plotId),
+      source: source,
+      activeJobId: options.jobId || activeJobId || null,
+      activeCruiseId: options.cruiseId || window._activeCloudCruiseId || null,
+      deletedAt: recentDelete.deletedAt,
+      deletedJobId: recentDelete.jobId,
+      deletedCruiseId: recentDelete.cruiseId,
+      deletedJobName: recentDelete.jobName || ''
+    },
+    { level: 'warn', banner: true, persistent: true }
+  );
+}
+
 const NAV_HEADING_MODE_DEVICE = 'device';
 const NAV_HEADING_MODE_MOVEMENT = 'movement';
 const MOVEMENT_HEADING_MIN_DISTANCE_METERS = 1.5;
@@ -3911,6 +4337,11 @@ function rememberDeletedPlotIds(ids) {
   });
   job.deletedPlotIds = Array.from(merged).sort((a, b) => a.localeCompare(b));
   job.updatedAt = Date.now();
+  addSyncDebugEvent('deleted-ids', 'Updated deleted plot ids for job ' + (job.name || job.id), {
+    jobId: job.id,
+    jobName: job.name || '',
+    deletedPlotIds: job.deletedPlotIds.slice()
+  });
 }
 
 function clearDeletedPlotId(id) {
@@ -5442,6 +5873,11 @@ async function syncExistingCruiseState(cruiseId, options = {}) {
   if (window._activeCloudCruiseOwner === fb_user.uid) {
     await updateCruiseInCloud(cruiseId);
     await pullOtherUsersPlotData(cruiseId, { silent: true, skipPlotLocations: true, skipBoundaries: true });
+    addSyncDebugEvent('sync-path', 'Sync used owner path', {
+      cruiseId: cruiseId,
+      syncMode: 'owner',
+      deletedPlotIds: getActiveJobDeletedPlotIds()
+    });
     return 'owner';
   }
   if (!window._activeCloudCruiseOwner) {
@@ -5449,15 +5885,30 @@ async function syncExistingCruiseState(cruiseId, options = {}) {
       await updateCruiseInCloud(cruiseId);
       markActiveCruiseOwnedByCurrentUser();
       await pullOtherUsersPlotData(cruiseId, { silent: true, skipPlotLocations: true, skipBoundaries: true });
+      addSyncDebugEvent('sync-path', 'Sync claimed owner path on existing cruise', {
+        cruiseId: cruiseId,
+        syncMode: 'owner-claimed',
+        deletedPlotIds: getActiveJobDeletedPlotIds()
+      }, { banner: true });
       return 'owner-claimed';
     } catch (e) {
       if (!isPermissionDeniedError(e)) throw e;
       console.warn('[SYNC] Main cruise update denied while owner was unknown; falling back to userData sync.');
+      addSyncDebugEvent('sync-path', 'Main cruise update denied; falling back to shared-user sync', {
+        cruiseId: cruiseId,
+        syncMode: 'shared-fallback',
+        error: String((e && e.message) || e || '')
+      }, { level: 'warn', banner: true, persistent: true });
     }
   }
   await pullOtherUsersPlotData(cruiseId, { silent: true });
   await saveUserPlotData(cruiseId);
   if (!silent) console.log('[SYNC] Used shared-user sync path for cruise ' + cruiseId);
+  addSyncDebugEvent('sync-path', 'Sync used shared-user path', {
+    cruiseId: cruiseId,
+    syncMode: 'shared',
+    deletedPlotIds: getActiveJobDeletedPlotIds()
+  }, { banner: true });
   return 'shared';
 }
 
@@ -5579,6 +6030,12 @@ async function manualCloudSync() {
       // Cloud cruise exists, sync everything
       toast('Syncing to ' + window._activeCloudCruiseId.substring(0,6) + '...');
       const syncMode = await syncExistingCruiseState(window._activeCloudCruiseId);
+      addSyncDebugEvent('sync-mode', 'Existing cruise sync used the ' + syncMode + ' path', {
+        cruiseId: window._activeCloudCruiseId,
+        syncMode: syncMode,
+        plotIds: plotMarkers.map(plot => String(plot.id)),
+        deletedPlotIds: getActiveJobDeletedPlotIds()
+      }, { banner: true });
       console.log('[SYNC] Push complete (' + syncMode + ' path)');
     }
 
@@ -5642,16 +6099,12 @@ async function pullOtherUsersPlotData(cruiseId, options = {}) {
     const localHasUnsyncedLayout = _syncPending || (getPlotLocationHash() !== _lastSyncedPlotLocationHash);
     const acceptCloudPlotLocations = !skipPlotLocations && !(ownerIsLocalUser && localHasUnsyncedLayout);
     const cloudDeletedPlotIdSet = new Set(normalizeDeletedPlotIds(parseJsonArray(d.deletedPlotIdsJson)));
-    // Always include locally deleted plot IDs so a pull never re-adds a plot the
-    // current user deliberately deleted — regardless of whether they are the owner
-    // or a shared collaborator (non-owners cannot write to the main cruise doc, so
-    // their deletions never reach cloudDeletedPlotIdsJson).
-    const pendingLocalDeletedPlotIds = getActiveJobDeletedPlotIds();
+    const pendingLocalDeletedPlotIds = ownerIsLocalUser && localHasUnsyncedLayout ? getActiveJobDeletedPlotIds() : [];
     const deletedPlotIdSet = new Set([...cloudDeletedPlotIdSet, ...pendingLocalDeletedPlotIds]);
+    const pullAddedPlotIds = [];
+    const pullSkippedDeletedIds = [];
+    const cloudPlotIds = d.plotsJson ? parseJsonArray(d.plotsJson).map(plot => String(plot.id)) : [];
 
-    // Remove plots deleted in the cloud (owner-side deletions that all users should respect).
-    // For the owner with pending local layout changes we skip this so a newly placed plot
-    // that hasn't been pushed yet is not mistakenly removed by a stale cloud snapshot.
     if (!(ownerIsLocalUser && localHasUnsyncedLayout) && cloudDeletedPlotIdSet.size) {
       const previousNavId = navTargetId;
       for (let i = plotMarkers.length - 1; i >= 0; i--) {
@@ -5664,55 +6117,43 @@ async function pullOtherUsersPlotData(cruiseId, options = {}) {
       }
     }
 
-    // Remove any locally deleted plots that are still on the map.
-    // Non-owners cannot write deletions to the main cruise doc, so their local
-    // deletedPlotIds never appear in cloudDeletedPlotIdSet.  We must enforce
-    // them here so a concurrent auto-sync or a pull-before-push can never
-    // re-add a plot the current user deliberately deleted.
-    if (pendingLocalDeletedPlotIds.length > 0) {
-      const localDeletedSet = new Set(pendingLocalDeletedPlotIds);
-      const previousNavId = navTargetId;
-      for (let i = plotMarkers.length - 1; i >= 0; i--) {
-        const plot = plotMarkers[i];
-        if (!localDeletedSet.has(String(plot.id))) continue;
-        plotLayer.removeLayer(plot.marker);
-        plotMarkers.splice(i, 1);
-        removedPlotsCount++;
-        if (String(previousNavId) === String(plot.id)) stopNavigation();
-      }
-    }
-
     // Sync plot locations from the main doc (new plots added on other devices)
     if (d.plotsJson && acceptCloudPlotLocations) {
-      const cloudPlotLocs = parseJsonArray(d.plotsJson);
       const existingPlotIds = new Set(plotMarkers.map(p => String(p.id)));
-      cloudPlotLocs.forEach(cp => {
+      parseJsonArray(d.plotsJson).forEach(cp => {
         const plotKey = String(cp.id);
-        if (deletedPlotIdSet.has(plotKey)) return;
+        if (deletedPlotIdSet.has(plotKey)) {
+          pullSkippedDeletedIds.push(plotKey);
+          return;
+        }
         if (!existingPlotIds.has(plotKey)) {
           // New plot location from cloud that doesn't exist locally
           addPlot(cp.id, cp.lat, cp.lng);
+          pullAddedPlotIds.push(plotKey);
+          tracePlotRestoreSource(cp.id, 'cloud plotsJson pull', { cruiseId: cruiseId, jobId: activeJobId });
           existingPlotIds.add(plotKey);
           newPlotsCount++;
         }
       });
+      addSyncDebugEvent('cloud-pull', 'Pulled plot locations from cloud main doc', {
+        cruiseId: cruiseId,
+        ownerIsLocalUser: ownerIsLocalUser,
+        acceptCloudPlotLocations: acceptCloudPlotLocations,
+        localHasUnsyncedLayout: localHasUnsyncedLayout,
+        cloudPlotIds: cloudPlotIds,
+        cloudDeletedPlotIds: Array.from(cloudDeletedPlotIdSet),
+        pendingLocalDeletedPlotIds: pendingLocalDeletedPlotIds,
+        addedPlotIds: pullAddedPlotIds,
+        skippedDeletedPlotIds: pullSkippedDeletedIds
+      }, { banner: pullAddedPlotIds.length > 0 });
     } else if (d.plotsJson && !silent && ownerIsLocalUser && localHasUnsyncedLayout) {
       console.log('[PULL] Skipping cloud plot locations because local layout changes are pending');
-    }
-
-    // Belt-and-suspenders: after applying plot locations, sweep out any plot that
-    // ended up in plotMarkers despite being in the local deleted list.  This guards
-    // against race conditions between the auto-sync timer and a manual sync.
-    if (pendingLocalDeletedPlotIds.length > 0) {
-      const localDeletedSet = new Set(pendingLocalDeletedPlotIds);
-      const previousNavId = navTargetId;
-      for (let i = plotMarkers.length - 1; i >= 0; i--) {
-        const plot = plotMarkers[i];
-        if (!localDeletedSet.has(String(plot.id))) continue;
-        plotLayer.removeLayer(plot.marker);
-        plotMarkers.splice(i, 1);
-        if (String(previousNavId) === String(plot.id)) stopNavigation();
-      }
+      addSyncDebugEvent('cloud-pull-skip', 'Skipped cloud plot locations because local layout changes are pending', {
+        cruiseId: cruiseId,
+        cloudPlotIds: cloudPlotIds,
+        cloudDeletedPlotIds: Array.from(cloudDeletedPlotIdSet),
+        pendingLocalDeletedPlotIds: pendingLocalDeletedPlotIds
+      });
     }
 
     // Sync boundaries from the main doc
@@ -5859,6 +6300,8 @@ async function updateCruiseInCloud(cruiseId) {
   if (!fb_user) return;
   const activeJob = normalizeJobCruiseSettings(allJobs.find(j => j.id === activeJobId));
   try {
+    const pushedPlotIds = plotMarkers.map(plot => String(plot.id));
+    const pushedDeletedPlotIds = getActiveJobDeletedPlotIds();
     const ownerFields = (!window._activeCloudCruiseOwner || window._activeCloudCruiseOwner === fb_user.uid) ? {
       ownerId: fb_user.uid,
       ownerName: fb_user.displayName || fb_user.email,
@@ -5885,6 +6328,14 @@ async function updateCruiseInCloud(cruiseId) {
 
     // Save this user's plot tree data
     await saveUserPlotData(cruiseId);
+    addSyncDebugEvent('cloud-update', 'Pushed cruise layout to cloud', {
+      cruiseId: cruiseId,
+      jobId: activeJobId || null,
+      jobName: activeJob ? activeJob.name || '' : '',
+      plotIds: pushedPlotIds,
+      deletedPlotIds: pushedDeletedPlotIds,
+      ownerPath: window._activeCloudCruiseOwner || null
+    });
 
   } catch(e) {
     console.error('Update error:', e);
@@ -6081,6 +6532,9 @@ async function loadCruiseFromCloud(cruiseId, options = {}) {
     if (hasNewFormat) {
       // â”€â”€ New multi-user format â”€â”€
       const deletedPlotIdSet = new Set(normalizeDeletedPlotIds(parseJsonArray(d.deletedPlotIdsJson)));
+      const cloudOpenAddedPlotIds = [];
+      const cloudOpenSkippedDeletedIds = [];
+      const cloudOpenPlotIds = d.plotsJson ? parseJsonArray(d.plotsJson).map(plot => String(plot.id)) : [];
 
       // Restore polygons from main doc
       if (d.polygonsJson) {
@@ -6090,10 +6544,22 @@ async function loadCruiseFromCloud(cruiseId, options = {}) {
       // Restore all plot locations from main doc
       if (d.plotsJson) {
         parseJsonArray(d.plotsJson).forEach(pd => {
-          if (deletedPlotIdSet.has(String(pd.id))) return;
+          if (deletedPlotIdSet.has(String(pd.id))) {
+            cloudOpenSkippedDeletedIds.push(String(pd.id));
+            return;
+          }
           addPlot(pd.id, pd.lat, pd.lng);
+          cloudOpenAddedPlotIds.push(String(pd.id));
+          tracePlotRestoreSource(pd.id, 'cloud cruise open (plotsJson)', { cruiseId: cruiseId });
         });
       }
+      addSyncDebugEvent('cloud-open', 'Opened cruise from cloud main document', {
+        cruiseId: cruiseId,
+        plotIds: cloudOpenPlotIds,
+        addedPlotIds: cloudOpenAddedPlotIds,
+        deletedPlotIds: Array.from(deletedPlotIdSet),
+        skippedDeletedPlotIds: cloudOpenSkippedDeletedIds
+      }, { banner: cloudOpenAddedPlotIds.length > 0 });
 
       // Merge pre-fetched user tree data from sub-collection, preferring the newest edit per plot.
       const mergedPlots = {}; // plotId -> { trees, cruiser, updatedAt }
@@ -6143,6 +6609,7 @@ async function loadCruiseFromCloud(cruiseId, options = {}) {
     } else {
       // â”€â”€ Legacy single-user format â”€â”€
       const data = d.dataJson ? JSON.parse(d.dataJson) : (d.data || {});
+      const legacyCloudLoadedPlotIds = [];
       if (data.polygons && data.polygons.length) {
         data.polygons.forEach(pd => {
           addPolygonToMap(pd.name, pd.coords);
@@ -6151,6 +6618,8 @@ async function loadCruiseFromCloud(cruiseId, options = {}) {
       if (data.plots && data.plots.length) {
         data.plots.forEach(pd => {
           addPlot(pd.id, pd.lat, pd.lng);
+          legacyCloudLoadedPlotIds.push(String(pd.id));
+          tracePlotRestoreSource(pd.id, 'legacy cloud cruise load', { cruiseId: cruiseId });
           const plot = plotMarkers.find(p => p.id === pd.id);
           if (plot) {
             if (pd.trees && pd.trees.length) plot.trees = JSON.parse(JSON.stringify(pd.trees));
@@ -6158,6 +6627,10 @@ async function loadCruiseFromCloud(cruiseId, options = {}) {
           }
         });
       }
+      addSyncDebugEvent('cloud-open-legacy', 'Opened legacy cloud cruise data', {
+        cruiseId: cruiseId,
+        plotIds: legacyCloudLoadedPlotIds
+      }, { banner: legacyCloudLoadedPlotIds.length > 0 });
       window._cloudContributors = [d.ownerName || 'Owner'];
     }
 
@@ -8807,6 +9280,7 @@ function openPanel(name) {
   if (name === 'jobs') refreshJobsList();
   if (name === 'cruisesetup') initCruiseSetupPanel();
   if (name === 'report') initReportPanel();
+  if (name === 'syncdebug') renderSyncDebugLog();
   document.getElementById('panel-overlay').classList.add('open');
   document.getElementById('panel-' + name).classList.add('open');
   currentPanel = name;
@@ -9443,6 +9917,12 @@ function updatePlotMarkerStyle(plot) {
 function deletePlot(id) {
   const idx = plotMarkers.findIndex(p => String(p.id) === String(id));
   if (idx === -1) return;
+  const activeJob = normalizeJobCruiseSettings(allJobs.find(j => j.id === activeJobId));
+  rememberRecentDeletedPlotTrace(id, {
+    jobId: activeJobId,
+    cruiseId: window._activeCloudCruiseId || null,
+    jobName: activeJob ? activeJob.name : ''
+  });
   rememberDeletedPlotIds([id]);
   if (String(navTargetId) === String(id)) stopNavigation();
   const plot = plotMarkers[idx];
@@ -9454,6 +9934,13 @@ function deletePlot(id) {
   refreshPlotList();
   checkSyncNeeded();
   saveSession();
+  addSyncDebugEvent('delete-local', 'Deleted plot ' + id + ' locally', {
+    jobId: activeJobId || null,
+    jobName: activeJob ? activeJob.name || '' : '',
+    cruiseId: window._activeCloudCruiseId || null,
+    remainingPlotIds: plotMarkers.map(p => String(p.id)),
+    deletedPlotIds: getActiveJobDeletedPlotIds()
+  });
   toast('Plot ' + id + ' deleted');
 }
 
@@ -10623,6 +11110,15 @@ async function applyOfflineBackupPayload(payload) {
 
   const session = payload.session || {};
   const jobs = payload.jobs.map(job => normalizeJobCruiseSettings(job));
+  addSyncDebugEvent('backup-apply', 'Applying offline backup payload', {
+    activeJobId: session.activeJobId || null,
+    jobs: jobs.map(job => ({
+      jobId: job.id,
+      name: job.name || '',
+      plotIds: (job.plots || []).map(plot => String(plot.id)),
+      deletedPlotIds: getJobDeletedPlotIds(job)
+    }))
+  }, { banner: true });
 
   try {
     const db = await openDB();
@@ -10680,6 +11176,14 @@ async function applyOfflineBackupPayload(payload) {
 async function restoreOfflineBackupMirror() {
   const payload = getOfflineBackupMirror();
   if (!payload || !Array.isArray(payload.jobs) || payload.jobs.length === 0) return false;
+  addSyncDebugEvent('backup-restore', 'Restoring offline backup mirror', {
+    jobs: payload.jobs.map(job => ({
+      jobId: job.id,
+      name: job.name || '',
+      plotIds: (job.plots || []).map(plot => String(plot.id)),
+      deletedPlotIds: normalizeDeletedPlotIds(job.deletedPlotIds)
+    }))
+  }, { banner: true });
   await applyOfflineBackupPayload(payload);
   return true;
 }
@@ -10714,13 +11218,24 @@ async function saveSession() {
       const tx = db.transaction('jobs', 'readwrite');
       const store = tx.objectStore('jobs');
       const job = allJobs.find(j => j.id === activeJobId);
+      let savedJobTrace = null;
       if (job) {
         job.plots = jobData.plots;
         job.polygons = jobData.polygons;
         job.updatedAt = Date.now();
         store.put(job);
+        savedJobTrace = {
+          jobId: job.id,
+          jobName: job.name || '',
+          cruiseId: job.cloudCruiseId || null,
+          plotIds: jobData.plots.map(plot => String(plot.id)),
+          deletedPlotIds: getJobDeletedPlotIds(job)
+        };
       }
       await new Promise((res, rej) => { tx.oncomplete = res; tx.onerror = rej; });
+      if (savedJobTrace) {
+        addSyncDebugEvent('local-save', 'Saved local job ' + (savedJobTrace.jobName || savedJobTrace.jobId), savedJobTrace);
+      }
     }
 
     // Save global state (active job ID, all jobs metadata, settings)
@@ -10770,6 +11285,11 @@ async function restoreSession() {
     const store2 = tx2.objectStore('state');
     const req = store2.get('session');
     const data = await new Promise((res, rej) => { req.onsuccess = () => res(req.result); req.onerror = rej; });
+    addSyncDebugEvent('session-restore', 'Loaded session from IndexedDB', {
+      jobIds: allJobs.map(job => job.id),
+      activeJobId: data && data.activeJobId ? data.activeJobId : null,
+      linkedCruiseId: data && data.cloudCruiseId ? data.cloudCruiseId : null
+    });
 
     if (data) {
       // Restore basemap
@@ -10896,10 +11416,17 @@ function loadJob(jobId, skipSave) {
   }
 
   // Restore plots
+  const localRestoredPlotIds = [];
+  const localSkippedDeletedIds = [];
   if (job.plots && job.plots.length) {
     job.plots.forEach(pd => {
-      if (deletedPlotIdSet.has(String(pd.id))) return;
+      if (deletedPlotIdSet.has(String(pd.id))) {
+        localSkippedDeletedIds.push(String(pd.id));
+        return;
+      }
       addPlot(pd.id, pd.lat, pd.lng);
+      localRestoredPlotIds.push(String(pd.id));
+      tracePlotRestoreSource(pd.id, 'local job load', { jobId: job.id, cruiseId: job.cloudCruiseId || null });
       const plot = plotMarkers.find(p => p.id === pd.id);
       if (plot) {
         if (pd.trees && pd.trees.length) plot.trees = JSON.parse(JSON.stringify(pd.trees));
@@ -10909,6 +11436,14 @@ function loadJob(jobId, skipSave) {
       }
     });
   }
+  addSyncDebugEvent('local-load', 'Loaded job ' + (job.name || job.id) + ' from local storage', {
+    jobId: job.id,
+    jobName: job.name || '',
+    cruiseId: job.cloudCruiseId || null,
+    restoredPlotIds: localRestoredPlotIds,
+    skippedDeletedPlotIds: localSkippedDeletedIds,
+    deletedPlotIds: Array.from(deletedPlotIdSet)
+  });
 
   queueMapRefresh({ fitBounds: allPolygons.length > 0, delay: 100 });
 
@@ -11272,6 +11807,7 @@ buildThemeSwatches();
 
 (async function init() {
   syncHelpGuideToggleState();
+  loadSyncDebugState();
 
   // Try restoring a previous session
   const restored = await restoreSession().catch(() => false);
