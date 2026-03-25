@@ -5923,11 +5923,7 @@ async function loadCruiseFromCloud(cruiseId, options = {}) {
       const data = d.dataJson ? JSON.parse(d.dataJson) : (d.data || {});
       if (data.polygons && data.polygons.length) {
         data.polygons.forEach(pd => {
-          const latlngs = pd.coords.map(c => L.latLng(c[0], c[1]));
-          const layer = L.polygon(latlngs, { color: '#e53935', fillOpacity: 0, opacity: 1, fill: false, weight: 4 });
-          tractLayer.addLayer(layer);
-          if (!tractBoundary) tractBoundary = layer;
-          allPolygons.push({ layer: layer, name: pd.name });
+          addPolygonToMap(pd.name, pd.coords);
         });
       }
       if (data.plots && data.plots.length) {
@@ -8505,7 +8501,7 @@ function getReportJobData() {
   }));
 
   const polygons = (job.polygons || []).map(pd => {
-    const latlngs = pd.coords.map(c => L.latLng(c[0], c[1]));
+    const latlngs = deserializePolygonCoordsToLatLngs(pd.coords);
     const layer = L.polygon(latlngs);
     return { layer: layer, name: pd.name };
   });
@@ -10629,11 +10625,7 @@ function loadJob(jobId, skipSave) {
   // Restore polygons
   if (job.polygons && job.polygons.length) {
     job.polygons.forEach(pd => {
-      const latlngs = pd.coords.map(c => L.latLng(c[0], c[1]));
-      const layer = L.polygon(latlngs, { color: '#e53935', fillOpacity: 0, opacity: 1, fill: false, weight: 4 });
-      tractLayer.addLayer(layer);
-      if (!tractBoundary) tractBoundary = layer;
-      allPolygons.push({ layer: layer, name: pd.name });
+      addPolygonToMap(pd.name, pd.coords);
     });
   }
 
