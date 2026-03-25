@@ -4981,14 +4981,37 @@ function formatCloudSyncError(action, error) {
 
 async function ensureActiveCloudCruiseOwner(cruiseId = window._activeCloudCruiseId) {
   if (!fb_db || !cruiseId) return window._activeCloudCruiseOwner || null;
-  if (window._activeCloudCruiseOwner) return window._activeCloudCruiseOwner;
+  if (window._activeCloudCruiseOwner) {
+    const activeJob = normalizeJobCruiseSettings(allJobs.find(j => j.id === activeJobId));
+    if (activeJob && activeJob.cloudCruiseId === cruiseId) {
+      activeJob.cloudCruiseOwner = window._activeCloudCruiseOwner;
+    }
+    return window._activeCloudCruiseOwner;
+  }
   try {
     const snap = await fb_db.collection('cruises').doc(cruiseId).get({ source: 'server' });
     if (snap.exists) {
       const data = snap.data() || {};
-      if (data.ownerId) {
-        window._activeCloudCruiseOwner = data.ownerId;
-        return data.ownerId;
+      let resolvedOwner = data.ownerId || null;
+      const currentEmail = getCurrentUserEmail();
+      if (!resolvedOwner && currentEmail && normalizeEmail(data.ownerEmail) === currentEmail && fb_user && fb_user.uid) {
+        resolvedOwner = fb_user.uid;
+        try {
+          await fb_db.collection('cruises').doc(cruiseId).set({
+            ownerId: resolvedOwner,
+            ownerEmail: currentEmail
+          }, { merge: true });
+        } catch (updateErr) {
+          console.warn('Could not backfill ownerId on cruise:', updateErr);
+        }
+      }
+      if (resolvedOwner) {
+        window._activeCloudCruiseOwner = resolvedOwner;
+        const activeJob = normalizeJobCruiseSettings(allJobs.find(j => j.id === activeJobId));
+        if (activeJob && activeJob.cloudCruiseId === cruiseId) {
+          activeJob.cloudCruiseOwner = resolvedOwner;
+        }
+        return resolvedOwner;
       }
     }
   } catch (e) {
@@ -5285,6 +5308,7 @@ async function saveCruiseToCloud() {
     const linkJob = allJobs.find(j => j.id === activeJobId);
     if (linkJob) {
       linkJob.cloudCruiseId = docRef.id;
+      linkJob.cloudCruiseOwner = fb_user.uid;
       linkJob.updatedAt = Date.now();
     }
 
@@ -5469,6 +5493,7 @@ async function manualCloudSync() {
         window._activeCloudCruiseOwner = fb_user.uid;
         if (activeJob) {
           activeJob.cloudCruiseId = existingCruiseId;
+          activeJob.cloudCruiseOwner = fb_user.uid;
           activeJob.updatedAt = Date.now();
         }
         toast('Linked to existing cloud cruise');
@@ -5513,6 +5538,7 @@ async function manualCloudSync() {
       // Link this cloud cruise ID to the active local job
       if (activeJob) {
         activeJob.cloudCruiseId = window._activeCloudCruiseId;
+        activeJob.cloudCruiseOwner = window._activeCloudCruiseOwner || activeJob.cloudCruiseOwner || null;
         activeJob.updatedAt = Date.now();
       }
     } else {
@@ -6080,6 +6106,7 @@ async function loadCruiseFromCloud(cruiseId, options = {}) {
         plots: [],
         polygons: [],
         deletedPlotIds: [],
+        cloudCruiseOwner: d.ownerId || null,
         cruiseType: d.cruiseType || deriveCruiseTypeFromLegacyBaf(d.baf),
         baf: d.baf || 20,
         logRule: d.logRule || 'scribner',
@@ -6093,6 +6120,7 @@ async function loadCruiseFromCloud(cruiseId, options = {}) {
     }
     // Update the local job with current cloud/map data
     localJob.cloudCruiseId = cruiseId;
+    localJob.cloudCruiseOwner = d.ownerId || localJob.cloudCruiseOwner || null;
     localJob.name = d.name || localJob.name;
     localJob.cruiseType = d.cruiseType || localJob.cruiseType || deriveCruiseTypeFromLegacyBaf(d.baf);
     localJob.baf = d.baf || localJob.baf;
@@ -10789,7 +10817,7 @@ function loadJob(jobId, skipSave) {
   // Restore cloud cruise link if this job is linked to one
   if (job.cloudCruiseId) {
     window._activeCloudCruiseId = job.cloudCruiseId;
-    // Owner info will be resolved on next sync/load if needed.
+    window._activeCloudCruiseOwner = job.cloudCruiseOwner || null;
   } else {
     window._activeCloudCruiseId = null;
     window._activeCloudCruiseOwner = null;
