@@ -5464,7 +5464,11 @@ async function manualCloudSync() {
     }
 
     // Pull: fetch other users' plot data and merge onto local markers
-    await pullOtherUsersPlotData(window._activeCloudCruiseId);
+    if (window._activeCloudCruiseOwner === fb_user.uid) {
+      await pullOtherUsersPlotData(window._activeCloudCruiseId, { silent: true, skipPlotLocations: true, skipBoundaries: true });
+    } else {
+      await pullOtherUsersPlotData(window._activeCloudCruiseId);
+    }
 
     _lastSyncedPlotHash = getPlotHash();
     _lastSyncedPlotLocationHash = getPlotLocationHash();
@@ -5488,6 +5492,8 @@ async function manualCloudSync() {
 async function pullOtherUsersPlotData(cruiseId, options = {}) {
   if (!fb_user || !cruiseId) return { newPlotsCount: 0, newBoundariesCount: 0, updatedPlotsCount: 0 };
   const silent = !!options.silent;
+  const skipPlotLocations = !!options.skipPlotLocations;
+  const skipBoundaries = !!options.skipBoundaries;
   console.log('[PULL] Starting pull from cruise: ' + cruiseId);
   try {
     // Fetch the main cruise document first. Shared users may not always have access
@@ -5512,9 +5518,12 @@ async function pullOtherUsersPlotData(cruiseId, options = {}) {
     let newPlotsCount = 0;
     let newBoundariesCount = 0;
     let updatedPlotsCount = 0;
+    const ownerIsLocalUser = (d.ownerId && d.ownerId === fb_user.uid) || window._activeCloudCruiseOwner === fb_user.uid;
+    const localHasUnsyncedLayout = _syncPending || (getPlotLocationHash() !== _lastSyncedPlotLocationHash);
+    const acceptCloudPlotLocations = !skipPlotLocations && !(ownerIsLocalUser && localHasUnsyncedLayout);
 
     // Sync plot locations from the main doc (new plots added on other devices)
-    if (d.plotsJson) {
+    if (d.plotsJson && acceptCloudPlotLocations) {
       const cloudPlotLocs = parseJsonArray(d.plotsJson);
       const existingPlotIds = new Set(plotMarkers.map(p => String(p.id)));
       cloudPlotLocs.forEach(cp => {
@@ -5526,10 +5535,12 @@ async function pullOtherUsersPlotData(cruiseId, options = {}) {
           newPlotsCount++;
         }
       });
+    } else if (d.plotsJson && !silent && ownerIsLocalUser && localHasUnsyncedLayout) {
+      console.log('[PULL] Skipping cloud plot locations because local layout changes are pending');
     }
 
     // Sync boundaries from the main doc
-    if (d.polygonsJson) {
+    if (d.polygonsJson && !skipBoundaries) {
       const cloudPolys = parseJsonArray(d.polygonsJson);
       const existingPolySigs = new Set(allPolygons.map(p => {
         return getPolygonSignature(p.name, getLayerCoordinateData(p.layer));
@@ -10482,7 +10493,7 @@ function scheduleCloudSync() {
     try {
       if (window._activeCloudCruiseOwner === fb_user.uid) {
         await updateCruiseInCloud(window._activeCloudCruiseId);
-        await pullOtherUsersPlotData(window._activeCloudCruiseId, { silent: true });
+        await pullOtherUsersPlotData(window._activeCloudCruiseId, { silent: true, skipPlotLocations: true, skipBoundaries: true });
       } else {
         await saveUserPlotData(window._activeCloudCruiseId);
         await pullOtherUsersPlotData(window._activeCloudCruiseId, { silent: true });
