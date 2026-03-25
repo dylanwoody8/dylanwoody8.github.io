@@ -5227,6 +5227,7 @@ async function saveCruiseToCloud() {
     await tryEnsureCruiseShareCode(docRef.id, name, cruiseData.shareCode);
 
     _lastSyncedPlotHash = getPlotHash();
+    _lastSyncedPlotLocationHash = getPlotLocationHash();
     updateSyncButton();
 
     toast('Saved: ' + name);
@@ -5279,11 +5280,24 @@ async function saveUserPlotData(cruiseId) {
 // â”€â”€ Sync state tracking â”€â”€
 let _syncPending = false;
 let _lastSyncedPlotHash = '';
+let _lastSyncedPlotLocationHash = '';
 
 function getPlotHash() {
   // Hash the full completed-plot payload so tree edits are detected
   // even when the tree count stays the same.
   return JSON.stringify(getCompletedPlotsForSync());
+}
+
+function getPlotLocationHash() {
+  return JSON.stringify(
+    plotMarkers
+      .map(p => ({
+        id: String(p.id),
+        lat: Number(p.lat).toFixed(6),
+        lng: Number(p.lng).toFixed(6)
+      }))
+      .sort((a, b) => a.id.localeCompare(b.id))
+  );
 }
 
 function setSyncPending(pending) {
@@ -5304,8 +5318,11 @@ function setSyncPending(pending) {
 
 function checkSyncNeeded() {
   if (!window._activeCloudCruiseId) return;
-  const hash = getPlotHash();
-  if (hash !== _lastSyncedPlotHash && hash !== '') {
+  const plotHash = getPlotHash();
+  const locationHash = getPlotLocationHash();
+  const treeChanges = plotHash !== _lastSyncedPlotHash && plotHash !== '';
+  const layoutChanges = locationHash !== _lastSyncedPlotLocationHash;
+  if (treeChanges || layoutChanges) {
     setSyncPending(true);
   }
 }
@@ -5434,12 +5451,13 @@ async function manualCloudSync() {
     } else {
       // Cloud cruise exists, sync everything
       toast('Syncing to ' + window._activeCloudCruiseId.substring(0,6) + '...');
-      await pullOtherUsersPlotData(window._activeCloudCruiseId, { silent: true });
-      console.log('[SYNC] Push to existing cruise: ' + window._activeCloudCruiseId + ', owner=' + (window._activeCloudCruiseOwner === fb_user.uid ? 'SELF' : 'OTHER'));
       if (window._activeCloudCruiseOwner === fb_user.uid) {
+        console.log('[SYNC] Push to existing cruise: ' + window._activeCloudCruiseId + ', owner=SELF');
         await updateCruiseInCloud(window._activeCloudCruiseId);
         console.log('[SYNC] Push complete (owner path)');
       } else {
+        await pullOtherUsersPlotData(window._activeCloudCruiseId, { silent: true });
+        console.log('[SYNC] Push to existing cruise: ' + window._activeCloudCruiseId + ', owner=OTHER');
         await saveUserPlotData(window._activeCloudCruiseId);
         console.log('[SYNC] Push complete (shared user path)');
       }
@@ -5449,6 +5467,7 @@ async function manualCloudSync() {
     await pullOtherUsersPlotData(window._activeCloudCruiseId);
 
     _lastSyncedPlotHash = getPlotHash();
+    _lastSyncedPlotLocationHash = getPlotLocationHash();
     setSyncPending(false);
     btn.classList.remove('sync-active');
     btn.classList.add('sync-done');
@@ -5994,6 +6013,7 @@ async function loadCruiseFromCloud(cruiseId, options = {}) {
 
     // Set up sync button and record baseline
     _lastSyncedPlotHash = getPlotHash();
+    _lastSyncedPlotLocationHash = getPlotLocationHash();
     updateSyncButton();
     setSyncPending(false);
 
@@ -7053,23 +7073,31 @@ function toast(msg) {
 let currentPanel = null;
 let _mapRefreshTimer = null;
 
+function runMapRefreshPass(options = {}) {
+  try { map.invalidateSize(true); } catch (e) {}
+  try {
+    tractLayer.eachLayer(layer => {
+      if (!layer) return;
+      if (typeof layer.bringToFront === 'function') layer.bringToFront();
+      if (typeof layer.redraw === 'function') layer.redraw();
+    });
+  } catch (e) {}
+  if (options.fitBounds && allPolygons.length) {
+    try {
+      const group = L.featureGroup(allPolygons.map(p => p.layer));
+      map.fitBounds(group.getBounds().pad(0.1));
+    } catch (e) {}
+  }
+}
+
 function queueMapRefresh(options = {}) {
   if (_mapRefreshTimer) clearTimeout(_mapRefreshTimer);
   const delay = Number.isFinite(options.delay) ? options.delay : 90;
   _mapRefreshTimer = setTimeout(() => {
     _mapRefreshTimer = null;
-    try { map.invalidateSize(true); } catch (e) {}
-    try {
-      tractLayer.eachLayer(layer => {
-        if (layer && typeof layer.redraw === 'function') layer.redraw();
-      });
-    } catch (e) {}
-    if (options.fitBounds && allPolygons.length) {
-      try {
-        const group = L.featureGroup(allPolygons.map(p => p.layer));
-        map.fitBounds(group.getBounds().pad(0.1));
-      } catch (e) {}
-    }
+    runMapRefreshPass(options);
+    const followupDelay = Number.isFinite(options.followupDelay) ? options.followupDelay : 260;
+    setTimeout(() => runMapRefreshPass({ fitBounds: false }), followupDelay);
   }, delay);
 }
 
@@ -8619,12 +8647,14 @@ function openHelpGuide() {
   overlay.classList.add('open');
   const body = document.getElementById('help-body');
   if (body) body.scrollTop = 0;
+  queueMapRefresh({ fitBounds: false, delay: 80 });
 }
 
 function dismissHelpGuide() {
   const overlay = document.getElementById('help-overlay');
   if (!overlay) return;
   overlay.classList.remove('open');
+  queueMapRefresh({ fitBounds: allPolygons.length > 0, delay: 80 });
 }
 
 // â”€â”€ Draw boundary (crosshair mode) â”€â”€
@@ -9203,13 +9233,16 @@ function updatePlotMarkerStyle(plot) {
 function deletePlot(id) {
   const idx = plotMarkers.findIndex(p => String(p.id) === String(id));
   if (idx === -1) return;
+  if (String(navTargetId) === String(id)) stopNavigation();
   const plot = plotMarkers[idx];
   plotLayer.removeLayer(plot.marker);
   plotMarkers.splice(idx, 1);
-  if (String(navTargetId) === String(id)) stopNavigation();
   map.closePopup();
   updateStats();
   updateEmptyHint();
+  refreshPlotList();
+  checkSyncNeeded();
+  saveSession();
   toast('Plot ' + id + ' deleted');
 }
 
@@ -9458,8 +9491,10 @@ function navigateToPlot(id) {
   if (!plot) return;
 
   // Clear previous nav styling
-  if (navTargetId != null) {
-    const prev = findPlotById(navTargetId);
+  const previousNavId = navTargetId;
+  navTargetId = null;
+  if (previousNavId != null) {
+    const prev = findPlotById(previousNavId);
     if (prev) updatePlotMarkerStyle(prev);
   }
   if (navLine) { map.removeLayer(navLine); navLine = null; }
@@ -9497,11 +9532,12 @@ function navigateToNext() {
 }
 
 function stopNavigation() {
-  if (navTargetId != null) {
-    const plot = findPlotById(navTargetId);
+  const previousNavId = navTargetId;
+  navTargetId = null;
+  if (previousNavId != null) {
+    const plot = findPlotById(previousNavId);
     if (plot) updatePlotMarkerStyle(plot);
   }
-  navTargetId = null;
   if (navLine) { map.removeLayer(navLine); navLine = null; }
   document.getElementById('nav-hud').classList.remove('open');
   const navArrow = document.getElementById('nav-arrow');
@@ -10444,13 +10480,15 @@ function scheduleCloudSync() {
   _cloudSyncTimer = setTimeout(async () => {
     _cloudSyncTimer = null;
     try {
-      await pullOtherUsersPlotData(window._activeCloudCruiseId, { silent: true });
       if (window._activeCloudCruiseOwner === fb_user.uid) {
         await updateCruiseInCloud(window._activeCloudCruiseId);
+        await pullOtherUsersPlotData(window._activeCloudCruiseId, { silent: true });
       } else {
         await saveUserPlotData(window._activeCloudCruiseId);
+        await pullOtherUsersPlotData(window._activeCloudCruiseId, { silent: true });
       }
       _lastSyncedPlotHash = getPlotHash();
+      _lastSyncedPlotLocationHash = getPlotLocationHash();
       setSyncPending(false);
     } catch(syncErr) {
       console.warn('Auto-sync failed:', syncErr);
@@ -10930,6 +10968,10 @@ if ('serviceWorker' in navigator) {
   });
 }
 
+window.addEventListener('load', () => {
+  queueMapRefresh({ fitBounds: allPolygons.length > 0, delay: 120, followupDelay: 500 });
+});
+
 // â”€â”€ Re-acquire wake lock when app regains visibility â”€â”€
 document.addEventListener('visibilitychange', () => {
   if (document.visibilityState === 'visible' && navTargetId != null) {
@@ -11037,6 +11079,7 @@ buildThemeSwatches();
     const ls = document.getElementById('loading-screen');
     ls.classList.add('hidden');
     setTimeout(() => ls.remove(), 500);
+    queueMapRefresh({ fitBounds: allPolygons.length > 0, delay: 80, followupDelay: 420 });
     setTimeout(() => {
       if (getHelpGuideShowOnStart()) openHelpGuide();
     }, 180);
