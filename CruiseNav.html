@@ -9533,9 +9533,114 @@ function parseShapefileProjection(prjWkt) {
   };
 }
 
+function extractWktQuotedValue(wkt, token) {
+  const match = String(wkt || '').match(new RegExp(token + '\\["([^"]+)"', 'i'));
+  return match ? match[1] : '';
+}
+
+function extractWktNumericValue(wkt, token) {
+  const match = String(wkt || '').match(new RegExp(token + '\\["[^"]+",\\s*([-+0-9.eE]+)\\]', 'i'));
+  return match ? Number(match[1]) : null;
+}
+
+function extractWktParameterValue(wkt, name) {
+  const match = String(wkt || '').match(new RegExp('PARAMETER\\["' + name + '",\\s*([-+0-9.eE]+)\\]', 'i'));
+  return match ? Number(match[1]) : null;
+}
+
+function extractWktAuthorityCode(wkt) {
+  const matches = String(wkt || '').match(/AUTHORITY\["EPSG","(\d+)"\]/ig);
+  if (!matches || !matches.length) return '';
+  const last = matches[matches.length - 1].match(/"(\d+)"/);
+  return last ? last[1] : '';
+}
+
+function normalizeWktDatum(wkt) {
+  const datum = extractWktQuotedValue(wkt, 'DATUM').toUpperCase();
+  if (datum.includes('NORTH_AMERICAN_1983') || datum.includes('NAD_1983') || datum.includes('NAD83')) return 'NAD83';
+  if (datum.includes('WGS_1984') || datum.includes('WGS 1984') || datum.includes('WGS84')) return 'WGS84';
+  if (datum.includes('NORTH_AMERICAN_1927') || datum.includes('NAD_1927') || datum.includes('NAD27')) return 'NAD27';
+  return '';
+}
+
+function buildProj4FromPrjWkt(prjWkt) {
+  const wkt = String(prjWkt || '');
+  const projectionName = extractWktQuotedValue(wkt, 'PROJECTION').toUpperCase();
+  const datum = normalizeWktDatum(wkt);
+  const spheroidMatch = wkt.match(/SPHEROID\["[^"]+",\s*([-+0-9.eE]+),\s*([-+0-9.eE]+)/i);
+  const semiMajor = spheroidMatch ? Number(spheroidMatch[1]) : null;
+  const invFlattening = spheroidMatch ? Number(spheroidMatch[2]) : null;
+  const unitName = extractWktQuotedValue(wkt, 'UNIT').toLowerCase();
+  const toMeter = extractWktNumericValue(wkt, 'UNIT');
+
+  const zoneMatch = wkt.match(/UTM[_ ]ZONE[_ ](\d+)([NS])/i);
+  if (zoneMatch) {
+    const zone = Number(zoneMatch[1]);
+    const hemisphere = (zoneMatch[2] || 'N').toUpperCase();
+    const utmBits = ['+proj=utm', '+zone=' + zone];
+    if (hemisphere === 'S') utmBits.push('+south');
+    if (datum) utmBits.push('+datum=' + datum);
+    else if (semiMajor && invFlattening) {
+      utmBits.push('+a=' + semiMajor);
+      utmBits.push('+rf=' + invFlattening);
+    }
+    utmBits.push(unitName.includes('meter') || !unitName ? '+units=m' : '+to_meter=' + (toMeter || 1));
+    utmBits.push('+no_defs');
+    return utmBits.join(' ');
+  }
+
+  if (projectionName === 'TRANSVERSE_MERCATOR') {
+    const bits = [
+      '+proj=tmerc',
+      '+lat_0=' + (extractWktParameterValue(wkt, 'Latitude_Of_Origin') ?? 0),
+      '+lon_0=' + (extractWktParameterValue(wkt, 'Central_Meridian') ?? 0),
+      '+k=' + (extractWktParameterValue(wkt, 'Scale_Factor') ?? 1),
+      '+x_0=' + (extractWktParameterValue(wkt, 'False_Easting') ?? 0),
+      '+y_0=' + (extractWktParameterValue(wkt, 'False_Northing') ?? 0)
+    ];
+    if (datum) bits.push('+datum=' + datum);
+    else if (semiMajor && invFlattening) {
+      bits.push('+a=' + semiMajor);
+      bits.push('+rf=' + invFlattening);
+    }
+    bits.push(unitName.includes('meter') || !unitName ? '+units=m' : '+to_meter=' + (toMeter || 1));
+    bits.push('+no_defs');
+    return bits.join(' ');
+  }
+
+  return '';
+}
+
+function getFirstCoordinateFromFeatures(features) {
+  function walk(coords) {
+    if (!Array.isArray(coords) || !coords.length) return null;
+    if (typeof coords[0] === 'number' && typeof coords[1] === 'number') return coords;
+    for (let i = 0; i < coords.length; i++) {
+      const found = walk(coords[i]);
+      if (found) return found;
+    }
+    return null;
+  }
+  for (let i = 0; i < (features || []).length; i++) {
+    const geom = features[i] && features[i].geometry;
+    const found = geom ? walk(geom.coordinates) : null;
+    if (found) return found;
+  }
+  return null;
+}
+
+function isValidLngLatPair(pair) {
+  return Array.isArray(pair) &&
+    pair.length >= 2 &&
+    Number.isFinite(pair[0]) &&
+    Number.isFinite(pair[1]) &&
+    Math.abs(pair[0]) <= 180 &&
+    Math.abs(pair[1]) <= 90;
+}
+
 function reprojectCoords(coords, fromProj) {
   if (typeof coords[0] === 'number') {
-    const [x, y] = proj4(fromProj, 'EPSG:4326', [coords[0], coords[1]]);
+    const [x, y] = proj4(fromProj, 'WGS84', [coords[0], coords[1]]);
     return [x, y];
   }
   return coords.map(c => reprojectCoords(c, fromProj));
@@ -9551,13 +9656,40 @@ async function maybeReprojectShapefileFeatures(features, prjWkt) {
     throw new Error('proj4 is not available');
   }
 
+  const sampleCoord = getFirstCoordinateFromFeatures(features);
+  if (!sampleCoord) return features;
+
+  const candidates = [];
+  const epsgCode = extractWktAuthorityCode(projection.wkt);
+  if (epsgCode) candidates.push('EPSG:' + epsgCode);
+  candidates.push(projection.wkt);
+  const fallbackProj = buildProj4FromPrjWkt(projection.wkt);
+  if (fallbackProj) candidates.push(fallbackProj);
+
+  let workingSource = '';
+  for (let i = 0; i < candidates.length; i++) {
+    const candidate = candidates[i];
+    if (!candidate || candidates.indexOf(candidate) !== i) continue;
+    try {
+      const testPair = proj4(candidate, 'WGS84', sampleCoord);
+      if (isValidLngLatPair(testPair)) {
+        workingSource = candidate;
+        break;
+      }
+    } catch (e) {}
+  }
+
+  if (!workingSource) {
+    throw new Error('Could not derive a usable source projection from the .prj');
+  }
+
   return features.map(feature => {
     if (!feature || !feature.geometry || !feature.geometry.coordinates) return feature;
     return {
       ...feature,
       geometry: {
         ...feature.geometry,
-        coordinates: reprojectCoords(feature.geometry.coordinates, projection.wkt)
+        coordinates: reprojectCoords(feature.geometry.coordinates, workingSource)
       }
     };
   });
