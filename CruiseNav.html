@@ -9499,15 +9499,71 @@ function handleShpFiles(files) {
   ]).then(([s, d, p]) => loadShpLayer(s, d, name, p));
 }
 
+const PROJ4_CDN_URL = 'https://cdnjs.cloudflare.com/ajax/libs/proj4js/2.9.0/proj4.js';
+let _proj4LoadPromise = null;
+
+function ensureProj4Loaded() {
+  if (typeof proj4 !== 'undefined') return Promise.resolve(proj4);
+  if (_proj4LoadPromise) return _proj4LoadPromise;
+  _proj4LoadPromise = new Promise((resolve, reject) => {
+    const script = document.createElement('script');
+    script.src = PROJ4_CDN_URL;
+    script.async = true;
+    script.onload = () => {
+      if (typeof proj4 !== 'undefined') resolve(proj4);
+      else reject(new Error('proj4 failed to initialize'));
+    };
+    script.onerror = () => reject(new Error('Failed to load proj4'));
+    document.head.appendChild(script);
+  });
+  return _proj4LoadPromise;
+}
+
+function parseShapefileProjection(prjWkt) {
+  const wkt = typeof prjWkt === 'string' ? prjWkt.trim() : '';
+  if (!wkt) {
+    return { wkt: '', hasPrj: false, isProjected: false, isGeographic: false };
+  }
+  const upper = wkt.toUpperCase();
+  return {
+    wkt: wkt,
+    hasPrj: true,
+    isProjected: upper.includes('PROJCS[') || upper.includes('PROJCRS['),
+    isGeographic: upper.includes('GEOGCS[') || upper.includes('GEOGCRS[')
+  };
+}
+
 function reprojectCoords(coords, fromProj) {
   if (typeof coords[0] === 'number') {
-    const [x, y] = proj4(fromProj, 'WGS84', [coords[0], coords[1]]);
+    const [x, y] = proj4(fromProj, 'EPSG:4326', [coords[0], coords[1]]);
     return [x, y];
   }
   return coords.map(c => reprojectCoords(c, fromProj));
 }
 
-function loadShpLayer(shpBuf, dbfBuf, name, prjWkt) {
+async function maybeReprojectShapefileFeatures(features, prjWkt) {
+  const projection = parseShapefileProjection(prjWkt);
+  if (!projection.hasPrj) return features;
+  if (!projection.isProjected) return features;
+
+  await ensureProj4Loaded();
+  if (typeof proj4 === 'undefined') {
+    throw new Error('proj4 is not available');
+  }
+
+  return features.map(feature => {
+    if (!feature || !feature.geometry || !feature.geometry.coordinates) return feature;
+    return {
+      ...feature,
+      geometry: {
+        ...feature.geometry,
+        coordinates: reprojectCoords(feature.geometry.coordinates, projection.wkt)
+      }
+    };
+  });
+}
+
+async function loadShpLayer(shpBuf, dbfBuf, name, prjWkt) {
   let features;
   try { features = readShpFeatures(shpBuf); }
   catch(e) { toast('Invalid shapefile'); return; }
@@ -9520,14 +9576,15 @@ function loadShpLayer(shpBuf, dbfBuf, name, prjWkt) {
     } catch(e) {}
   }
 
-  // Reproject if .prj provided
-  if (prjWkt && typeof proj4 !== 'undefined') {
+  // Reproject projected shapefiles to WGS84 before handing them to Leaflet.
+  // Geographic .prj files (WGS84/NAD83 lon/lat) pass through unchanged.
+  if (prjWkt) {
     try {
-      features = features.map(f => f.geometry
-        ? { ...f, geometry: { ...f.geometry, coordinates: reprojectCoords(f.geometry.coordinates, prjWkt) } }
-        : f
-      );
-    } catch(e) { console.warn('Reprojection failed:', e); toast('Warning: could not reproject'); }
+      features = await maybeReprojectShapefileFeatures(features, prjWkt);
+    } catch(e) {
+      console.warn('Reprojection failed:', e);
+      toast('Warning: could not reproject shapefile');
+    }
   }
 
   loadGeoJSON({ type: 'FeatureCollection', features: features }, name);
