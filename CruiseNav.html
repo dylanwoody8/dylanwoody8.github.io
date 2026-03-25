@@ -5649,11 +5649,32 @@ async function pullOtherUsersPlotData(cruiseId, options = {}) {
     const pendingLocalDeletedPlotIds = getActiveJobDeletedPlotIds();
     const deletedPlotIdSet = new Set([...cloudDeletedPlotIdSet, ...pendingLocalDeletedPlotIds]);
 
+    // Remove plots deleted in the cloud (owner-side deletions that all users should respect).
+    // For the owner with pending local layout changes we skip this so a newly placed plot
+    // that hasn't been pushed yet is not mistakenly removed by a stale cloud snapshot.
     if (!(ownerIsLocalUser && localHasUnsyncedLayout) && cloudDeletedPlotIdSet.size) {
       const previousNavId = navTargetId;
       for (let i = plotMarkers.length - 1; i >= 0; i--) {
         const plot = plotMarkers[i];
         if (!cloudDeletedPlotIdSet.has(String(plot.id))) continue;
+        plotLayer.removeLayer(plot.marker);
+        plotMarkers.splice(i, 1);
+        removedPlotsCount++;
+        if (String(previousNavId) === String(plot.id)) stopNavigation();
+      }
+    }
+
+    // Remove any locally deleted plots that are still on the map.
+    // Non-owners cannot write deletions to the main cruise doc, so their local
+    // deletedPlotIds never appear in cloudDeletedPlotIdSet.  We must enforce
+    // them here so a concurrent auto-sync or a pull-before-push can never
+    // re-add a plot the current user deliberately deleted.
+    if (pendingLocalDeletedPlotIds.length > 0) {
+      const localDeletedSet = new Set(pendingLocalDeletedPlotIds);
+      const previousNavId = navTargetId;
+      for (let i = plotMarkers.length - 1; i >= 0; i--) {
+        const plot = plotMarkers[i];
+        if (!localDeletedSet.has(String(plot.id))) continue;
         plotLayer.removeLayer(plot.marker);
         plotMarkers.splice(i, 1);
         removedPlotsCount++;
@@ -5677,6 +5698,21 @@ async function pullOtherUsersPlotData(cruiseId, options = {}) {
       });
     } else if (d.plotsJson && !silent && ownerIsLocalUser && localHasUnsyncedLayout) {
       console.log('[PULL] Skipping cloud plot locations because local layout changes are pending');
+    }
+
+    // Belt-and-suspenders: after applying plot locations, sweep out any plot that
+    // ended up in plotMarkers despite being in the local deleted list.  This guards
+    // against race conditions between the auto-sync timer and a manual sync.
+    if (pendingLocalDeletedPlotIds.length > 0) {
+      const localDeletedSet = new Set(pendingLocalDeletedPlotIds);
+      const previousNavId = navTargetId;
+      for (let i = plotMarkers.length - 1; i >= 0; i--) {
+        const plot = plotMarkers[i];
+        if (!localDeletedSet.has(String(plot.id))) continue;
+        plotLayer.removeLayer(plot.marker);
+        plotMarkers.splice(i, 1);
+        if (String(previousNavId) === String(plot.id)) stopNavigation();
+      }
     }
 
     // Sync boundaries from the main doc
