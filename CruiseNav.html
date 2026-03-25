@@ -5427,6 +5427,40 @@ function updateSyncButton() {
   }
 }
 
+function markActiveCruiseOwnedByCurrentUser() {
+  window._activeCloudCruiseOwner = fb_user ? fb_user.uid : null;
+  const activeJob = normalizeJobCruiseSettings(allJobs.find(j => j.id === activeJobId));
+  if (activeJob && window._activeCloudCruiseId && activeJob.cloudCruiseId === window._activeCloudCruiseId) {
+    activeJob.cloudCruiseOwner = window._activeCloudCruiseOwner;
+    activeJob.updatedAt = Date.now();
+  }
+}
+
+async function syncExistingCruiseState(cruiseId, options = {}) {
+  const silent = !!options.silent;
+  await ensureActiveCloudCruiseOwner(cruiseId);
+  if (window._activeCloudCruiseOwner === fb_user.uid) {
+    await updateCruiseInCloud(cruiseId);
+    await pullOtherUsersPlotData(cruiseId, { silent: true, skipPlotLocations: true, skipBoundaries: true });
+    return 'owner';
+  }
+  if (!window._activeCloudCruiseOwner) {
+    try {
+      await updateCruiseInCloud(cruiseId);
+      markActiveCruiseOwnedByCurrentUser();
+      await pullOtherUsersPlotData(cruiseId, { silent: true, skipPlotLocations: true, skipBoundaries: true });
+      return 'owner-claimed';
+    } catch (e) {
+      if (!isPermissionDeniedError(e)) throw e;
+      console.warn('[SYNC] Main cruise update denied while owner was unknown; falling back to userData sync.');
+    }
+  }
+  await pullOtherUsersPlotData(cruiseId, { silent: true });
+  await saveUserPlotData(cruiseId);
+  if (!silent) console.log('[SYNC] Used shared-user sync path for cruise ' + cruiseId);
+  return 'shared';
+}
+
 async function manualCloudSync() {
   if (!fb_user) { toast('Sign in first'); return; }
   if (allPolygons.length === 0 && plotMarkers.length === 0) { toast('Nothing to sync'); return; }
@@ -5544,16 +5578,8 @@ async function manualCloudSync() {
     } else {
       // Cloud cruise exists, sync everything
       toast('Syncing to ' + window._activeCloudCruiseId.substring(0,6) + '...');
-      if (window._activeCloudCruiseOwner === fb_user.uid) {
-        console.log('[SYNC] Push to existing cruise: ' + window._activeCloudCruiseId + ', owner=SELF');
-        await updateCruiseInCloud(window._activeCloudCruiseId);
-        console.log('[SYNC] Push complete (owner path)');
-      } else {
-        await pullOtherUsersPlotData(window._activeCloudCruiseId, { silent: true });
-        console.log('[SYNC] Push to existing cruise: ' + window._activeCloudCruiseId + ', owner=OTHER');
-        await saveUserPlotData(window._activeCloudCruiseId);
-        console.log('[SYNC] Push complete (shared user path)');
-      }
+      const syncMode = await syncExistingCruiseState(window._activeCloudCruiseId);
+      console.log('[SYNC] Push complete (' + syncMode + ' path)');
     }
 
     // Pull: fetch other users' plot data and merge onto local markers
@@ -5793,8 +5819,14 @@ async function updateCruiseInCloud(cruiseId) {
   if (!fb_user) return;
   const activeJob = normalizeJobCruiseSettings(allJobs.find(j => j.id === activeJobId));
   try {
+    const ownerFields = (!window._activeCloudCruiseOwner || window._activeCloudCruiseOwner === fb_user.uid) ? {
+      ownerId: fb_user.uid,
+      ownerName: fb_user.displayName || fb_user.email,
+      ownerEmail: getCurrentUserEmail()
+    } : {};
     // Update shared cruise metadata (polygons, plot locations, settings)
     await fb_db.collection('cruises').doc(cruiseId).update({
+      ...ownerFields,
       updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
       polygonsJson: JSON.stringify(allPolygons.map(getPolygonSerializableData)),
       plotsJson: JSON.stringify(plotMarkers.map(p => ({ id: p.id, lat: p.lat, lng: p.lng }))),
@@ -10621,14 +10653,7 @@ function scheduleCloudSync() {
   _cloudSyncTimer = setTimeout(async () => {
     _cloudSyncTimer = null;
     try {
-      await ensureActiveCloudCruiseOwner(window._activeCloudCruiseId);
-      if (window._activeCloudCruiseOwner === fb_user.uid) {
-        await updateCruiseInCloud(window._activeCloudCruiseId);
-        await pullOtherUsersPlotData(window._activeCloudCruiseId, { silent: true, skipPlotLocations: true, skipBoundaries: true });
-      } else {
-        await saveUserPlotData(window._activeCloudCruiseId);
-        await pullOtherUsersPlotData(window._activeCloudCruiseId, { silent: true });
-      }
+      await syncExistingCruiseState(window._activeCloudCruiseId, { silent: true });
       _lastSyncedPlotHash = getPlotHash();
       _lastSyncedPlotLocationHash = getPlotLocationHash();
       setSyncPending(false);
