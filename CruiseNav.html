@@ -5939,9 +5939,7 @@ async function loadCruiseFromCloud(cruiseId, options = {}) {
       window._cloudContributors = [d.ownerName || 'Owner'];
     }
 
-    if (allPolygons.length) {
-      try { map.fitBounds(L.featureGroup(allPolygons.map(p => p.layer)).getBounds().pad(0.1)); } catch(e) {}
-    }
+    queueMapRefresh({ fitBounds: allPolygons.length > 0, delay: 100 });
 
     window._activeCloudCruiseId = cruiseId;
     window._activeCloudCruiseOwner = d.ownerId;
@@ -7053,6 +7051,28 @@ function toast(msg) {
 
 // â”€â”€ Panel management â”€â”€
 let currentPanel = null;
+let _mapRefreshTimer = null;
+
+function queueMapRefresh(options = {}) {
+  if (_mapRefreshTimer) clearTimeout(_mapRefreshTimer);
+  const delay = Number.isFinite(options.delay) ? options.delay : 90;
+  _mapRefreshTimer = setTimeout(() => {
+    _mapRefreshTimer = null;
+    try { map.invalidateSize(true); } catch (e) {}
+    try {
+      tractLayer.eachLayer(layer => {
+        if (layer && typeof layer.redraw === 'function') layer.redraw();
+      });
+    } catch (e) {}
+    if (options.fitBounds && allPolygons.length) {
+      try {
+        const group = L.featureGroup(allPolygons.map(p => p.layer));
+        map.fitBounds(group.getBounds().pad(0.1));
+      } catch (e) {}
+    }
+  }, delay);
+}
+
 // â”€â”€ Cruise Setup Panel â”€â”€
 function initCruiseSetupPanel() {
   const job = normalizeJobCruiseSettings(allJobs.find(j => j.id === activeJobId));
@@ -8559,6 +8579,7 @@ function closePanel() {
   document.getElementById('panel-overlay').classList.remove('open');
   document.querySelectorAll('.panel').forEach(p => p.classList.remove('open'));
   currentPanel = null;
+  queueMapRefresh({ fitBounds: false, delay: 60 });
 }
 
 const HELP_GUIDE_STARTUP_KEY = 'cruisenav-help-show-on-start-v1';
@@ -10643,12 +10664,7 @@ function loadJob(jobId, skipSave) {
     });
   }
 
-  if (allPolygons.length) {
-    try {
-      const group = L.featureGroup(allPolygons.map(p => p.layer));
-      map.fitBounds(group.getBounds().pad(0.1));
-    } catch(e) {}
-  }
+  queueMapRefresh({ fitBounds: allPolygons.length > 0, delay: 100 });
 
   updateStats();
   updateTractInfo();
@@ -10820,10 +10836,12 @@ function switchToJob(jobId) {
     closePanel();
     return;
   }
-  loadJob(jobId);
   closePanel();
-  const job = allJobs.find(j => j.id === jobId);
-  toast('Switched to: ' + (job ? job.name : 'Job'));
+  requestAnimationFrame(() => {
+    loadJob(jobId);
+    const job = allJobs.find(j => j.id === jobId);
+    toast('Switched to: ' + (job ? job.name : 'Job'));
+  });
 }
 
 // Auto-create a job if none exists when user starts working
