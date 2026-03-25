@@ -5642,7 +5642,11 @@ async function pullOtherUsersPlotData(cruiseId, options = {}) {
     const localHasUnsyncedLayout = _syncPending || (getPlotLocationHash() !== _lastSyncedPlotLocationHash);
     const acceptCloudPlotLocations = !skipPlotLocations && !(ownerIsLocalUser && localHasUnsyncedLayout);
     const cloudDeletedPlotIdSet = new Set(normalizeDeletedPlotIds(parseJsonArray(d.deletedPlotIdsJson)));
-    const pendingLocalDeletedPlotIds = ownerIsLocalUser && localHasUnsyncedLayout ? getActiveJobDeletedPlotIds() : [];
+    // Always include locally deleted plot IDs so a pull never re-adds a plot the
+    // current user deliberately deleted — regardless of whether they are the owner
+    // or a shared collaborator (non-owners cannot write to the main cruise doc, so
+    // their deletions never reach cloudDeletedPlotIdsJson).
+    const pendingLocalDeletedPlotIds = getActiveJobDeletedPlotIds();
     const deletedPlotIdSet = new Set([...cloudDeletedPlotIdSet, ...pendingLocalDeletedPlotIds]);
 
     if (!(ownerIsLocalUser && localHasUnsyncedLayout) && cloudDeletedPlotIdSet.size) {
