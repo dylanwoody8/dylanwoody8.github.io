@@ -3867,6 +3867,7 @@ function normalizeJobCruiseSettings(job) {
   if (!LOG_RULES[job.logRule]) job.logRule = 'scribner';
   job.formClass = normalizeFormClass(job.formClass);
   if (!Array.isArray(job.species) || job.species.length === 0) job.species = getDefaultCruiseSpecies();
+  job.deletedPlotIds = normalizeDeletedPlotIds(job.deletedPlotIds);
   if (!job.cruiseType || !CRUISE_METHOD_MAP[job.cruiseType]) {
     job.cruiseType = deriveCruiseTypeFromLegacyBaf(job.baf);
   }
@@ -3877,6 +3878,47 @@ function normalizeJobCruiseSettings(job) {
     job.baf = 20;
   }
   return job;
+}
+
+function normalizeDeletedPlotIds(ids) {
+  return Array.from(new Set((Array.isArray(ids) ? ids : [])
+    .map(id => String(id == null ? '' : id).trim())
+    .filter(Boolean)))
+    .sort((a, b) => a.localeCompare(b));
+}
+
+function getJobDeletedPlotIds(job) {
+  return normalizeDeletedPlotIds(job && job.deletedPlotIds);
+}
+
+function getActiveJobDeletedPlotIds() {
+  const job = normalizeJobCruiseSettings(allJobs.find(j => j.id === activeJobId));
+  if (!job) return [];
+  job.deletedPlotIds = normalizeDeletedPlotIds(job.deletedPlotIds);
+  return job.deletedPlotIds.slice();
+}
+
+function rememberDeletedPlotIds(ids) {
+  const job = normalizeJobCruiseSettings(allJobs.find(j => j.id === activeJobId));
+  if (!job) return;
+  const merged = new Set(getJobDeletedPlotIds(job));
+  (Array.isArray(ids) ? ids : [ids]).forEach(id => {
+    const key = String(id == null ? '' : id).trim();
+    if (key) merged.add(key);
+  });
+  job.deletedPlotIds = Array.from(merged).sort((a, b) => a.localeCompare(b));
+  job.updatedAt = Date.now();
+}
+
+function clearDeletedPlotId(id) {
+  const job = normalizeJobCruiseSettings(allJobs.find(j => j.id === activeJobId));
+  if (!job) return;
+  const key = String(id == null ? '' : id).trim();
+  const next = getJobDeletedPlotIds(job).filter(existing => existing !== key);
+  if (next.length !== job.deletedPlotIds.length) {
+    job.deletedPlotIds = next;
+    job.updatedAt = Date.now();
+  }
 }
 
 // Available DBH classes for tally buttons
@@ -5195,6 +5237,7 @@ async function saveCruiseToCloud() {
       logRule: (activeJob && activeJob.logRule) || 'scribner',
       formClass: normalizeFormClass(activeJob && activeJob.formClass),
       species: (activeJob && activeJob.species) || [],
+      deletedPlotIdsJson: JSON.stringify(getActiveJobDeletedPlotIds()),
       createdAt: firebase.firestore.FieldValue.serverTimestamp(),
       updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
       // Polygons/boundaries stored on main doc (shared by all)
@@ -5518,9 +5561,25 @@ async function pullOtherUsersPlotData(cruiseId, options = {}) {
     let newPlotsCount = 0;
     let newBoundariesCount = 0;
     let updatedPlotsCount = 0;
+    let removedPlotsCount = 0;
     const ownerIsLocalUser = (d.ownerId && d.ownerId === fb_user.uid) || window._activeCloudCruiseOwner === fb_user.uid;
     const localHasUnsyncedLayout = _syncPending || (getPlotLocationHash() !== _lastSyncedPlotLocationHash);
     const acceptCloudPlotLocations = !skipPlotLocations && !(ownerIsLocalUser && localHasUnsyncedLayout);
+    const cloudDeletedPlotIdSet = new Set(normalizeDeletedPlotIds(parseJsonArray(d.deletedPlotIdsJson)));
+    const pendingLocalDeletedPlotIds = ownerIsLocalUser && localHasUnsyncedLayout ? getActiveJobDeletedPlotIds() : [];
+    const deletedPlotIdSet = new Set([...cloudDeletedPlotIdSet, ...pendingLocalDeletedPlotIds]);
+
+    if (!(ownerIsLocalUser && localHasUnsyncedLayout) && cloudDeletedPlotIdSet.size) {
+      const previousNavId = navTargetId;
+      for (let i = plotMarkers.length - 1; i >= 0; i--) {
+        const plot = plotMarkers[i];
+        if (!cloudDeletedPlotIdSet.has(String(plot.id))) continue;
+        plotLayer.removeLayer(plot.marker);
+        plotMarkers.splice(i, 1);
+        removedPlotsCount++;
+        if (String(previousNavId) === String(plot.id)) stopNavigation();
+      }
+    }
 
     // Sync plot locations from the main doc (new plots added on other devices)
     if (d.plotsJson && acceptCloudPlotLocations) {
@@ -5528,6 +5587,7 @@ async function pullOtherUsersPlotData(cruiseId, options = {}) {
       const existingPlotIds = new Set(plotMarkers.map(p => String(p.id)));
       cloudPlotLocs.forEach(cp => {
         const plotKey = String(cp.id);
+        if (deletedPlotIdSet.has(plotKey)) return;
         if (!existingPlotIds.has(plotKey)) {
           // New plot location from cloud that doesn't exist locally
           addPlot(cp.id, cp.lat, cp.lng);
@@ -5553,6 +5613,10 @@ async function pullOtherUsersPlotData(cruiseId, options = {}) {
           newBoundariesCount++;
         }
       });
+    }
+    const activeJob = normalizeJobCruiseSettings(allJobs.find(j => j.id === activeJobId));
+    if (activeJob) {
+      activeJob.deletedPlotIds = normalizeDeletedPlotIds(Array.from(deletedPlotIdSet));
     }
 
     // Build a map of all completed plots from all users in the cloud
@@ -5641,12 +5705,13 @@ async function pullOtherUsersPlotData(cruiseId, options = {}) {
 
     console.log('[PULL] Result: newPlots=' + newPlotsCount + ', newBoundaries=' + newBoundariesCount + ', updatedPlots=' + updatedPlotsCount);
 
-    if (newPlotsCount > 0 || newBoundariesCount > 0 || updatedPlotsCount > 0) {
+    if (newPlotsCount > 0 || newBoundariesCount > 0 || updatedPlotsCount > 0 || removedPlotsCount > 0) {
       updateStats();
       updateTractInfo();
       updateEmptyHint();
       refreshPolyChecklist();
       const parts = [];
+      if (removedPlotsCount > 0) parts.push(removedPlotsCount + ' deleted plot' + (removedPlotsCount > 1 ? 's' : ''));
       if (newPlotsCount > 0) parts.push(newPlotsCount + ' new plot' + (newPlotsCount > 1 ? 's' : ''));
       if (newBoundariesCount > 0) parts.push(newBoundariesCount + ' new boundar' + (newBoundariesCount > 1 ? 'ies' : 'y'));
       if (updatedPlotsCount > 0) parts.push(updatedPlotsCount + ' updated');
@@ -5657,7 +5722,7 @@ async function pullOtherUsersPlotData(cruiseId, options = {}) {
     if (userDataUnavailable && !silent) {
       toast('Shared plot details are unavailable with current Firestore rules.');
     }
-    return { newPlotsCount, newBoundariesCount, updatedPlotsCount, userDataUnavailable };
+    return { newPlotsCount, newBoundariesCount, updatedPlotsCount, removedPlotsCount, userDataUnavailable };
   } catch(e) {
     console.error('[PULL] FAILED:', e);
     if (!silent) toast(formatCloudSyncError('Pull', e));
@@ -5691,6 +5756,7 @@ async function updateCruiseInCloud(cruiseId) {
       logRule: (activeJob && activeJob.logRule) || 'scribner',
       formClass: normalizeFormClass(activeJob && activeJob.formClass),
       species: (activeJob && activeJob.species) || [],
+      deletedPlotIdsJson: JSON.stringify(getActiveJobDeletedPlotIds()),
       distUnit: distUnit,
       basemap: currentBasemap
     });
@@ -5892,6 +5958,7 @@ async function loadCruiseFromCloud(cruiseId, options = {}) {
 
     if (hasNewFormat) {
       // â”€â”€ New multi-user format â”€â”€
+      const deletedPlotIdSet = new Set(normalizeDeletedPlotIds(parseJsonArray(d.deletedPlotIdsJson)));
 
       // Restore polygons from main doc
       if (d.polygonsJson) {
@@ -5900,7 +5967,10 @@ async function loadCruiseFromCloud(cruiseId, options = {}) {
 
       // Restore all plot locations from main doc
       if (d.plotsJson) {
-        parseJsonArray(d.plotsJson).forEach(pd => addPlot(pd.id, pd.lat, pd.lng));
+        parseJsonArray(d.plotsJson).forEach(pd => {
+          if (deletedPlotIdSet.has(String(pd.id))) return;
+          addPlot(pd.id, pd.lat, pd.lng);
+        });
       }
 
       // Merge pre-fetched user tree data from sub-collection, preferring the newest edit per plot.
@@ -5985,6 +6055,7 @@ async function loadCruiseFromCloud(cruiseId, options = {}) {
         name: d.name || 'Cloud Cruise',
         plots: [],
         polygons: [],
+        deletedPlotIds: [],
         cruiseType: d.cruiseType || deriveCruiseTypeFromLegacyBaf(d.baf),
         baf: d.baf || 20,
         logRule: d.logRule || 'scribner',
@@ -6004,6 +6075,7 @@ async function loadCruiseFromCloud(cruiseId, options = {}) {
     localJob.logRule = d.logRule || localJob.logRule;
     localJob.formClass = normalizeFormClass(d.formClass || localJob.formClass);
     localJob.species = (d.species && d.species.length) ? d.species : localJob.species;
+    localJob.deletedPlotIds = normalizeDeletedPlotIds(parseJsonArray(d.deletedPlotIdsJson));
     localJob.plots = plotMarkers.map(p => ({
       id: p.id, lat: p.lat, lng: p.lng, completed: p.completed,
       trees: p.trees || [], noTally: p.noTally || false, cruiser: p.cruiser || ''
@@ -8548,10 +8620,11 @@ function getReportJobData() {
   if (_reportJobId === activeJobId || !_reportJobId) {
     return { plots: plotMarkers, polygons: allPolygons, isLive: true };
   }
-  const job = allJobs.find(j => j.id === _reportJobId);
+  const job = normalizeJobCruiseSettings(allJobs.find(j => j.id === _reportJobId));
   if (!job) return { plots: [], polygons: [], isLive: false };
+  const deletedPlotIdSet = new Set(getJobDeletedPlotIds(job));
 
-  const plots = (job.plots || []).map(pd => ({
+  const plots = (job.plots || []).filter(pd => !deletedPlotIdSet.has(String(pd.id))).map(pd => ({
     id: pd.id, lat: pd.lat, lng: pd.lng,
     completed: pd.completed || false,
     trees: pd.trees || [],
@@ -8858,7 +8931,7 @@ function onManualPlotClick(e) {
   placingPlot = false;
   document.getElementById('draw-hint').classList.remove('show');
   const id = plotMarkers.length + 1;
-  addPlot(id, e.latlng.lat, e.latlng.lng);
+  addPlot(id, e.latlng.lat, e.latlng.lng, { clearDeleted: true });
   toast('Plot ' + id + ' placed');
 }
 
@@ -9132,7 +9205,9 @@ function updateLocationHeading() {
 }
 
 // â”€â”€ Plot management â”€â”€
-function addPlot(id, lat, lng) {
+function addPlot(id, lat, lng, options) {
+  const opts = options || {};
+  if (opts.clearDeleted) clearDeletedPlotId(id);
   const size = 28;
   const icon = L.divIcon({
     className: '',
@@ -9244,6 +9319,7 @@ function updatePlotMarkerStyle(plot) {
 function deletePlot(id) {
   const idx = plotMarkers.findIndex(p => String(p.id) === String(id));
   if (idx === -1) return;
+  rememberDeletedPlotIds([id]);
   if (String(navTargetId) === String(id)) stopNavigation();
   const plot = plotMarkers[idx];
   plotLayer.removeLayer(plot.marker);
@@ -9261,6 +9337,7 @@ async function clearPlots() {
   if (plotMarkers.length === 0) { toast('No plots to clear'); return; }
   const ok = await showConfirm('Clear all ' + plotMarkers.length + ' plots?');
   if (!ok) return;
+  rememberDeletedPlotIds(plotMarkers.map(p => p.id));
   plotMarkers.forEach(p => plotLayer.removeLayer(p.marker));
   plotMarkers = [];
   stopNavigation();
@@ -9337,6 +9414,7 @@ function generatePlots() {
   }
 
   // Clear existing
+  rememberDeletedPlotIds(plotMarkers.map(p => p.id));
   plotMarkers.forEach(p => plotLayer.removeLayer(p.marker));
   plotMarkers = [];
   stopNavigation();
@@ -9394,7 +9472,7 @@ function generatePlots() {
   const sorted = sortByLineOrder(allPoints);
   sorted.forEach((p, i) => {
     p.id = i + 1;
-    addPlot(p.id, p.lat, p.lng);
+    addPlot(p.id, p.lat, p.lng, { clearDeleted: true });
   });
 
   closePanel();
@@ -10681,6 +10759,7 @@ function loadJob(jobId, skipSave) {
   applyJobGridSettings(job);
 
   activeJobId = jobId;
+  const deletedPlotIdSet = new Set(getJobDeletedPlotIds(job));
 
   // Restore cloud cruise link if this job is linked to one
   if (job.cloudCruiseId) {
@@ -10702,6 +10781,7 @@ function loadJob(jobId, skipSave) {
   // Restore plots
   if (job.plots && job.plots.length) {
     job.plots.forEach(pd => {
+      if (deletedPlotIdSet.has(String(pd.id))) return;
       addPlot(pd.id, pd.lat, pd.lng);
       const plot = plotMarkers.find(p => p.id === pd.id);
       if (plot) {
@@ -10754,6 +10834,7 @@ async function createNewJob() {
     name: name.trim(),
     plots: [],
     polygons: [],
+    deletedPlotIds: [],
     cruiseType: 'baf_20',
     baf: 20,
     logRule: 'scribner',
@@ -10903,6 +10984,7 @@ async function ensureActiveJob() {
     name: name.trim(),
     plots: [],
     polygons: [],
+    deletedPlotIds: [],
     cruiseType: 'baf_20',
     baf: 20,
     logRule: 'scribner',
