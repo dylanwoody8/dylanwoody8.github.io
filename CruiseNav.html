@@ -6121,8 +6121,6 @@ async function loadCruiseFromCloud(cruiseId, options = {}) {
       window._cloudContributors = [d.ownerName || 'Owner'];
     }
 
-    queueMapRefresh({ fitBounds: allPolygons.length > 0, delay: 100 });
-
     window._activeCloudCruiseId = cruiseId;
     window._activeCloudCruiseOwner = d.ownerId;
 
@@ -6177,6 +6175,7 @@ async function loadCruiseFromCloud(cruiseId, options = {}) {
     updateEmptyHint();
     refreshPolyChecklist();
     closePanel();
+    queueMapRefresh({ fitBounds: allPolygons.length > 0, delay: 120, followupDelay: 500 });
 
     // Set up sync button and record baseline
     _lastSyncedPlotHash = getPlotHash();
