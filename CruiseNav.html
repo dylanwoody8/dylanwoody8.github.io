@@ -1536,6 +1536,109 @@
   }
   .tally-del:active { opacity: 0.6; }
 
+  .tally-overlay.tally-display-large-touch .tally-body,
+  .tally-overlay.tally-display-senior-grid .tally-body {
+    padding: 18px 20px;
+    padding-bottom: calc(22px + var(--safe-bottom));
+  }
+  .tally-overlay.tally-display-large-touch .tally-title,
+  .tally-overlay.tally-display-senior-grid .tally-title {
+    font-size: 1.28rem;
+  }
+  .tally-overlay.tally-display-large-touch .tally-body .field-label,
+  .tally-overlay.tally-display-senior-grid .tally-body .field-label {
+    font-size: 0.82rem;
+  }
+  .tally-overlay.tally-display-large-touch .tally-section-title,
+  .tally-overlay.tally-display-senior-grid .tally-section-title {
+    font-size: 0.98rem;
+  }
+  .tally-overlay.tally-display-large-touch .product-btn,
+  .tally-overlay.tally-display-senior-grid .product-btn {
+    padding: 16px 10px;
+    font-size: 0.95rem;
+  }
+  .tally-overlay.tally-display-large-touch .dbh-chip,
+  .tally-overlay.tally-display-senior-grid .dbh-chip {
+    min-width: 64px;
+    padding: 14px 12px;
+    font-size: 1.12rem;
+  }
+  .tally-overlay.tally-display-large-touch .tally-species-chip,
+  .tally-overlay.tally-display-senior-grid .tally-species-chip {
+    min-width: 72px;
+    padding: 14px 16px;
+    font-size: 0.9rem;
+  }
+  .tally-overlay.tally-display-large-touch .log-btn,
+  .tally-overlay.tally-display-large-touch .ht-btn,
+  .tally-overlay.tally-display-senior-grid .log-btn,
+  .tally-overlay.tally-display-senior-grid .ht-btn {
+    padding: 13px 16px;
+    font-size: 0.96rem;
+  }
+  .tally-overlay.tally-display-large-touch .tally-add-row .btn,
+  .tally-overlay.tally-display-large-touch .tally-body > .btn,
+  .tally-overlay.tally-display-senior-grid .tally-add-row .btn,
+  .tally-overlay.tally-display-senior-grid .tally-body > .btn {
+    font-size: 0.96rem;
+    padding: 17px 16px;
+  }
+  .tally-overlay.tally-display-large-touch .tally-utility-btn,
+  .tally-overlay.tally-display-senior-grid .tally-utility-btn {
+    padding: 16px 18px !important;
+  }
+  .tally-overlay.tally-display-large-touch .tally-table th,
+  .tally-overlay.tally-display-senior-grid .tally-table th {
+    font-size: 0.68rem;
+  }
+  .tally-overlay.tally-display-large-touch .tally-table td,
+  .tally-overlay.tally-display-senior-grid .tally-table td {
+    font-size: 0.86rem;
+  }
+  .tally-overlay.tally-display-large-touch .tally-live-stats {
+    padding: 14px;
+  }
+  .tally-overlay.tally-display-large-touch .tally-stat-val {
+    font-size: 1.72rem;
+  }
+  .tally-overlay.tally-display-senior-grid .tally-live-stats {
+    padding: 10px;
+    gap: 8px;
+  }
+  .tally-overlay.tally-display-senior-grid .tally-stat-val {
+    font-size: 1.4rem;
+  }
+  .tally-overlay.tally-display-senior-grid .species-scroll-wrap,
+  .tally-overlay.tally-display-senior-grid .dbh-scroll-wrap {
+    padding: 10px;
+  }
+  .tally-overlay.tally-display-senior-grid .species-scroll-row,
+  .tally-overlay.tally-display-senior-grid .dbh-scroll-row {
+    overflow: visible;
+    overflow-y: visible;
+    padding-bottom: 0;
+    scroll-snap-type: none;
+  }
+  .tally-overlay.tally-display-senior-grid .species-scroll-row {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 8px;
+  }
+  .tally-overlay.tally-display-senior-grid .dbh-scroll-row {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 8px;
+  }
+  .tally-overlay.tally-display-senior-grid .dbh-chip,
+  .tally-overlay.tally-display-senior-grid .tally-species-chip {
+    min-width: 0;
+    width: 100%;
+  }
+  .tally-overlay.tally-display-senior-grid .dbh-scroll-hint {
+    text-align: center;
+  }
+
   /* â•â•â• CRUISE SETUP IN JOB CREATION â•â•â• */
   .cruise-setup-row {
     display: grid;
@@ -3065,6 +3168,15 @@
     </select>
     <div class="field-help">Walking Direction waits until you start moving, then points using your travel direction instead of the phone compass.</div>
   </div>
+  <div class="field-group">
+    <div class="field-label">Tally Display</div>
+    <select class="field-input" id="tally-display-preset" onchange="setTallyDisplayPreset(this.value)">
+      <option value="standard">Standard</option>
+      <option value="large_touch">Large Touch</option>
+      <option value="senior_grid">Senior Grid</option>
+    </select>
+    <div class="field-help">Large Touch keeps the same tally flow with bigger buttons. Senior Grid uses the biggest tap targets and shows all DBH classes on screen without side-scrolling.</div>
+  </div>
   <button class="btn btn-danger" onclick="clearEverything()">Clear All Data</button>
   <div class="theme-picker">
     <div class="theme-picker-label">Theme Color</div>
@@ -3407,6 +3519,56 @@ let wakeLock = null;
 let lastToggle = null;           // {id, previousState} for undo
 let _confirmCb = null;
 let _localSharedAccess = {};     // { "<email>::<cruiseId>": { cruiseId, shareCode, name, email, joinedAt } }
+const TALLY_DISPLAY_PRESETS = {
+  standard: { label: 'Standard' },
+  large_touch: { label: 'Large Touch' },
+  senior_grid: { label: 'Senior Grid' }
+};
+let tallyDisplayPreset = 'standard';
+
+function normalizeTallyDisplayPreset(value) {
+  const key = String(value || '').trim();
+  return TALLY_DISPLAY_PRESETS[key] ? key : 'standard';
+}
+
+function getTallyDisplayPresetLabel(value) {
+  const preset = TALLY_DISPLAY_PRESETS[normalizeTallyDisplayPreset(value)];
+  return preset ? preset.label : 'Standard';
+}
+
+function isSeniorTallyDisplay() {
+  return normalizeTallyDisplayPreset(tallyDisplayPreset) === 'senior_grid';
+}
+
+function applyTallyDisplayPreset() {
+  tallyDisplayPreset = normalizeTallyDisplayPreset(tallyDisplayPreset);
+  const select = document.getElementById('tally-display-preset');
+  if (select && select.value !== tallyDisplayPreset) select.value = tallyDisplayPreset;
+  const overlay = document.getElementById('tally-overlay');
+  if (!overlay) return;
+  overlay.classList.remove('tally-display-standard', 'tally-display-large-touch', 'tally-display-senior-grid');
+  if (tallyDisplayPreset === 'large_touch') overlay.classList.add('tally-display-large-touch');
+  else if (tallyDisplayPreset === 'senior_grid') overlay.classList.add('tally-display-senior-grid');
+  else overlay.classList.add('tally-display-standard');
+}
+
+function setTallyDisplayPreset(value, opts) {
+  const normalized = normalizeTallyDisplayPreset(value);
+  const changed = tallyDisplayPreset !== normalized;
+  tallyDisplayPreset = normalized;
+  applyTallyDisplayPreset();
+  if (document.getElementById('tally-overlay') && document.getElementById('tally-overlay').classList.contains('open')) {
+    tallyBuildSpecies();
+    tallyBuildDBH();
+    tallyBuildLogs();
+    tallyRenderTable();
+    tallyUpdateStats();
+  }
+  if (!opts || !opts.skipSave) saveSession({ skipCloudSync: true });
+  if (changed && (!opts || !opts.silent)) {
+    toast('Tally display: ' + getTallyDisplayPresetLabel(normalized));
+  }
+}
 
 // â”€â”€ Jobs System â”€â”€
 let allJobs = [];                // [{id, name, plots, polygons, createdAt}]
@@ -4478,6 +4640,7 @@ function openTallyModal(plotOrId) {
     toast('Plot not found');
     return;
   }
+  applyTallyDisplayPreset();
   tallyPlotId = plot.id;
   const trees = plot.trees || [];
   tallyTrees = JSON.parse(JSON.stringify(trees));
@@ -4543,7 +4706,7 @@ function tallyBuildSpecies() {
       '<button type="button" class="tally-species-chip' + (sp.code === tallySelSpecies ? ' sel' : '') + '" data-code="' + sp.code + '" onclick="tallyPickSpecies(\'' + sp.code + '\')">' + sp.code + '</button>'
     ).join('');
     const selected = row.querySelector('.tally-species-chip.sel');
-    if (selected && selected.scrollIntoView) {
+    if (!isSeniorTallyDisplay() && selected && selected.scrollIntoView) {
       selected.scrollIntoView({ block: 'nearest', inline: 'center' });
     }
   }
@@ -4566,12 +4729,14 @@ function tallyBuildDBH() {
       '<button type="button" class="dbh-chip' + (d === tallySelDBH ? ' sel' : '') + '" data-dbh="' + d + '" onclick="tallyPickDBH(' + d + ')">' + d + '"</button>'
     ).join('');
     const selected = row.querySelector('.dbh-chip.sel');
-    if (selected && selected.scrollIntoView) {
+    if (!isSeniorTallyDisplay() && selected && selected.scrollIntoView) {
       selected.scrollIntoView({ block: 'nearest', inline: 'center' });
     }
   }
   if (hint) {
-    hint.textContent = tallySelDBH > 18 ? 'Swipe left for smaller DBH' : 'Swipe right for larger DBH';
+    hint.textContent = isSeniorTallyDisplay()
+      ? 'All DBH classes shown'
+      : (tallySelDBH > 18 ? 'Swipe left for smaller DBH' : 'Swipe right for larger DBH');
   }
 }
 
@@ -10478,6 +10643,7 @@ function buildOfflineBackupPayload() {
       activeJobId: activeJobId,
       distUnit: distUnit,
       navHeadingMode: navHeadingMode,
+      tallyDisplayPreset: tallyDisplayPreset,
       basemap: currentBasemap,
       cloudCruiseId: window._activeCloudCruiseId || null,
       cloudCruiseOwner: window._activeCloudCruiseOwner || null,
@@ -10524,6 +10690,7 @@ function applyBackupSessionState(session) {
     if (toggle) toggle.textContent = distUnit;
   }
   setNavHeadingMode(session && session.navHeadingMode, { skipSave: true });
+  setTallyDisplayPreset(session && session.tallyDisplayPreset, { skipSave: true, silent: true });
   _localSharedAccess = {};
   if (Array.isArray(session && session.localSharedAccess)) {
     session.localSharedAccess.forEach(entry => {
@@ -10568,6 +10735,7 @@ async function applyOfflineBackupPayload(payload) {
       activeJobId: session.activeJobId || null,
       distUnit: session.distUnit || distUnit,
       navHeadingMode: session.navHeadingMode || navHeadingMode,
+      tallyDisplayPreset: session.tallyDisplayPreset || tallyDisplayPreset,
       basemap: Number.isFinite(Number(session.basemap)) ? Number(session.basemap) : currentBasemap,
       cloudCruiseId: session.cloudCruiseId || null,
       cloudCruiseOwner: session.cloudCruiseOwner || null,
@@ -10631,7 +10799,7 @@ function scheduleCloudSync() {
   }, 3000); // Wait 3 seconds of inactivity before syncing
 }
 
-async function saveSession() {
+async function saveSession(opts) {
   try {
     const db = await openDB();
 
@@ -10657,6 +10825,7 @@ async function saveSession() {
       activeJobId: activeJobId,
       distUnit: distUnit,
       navHeadingMode: navHeadingMode,
+      tallyDisplayPreset: tallyDisplayPreset,
       basemap: currentBasemap,
       cloudCruiseId: window._activeCloudCruiseId || null,
       cloudCruiseOwner: window._activeCloudCruiseOwner || null,
@@ -10664,8 +10833,9 @@ async function saveSession() {
     }, 'session');
     await new Promise((res, rej) => { tx2.oncomplete = res; tx2.onerror = rej; });
 
-    // Schedule debounced cloud sync instead of immediate write
-    scheduleCloudSync();
+    if (!opts || !opts.skipCloudSync) {
+      scheduleCloudSync();
+    }
   } catch(e) { console.warn('Save error:', e); }
   saveOfflineBackupMirror();
 }
@@ -10711,6 +10881,7 @@ async function restoreSession() {
         document.getElementById('unit-toggle').textContent = distUnit;
       }
       setNavHeadingMode(data.navHeadingMode, { skipSave: true });
+      setTallyDisplayPreset(data.tallyDisplayPreset, { skipSave: true, silent: true });
       _localSharedAccess = {};
       if (Array.isArray(data.localSharedAccess)) {
         data.localSharedAccess.forEach(entry => {
@@ -11106,6 +11277,7 @@ if ('serviceWorker' in navigator) {
 }
 
 window.addEventListener('load', () => {
+  applyTallyDisplayPreset();
   queueMapRefresh({ fitBounds: allPolygons.length > 0, delay: 120, followupDelay: 500 });
 });
 
