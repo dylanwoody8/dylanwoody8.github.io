@@ -1536,6 +1536,115 @@
   }
   .tally-del:active { opacity: 0.6; }
 
+  .tally-overlay.tally-display-one-screen .tally-header {
+    padding: 12px 14px;
+  }
+  .tally-overlay.tally-display-one-screen .tally-title {
+    font-size: 1.08rem;
+  }
+  .tally-overlay.tally-display-one-screen .tally-close {
+    font-size: 20px;
+  }
+  .tally-overlay.tally-display-one-screen .tally-body {
+    padding: 10px 12px;
+    padding-bottom: calc(12px + var(--safe-bottom));
+  }
+  .tally-overlay.tally-display-one-screen .tally-live-stats {
+    display: none;
+  }
+  .tally-overlay.tally-display-one-screen .tally-section-title {
+    font-size: 0.82rem;
+    margin-bottom: 8px;
+    padding-bottom: 4px;
+  }
+  .tally-overlay.tally-display-one-screen .tally-body .field-label {
+    font-size: 0.66rem;
+    margin-bottom: 5px;
+  }
+  .tally-overlay.tally-display-one-screen .species-scroll-wrap,
+  .tally-overlay.tally-display-one-screen .dbh-scroll-wrap {
+    padding: 6px;
+    margin-bottom: 8px;
+  }
+  .tally-overlay.tally-display-one-screen .species-scroll-row,
+  .tally-overlay.tally-display-one-screen .dbh-scroll-row {
+    padding-bottom: 0;
+  }
+  .tally-overlay.tally-display-one-screen .product-toggle {
+    gap: 6px;
+    margin-bottom: 8px;
+  }
+  .tally-overlay.tally-display-one-screen .product-btn {
+    padding: 10px 6px;
+    font-size: 0.74rem;
+  }
+  .tally-overlay.tally-display-one-screen .tally-species-chip {
+    min-width: 54px;
+    padding: 8px 10px;
+    font-size: 0.74rem;
+  }
+  .tally-overlay.tally-display-one-screen .dbh-scroll-row {
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 6px;
+    overflow: visible;
+    overflow-y: visible;
+    scroll-snap-type: none;
+  }
+  .tally-overlay.tally-display-one-screen .dbh-chip {
+    min-width: 0;
+    width: 100%;
+    padding: 8px 4px;
+    font-size: 0.92rem;
+  }
+  .tally-overlay.tally-display-one-screen .dbh-scroll-hint {
+    text-align: center;
+    margin-top: 4px;
+    font-size: 0.56rem;
+  }
+  .tally-overlay.tally-display-one-screen #tally-method-note {
+    display: none;
+  }
+  .tally-overlay.tally-display-one-screen #tally-logs-section {
+    margin-top: 2px;
+  }
+  .tally-overlay.tally-display-one-screen .logs-row {
+    gap: 4px;
+    margin-bottom: 8px;
+  }
+  .tally-overlay.tally-display-one-screen .log-btn,
+  .tally-overlay.tally-display-one-screen .ht-btn {
+    padding: 8px 9px;
+    font-size: 0.78rem;
+  }
+  .tally-overlay.tally-display-one-screen .ht-grid {
+    gap: 4px;
+    margin-bottom: 6px;
+  }
+  .tally-overlay.tally-display-one-screen .ht-note {
+    margin-bottom: 8px;
+    font-size: 0.58rem;
+  }
+  .tally-overlay.tally-display-one-screen .tally-add-row {
+    gap: 6px;
+    margin-bottom: 10px;
+  }
+  .tally-overlay.tally-display-one-screen .tally-add-row .btn {
+    font-size: 0.76rem;
+    padding: 11px 8px;
+  }
+  .tally-overlay.tally-display-one-screen .tally-ld-wrap {
+    margin-bottom: 8px;
+  }
+  .tally-overlay.tally-display-one-screen .tally-utility-btn {
+    padding: 11px 12px !important;
+  }
+  .tally-overlay.tally-display-one-screen .tally-utility-label {
+    font-size: 0.72rem;
+  }
+  .tally-overlay.tally-display-one-screen .tally-utility-value {
+    font-size: 0.68rem;
+  }
   .tally-overlay.tally-display-large-touch .tally-body,
   .tally-overlay.tally-display-senior-grid .tally-body {
     padding: 18px 20px;
@@ -3184,11 +3293,12 @@
     <div class="field-label">Tally Display</div>
     <select class="field-input" id="tally-display-preset" onchange="setTallyDisplayPreset(this.value)">
       <option value="standard">Standard</option>
+      <option value="one_screen">One-Screen Entry</option>
       <option value="standard_grid">Standard Grid</option>
       <option value="large_touch">Large Touch</option>
       <option value="senior_grid">Senior Grid</option>
     </select>
-    <div class="field-help">Standard Grid keeps normal sizing but shows all DBH classes on screen. Large Touch keeps the same flow with bigger buttons. Senior Grid uses the biggest tap targets and larger grid layouts.</div>
+    <div class="field-help">One-Screen Entry compresses the entry area to help fit Species through Add Tree on one phone screen. Standard Grid keeps normal sizing but shows all DBH classes on screen. Large Touch and Senior Grid favor bigger tap targets.</div>
   </div>
   <button class="btn btn-danger" onclick="clearEverything()">Clear All Data</button>
   <div class="theme-picker">
@@ -3534,6 +3644,7 @@ let _confirmCb = null;
 let _localSharedAccess = {};     // { "<email>::<cruiseId>": { cruiseId, shareCode, name, email, joinedAt } }
 const TALLY_DISPLAY_PRESETS = {
   standard: { label: 'Standard' },
+  one_screen: { label: 'One-Screen Entry' },
   standard_grid: { label: 'Standard Grid' },
   large_touch: { label: 'Large Touch' },
   senior_grid: { label: 'Senior Grid' }
@@ -3556,7 +3667,7 @@ function isSeniorTallyDisplay() {
 
 function usesGridDbhDisplay() {
   const preset = normalizeTallyDisplayPreset(tallyDisplayPreset);
-  return preset === 'standard_grid' || preset === 'senior_grid';
+  return preset === 'one_screen' || preset === 'standard_grid' || preset === 'senior_grid';
 }
 
 function applyTallyDisplayPreset() {
@@ -3565,8 +3676,9 @@ function applyTallyDisplayPreset() {
   if (select && select.value !== tallyDisplayPreset) select.value = tallyDisplayPreset;
   const overlay = document.getElementById('tally-overlay');
   if (!overlay) return;
-  overlay.classList.remove('tally-display-standard', 'tally-display-standard-grid', 'tally-display-large-touch', 'tally-display-senior-grid');
-  if (tallyDisplayPreset === 'standard_grid') overlay.classList.add('tally-display-standard-grid');
+  overlay.classList.remove('tally-display-standard', 'tally-display-one-screen', 'tally-display-standard-grid', 'tally-display-large-touch', 'tally-display-senior-grid');
+  if (tallyDisplayPreset === 'one_screen') overlay.classList.add('tally-display-one-screen');
+  else if (tallyDisplayPreset === 'standard_grid') overlay.classList.add('tally-display-standard-grid');
   else if (tallyDisplayPreset === 'large_touch') overlay.classList.add('tally-display-large-touch');
   else if (tallyDisplayPreset === 'senior_grid') overlay.classList.add('tally-display-senior-grid');
   else overlay.classList.add('tally-display-standard');
