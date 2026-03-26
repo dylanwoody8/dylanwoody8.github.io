@@ -6668,14 +6668,16 @@ const map = L.map('map', {
 }).setView([35.5, -79.5], 7);
 
 // Basemaps
+const imageryTileUrl = 'https://services.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}';
+const imageryLabelsUrl = 'https://services.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}';
 const basemaps = {
   hybrid: L.layerGroup([
-    L.tileLayer('https://mt1.google.com/vt/lyrs=s&x={x}&y={y}&z={z}', { maxZoom: 20 }),
-    L.tileLayer('https://mt1.google.com/vt/lyrs=h&x={x}&y={y}&z={z}', { maxZoom: 20, opacity: 0.9 })
+    L.tileLayer(imageryTileUrl, { maxZoom: 20, crossOrigin: 'anonymous' }),
+    L.tileLayer(imageryLabelsUrl, { maxZoom: 20, crossOrigin: 'anonymous', opacity: 0.9 })
   ]),
-  satellite: L.tileLayer('https://mt1.google.com/vt/lyrs=s&x={x}&y={y}&z={z}', { maxZoom: 20 }),
-  streets: L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19 }),
-  topo: L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', { maxZoom: 17 })
+  satellite: L.tileLayer(imageryTileUrl, { maxZoom: 20, crossOrigin: 'anonymous' }),
+  streets: L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19, crossOrigin: 'anonymous' }),
+  topo: L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', { maxZoom: 17, crossOrigin: 'anonymous' })
 };
 
 const basemapOrder = ['hybrid', 'satellite', 'streets', 'topo'];
