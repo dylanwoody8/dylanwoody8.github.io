@@ -1609,16 +1609,27 @@
   .tally-overlay.tally-display-senior-grid .tally-stat-val {
     font-size: 1.4rem;
   }
+  .tally-overlay.tally-display-standard-grid .dbh-scroll-wrap,
   .tally-overlay.tally-display-senior-grid .species-scroll-wrap,
   .tally-overlay.tally-display-senior-grid .dbh-scroll-wrap {
     padding: 10px;
   }
+  .tally-overlay.tally-display-standard-grid .dbh-scroll-row,
   .tally-overlay.tally-display-senior-grid .species-scroll-row,
   .tally-overlay.tally-display-senior-grid .dbh-scroll-row {
     overflow: visible;
     overflow-y: visible;
     padding-bottom: 0;
     scroll-snap-type: none;
+  }
+  .tally-overlay.tally-display-standard-grid .dbh-scroll-row {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 8px;
+  }
+  .tally-overlay.tally-display-standard-grid .dbh-chip {
+    min-width: 0;
+    width: 100%;
   }
   .tally-overlay.tally-display-senior-grid .species-scroll-row {
     display: grid;
@@ -1635,6 +1646,7 @@
     min-width: 0;
     width: 100%;
   }
+  .tally-overlay.tally-display-standard-grid .dbh-scroll-hint,
   .tally-overlay.tally-display-senior-grid .dbh-scroll-hint {
     text-align: center;
   }
@@ -3172,10 +3184,11 @@
     <div class="field-label">Tally Display</div>
     <select class="field-input" id="tally-display-preset" onchange="setTallyDisplayPreset(this.value)">
       <option value="standard">Standard</option>
+      <option value="standard_grid">Standard Grid</option>
       <option value="large_touch">Large Touch</option>
       <option value="senior_grid">Senior Grid</option>
     </select>
-    <div class="field-help">Large Touch keeps the same tally flow with bigger buttons. Senior Grid uses the biggest tap targets and shows all DBH classes on screen without side-scrolling.</div>
+    <div class="field-help">Standard Grid keeps normal sizing but shows all DBH classes on screen. Large Touch keeps the same flow with bigger buttons. Senior Grid uses the biggest tap targets and larger grid layouts.</div>
   </div>
   <button class="btn btn-danger" onclick="clearEverything()">Clear All Data</button>
   <div class="theme-picker">
@@ -3521,6 +3534,7 @@ let _confirmCb = null;
 let _localSharedAccess = {};     // { "<email>::<cruiseId>": { cruiseId, shareCode, name, email, joinedAt } }
 const TALLY_DISPLAY_PRESETS = {
   standard: { label: 'Standard' },
+  standard_grid: { label: 'Standard Grid' },
   large_touch: { label: 'Large Touch' },
   senior_grid: { label: 'Senior Grid' }
 };
@@ -3540,14 +3554,20 @@ function isSeniorTallyDisplay() {
   return normalizeTallyDisplayPreset(tallyDisplayPreset) === 'senior_grid';
 }
 
+function usesGridDbhDisplay() {
+  const preset = normalizeTallyDisplayPreset(tallyDisplayPreset);
+  return preset === 'standard_grid' || preset === 'senior_grid';
+}
+
 function applyTallyDisplayPreset() {
   tallyDisplayPreset = normalizeTallyDisplayPreset(tallyDisplayPreset);
   const select = document.getElementById('tally-display-preset');
   if (select && select.value !== tallyDisplayPreset) select.value = tallyDisplayPreset;
   const overlay = document.getElementById('tally-overlay');
   if (!overlay) return;
-  overlay.classList.remove('tally-display-standard', 'tally-display-large-touch', 'tally-display-senior-grid');
-  if (tallyDisplayPreset === 'large_touch') overlay.classList.add('tally-display-large-touch');
+  overlay.classList.remove('tally-display-standard', 'tally-display-standard-grid', 'tally-display-large-touch', 'tally-display-senior-grid');
+  if (tallyDisplayPreset === 'standard_grid') overlay.classList.add('tally-display-standard-grid');
+  else if (tallyDisplayPreset === 'large_touch') overlay.classList.add('tally-display-large-touch');
   else if (tallyDisplayPreset === 'senior_grid') overlay.classList.add('tally-display-senior-grid');
   else overlay.classList.add('tally-display-standard');
 }
@@ -4729,12 +4749,12 @@ function tallyBuildDBH() {
       '<button type="button" class="dbh-chip' + (d === tallySelDBH ? ' sel' : '') + '" data-dbh="' + d + '" onclick="tallyPickDBH(' + d + ')">' + d + '"</button>'
     ).join('');
     const selected = row.querySelector('.dbh-chip.sel');
-    if (!isSeniorTallyDisplay() && selected && selected.scrollIntoView) {
+    if (!usesGridDbhDisplay() && selected && selected.scrollIntoView) {
       selected.scrollIntoView({ block: 'nearest', inline: 'center' });
     }
   }
   if (hint) {
-    hint.textContent = isSeniorTallyDisplay()
+    hint.textContent = usesGridDbhDisplay()
       ? 'All DBH classes shown'
       : (tallySelDBH > 18 ? 'Swipe left for smaller DBH' : 'Swipe right for larger DBH');
   }
