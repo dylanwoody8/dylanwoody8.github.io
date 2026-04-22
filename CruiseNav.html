@@ -3597,7 +3597,8 @@ let tractLayer = new L.FeatureGroup();
 let plotMarkers = [];            // [{id, lat, lng, completed, marker, navLine}]
 let plotLayer = new L.FeatureGroup();
 let myLocationMarker = null;
-let myLocation = null;           // {lat, lng}
+let rawLocation = null;          // latest GPS fix from browser
+let navLocation = null;          // accepted GPS fix used for navigation UI
 let locationWatchId = null;
 let isLocating = false;
 let isDrawing = false;
@@ -3627,6 +3628,14 @@ function escapeJsString(value) {
 
 const NAV_HEADING_MODE_DEVICE = 'device';
 const NAV_HEADING_MODE_MOVEMENT = 'movement';
+const NAV_LOCATION_MAX_AGE_MS = 2500;
+const NAV_LOCATION_MAX_ACCURACY_METERS = 15;
+const NAV_ARRIVAL_MAX_ACCURACY_METERS = 9;
+const NAV_BOUNCE_CHECK_DISTANCE_METERS = 40 * 0.3048;
+const NAV_BOUNCE_SPIKE_THRESHOLD_METERS = 12 * 0.3048;
+const NAV_TALLY_AUTO_OPEN_DISTANCE_FEET = 30;
+const NAV_TALLY_AUTO_OPEN_DISTANCE_METERS = NAV_TALLY_AUTO_OPEN_DISTANCE_FEET * 0.3048;
+const NAV_TALLY_AUTO_REARM_DISTANCE_METERS = 45 * 0.3048;
 const MOVEMENT_HEADING_MIN_DISTANCE_METERS = 1.5;
 const MOVEMENT_HEADING_MIN_SPEED_MPS = 0.15;
 const MOVEMENT_HEADING_SMOOTHING = 0.4;
@@ -9306,6 +9315,84 @@ function toggleEdit() {
 
 // â”€â”€ GPS Location â”€â”€
 let pendingFlyToLocation = false;
+let pendingBounceFix = null;
+let arrivalConfirmationCount = 0;
+let arrivedAtPlot = false;
+
+function buildLocationFix(position) {
+  const coords = (position && position.coords) || {};
+  const accuracyVal = Number(coords.accuracy);
+  const speedVal = Number(coords.speed);
+  const timestampVal = Number(position && position.timestamp);
+  return {
+    lat: Number(coords.latitude),
+    lng: Number(coords.longitude),
+    accuracy: Number.isFinite(accuracyVal) && accuracyVal >= 0 ? accuracyVal : null,
+    timestamp: Number.isFinite(timestampVal) ? timestampVal : Date.now(),
+    speed: Number.isFinite(speedVal) ? speedVal : null
+  };
+}
+
+function isValidLocationFix(fix) {
+  return !!fix &&
+    Number.isFinite(fix.lat) &&
+    Number.isFinite(fix.lng) &&
+    fix.lat >= -90 && fix.lat <= 90 &&
+    fix.lng >= -180 && fix.lng <= 180;
+}
+
+function getLatestKnownLocation() {
+  if (isValidLocationFix(navLocation)) return navLocation;
+  if (isValidLocationFix(rawLocation)) return rawLocation;
+  return null;
+}
+
+function resetArrivalConfirmation() {
+  arrivalConfirmationCount = 0;
+  arrivedAtPlot = false;
+}
+
+function acceptNavigationLocationFix(fix) {
+  if (!isValidLocationFix(fix)) return null;
+
+  if (navTargetId != null) {
+    const ageMs = Math.max(Date.now() - fix.timestamp, 0);
+    if (ageMs > NAV_LOCATION_MAX_AGE_MS) return null;
+    if (fix.accuracy != null && fix.accuracy > NAV_LOCATION_MAX_ACCURACY_METERS) return null;
+  }
+
+  if (navTargetId == null || !navLocation) {
+    pendingBounceFix = null;
+    navLocation = { ...fix };
+    return navLocation;
+  }
+
+  const plot = findPlotById(navTargetId);
+  if (!plot) {
+    pendingBounceFix = null;
+    navLocation = { ...fix };
+    return navLocation;
+  }
+
+  const lastDist = getDistance(navLocation.lat, navLocation.lng, plot.lat, plot.lng);
+  const nextDist = getDistance(fix.lat, fix.lng, plot.lat, plot.lng);
+  const isBounceCandidate = lastDist <= NAV_BOUNCE_CHECK_DISTANCE_METERS &&
+    (nextDist - lastDist) > NAV_BOUNCE_SPIKE_THRESHOLD_METERS;
+
+  if (isBounceCandidate) {
+    if (pendingBounceFix) {
+      pendingBounceFix = null;
+      navLocation = { ...fix };
+      return navLocation;
+    }
+    pendingBounceFix = { ...fix };
+    return null;
+  }
+
+  pendingBounceFix = null;
+  navLocation = { ...fix };
+  return navLocation;
+}
 
 function normalizeHeadingMode(mode) {
   return mode === NAV_HEADING_MODE_MOVEMENT ? NAV_HEADING_MODE_MOVEMENT : NAV_HEADING_MODE_DEVICE;
@@ -9431,8 +9518,9 @@ function toggleLocate() {
   const btn = document.getElementById('nav-btn-locate');
   if (isLocating) {
     // If already locating and we have a position, fly to it
-    if (myLocation) {
-      map.setView([myLocation.lat, myLocation.lng], Math.max(map.getZoom(), 16), { animate: true });
+    const currentLocation = getLatestKnownLocation();
+    if (currentLocation) {
+      map.setView([currentLocation.lat, currentLocation.lng], Math.max(map.getZoom(), 16), { animate: true });
     } else {
       stopLocating();
       btn.classList.remove('active');
@@ -9447,23 +9535,28 @@ function startLocating() {
   if (!navigator.geolocation) { toast('GPS not available'); return; }
   isLocating = true;
   pendingFlyToLocation = true;
+  rawLocation = null;
+  navLocation = null;
+  pendingBounceFix = null;
+  resetArrivalConfirmation();
   movementHeading = null;
   movementSamples = [];
 
   locationWatchId = navigator.geolocation.watchPosition(
     pos => {
-      myLocation = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+      rawLocation = buildLocationFix(pos);
       updateMovementHeading(pos);
+      const acceptedFix = acceptNavigationLocationFix(rawLocation);
       updateLocationMarker();
-      updateNavigation();
+      updateNavigation({ acceptedFix });
       updatePlotDistances();
-      if (pendingFlyToLocation) {
+      if (pendingFlyToLocation && navLocation) {
         pendingFlyToLocation = false;
-        map.setView([myLocation.lat, myLocation.lng], Math.max(map.getZoom(), 16), { animate: true });
+        map.setView([navLocation.lat, navLocation.lng], Math.max(map.getZoom(), 16), { animate: true });
       }
     },
     err => { toast('GPS error: ' + err.message); },
-    { enableHighAccuracy: true, maximumAge: 3000, timeout: 15000 }
+    { enableHighAccuracy: true, maximumAge: 1000, timeout: 15000 }
   );
 
   syncHeadingTracking();
@@ -9486,6 +9579,7 @@ function onHeading(e) {
 
 function stopLocating() {
   isLocating = false;
+  pendingFlyToLocation = false;
   if (locationWatchId != null) {
     navigator.geolocation.clearWatch(locationWatchId);
     locationWatchId = null;
@@ -9498,10 +9592,14 @@ function stopLocating() {
   deviceHeading = null;
   movementHeading = null;
   movementSamples = [];
+  rawLocation = null;
+  navLocation = null;
+  pendingBounceFix = null;
+  resetArrivalConfirmation();
 }
 
 function updateLocationMarker() {
-  if (!myLocation) return;
+  if (!navLocation) return;
   if (!myLocationMarker) {
     const icon = L.divIcon({
       className: 'my-location-marker',
@@ -9517,9 +9615,9 @@ function updateLocationMarker() {
               '<path d="M16 17.5 L16 28" stroke="#ffffff" stroke-width="3.2" stroke-linecap="round"/>' +
             '</svg>'
     });
-    myLocationMarker = L.marker([myLocation.lat, myLocation.lng], { icon, zIndexOffset: 1000 }).addTo(map);
+    myLocationMarker = L.marker([navLocation.lat, navLocation.lng], { icon, zIndexOffset: 1000 }).addTo(map);
   } else {
-    myLocationMarker.setLatLng([myLocation.lat, myLocation.lng]);
+    myLocationMarker.setLatLng([navLocation.lat, navLocation.lng]);
   }
   updateLocationHeading();
 }
@@ -9581,6 +9679,7 @@ function openPlotPopup(plot) {
   const statusLabel = plot.noTally ? 'No Tally (0 trees)' : (plot.completed ? 'Done (' + treeCount + ' trees)' : 'Pending');
   const statusColor = plot.noTally ? 'var(--text-muted)' : (plot.completed ? 'var(--accent)' : 'var(--orange)');
   const plotIdArg = getInlineIdArg(plot.id);
+  const popupLocation = navLocation;
 
   const content = '<div class="plot-popup">' +
     '<div class="plot-popup-title">Plot ' + plot.id + '</div>' +
@@ -9588,7 +9687,7 @@ function openPlotPopup(plot) {
       'Status: <span style="color:' + statusColor + ';font-weight:700">' + statusLabel + '</span><br>' +
       'Lat: ' + plot.lat.toFixed(6) + '<br>' +
       'Lng: ' + plot.lng.toFixed(6) +
-      (myLocation ? '<br>Distance: ' + formatDist(getDistance(myLocation.lat, myLocation.lng, plot.lat, plot.lng)) : '') +
+      (popupLocation ? '<br>Distance: ' + formatDist(getDistance(popupLocation.lat, popupLocation.lng, plot.lat, plot.lng)) : '') +
     '</div>' +
     '<div class="plot-popup-actions">' +
       '<button class="popup-btn popup-btn-complete" onclick="map.closePopup(); openTallyModal(' + plotIdArg + ')">Tally</button>' +
@@ -9939,6 +10038,8 @@ function navigateToPlot(id) {
   if (navLine) { map.removeLayer(navLine); navLine = null; }
 
   navTargetId = id;
+  pendingBounceFix = null;
+  resetArrivalConfirmation();
   updatePlotMarkerStyle(plot);
 
   // Show HUD
@@ -9973,6 +10074,8 @@ function navigateToNext() {
 function stopNavigation() {
   const previousNavId = navTargetId;
   navTargetId = null;
+  pendingBounceFix = null;
+  resetArrivalConfirmation();
   if (previousNavId != null) {
     const plot = findPlotById(previousNavId);
     if (plot) updatePlotMarkerStyle(plot);
@@ -9983,20 +10086,29 @@ function stopNavigation() {
   if (navArrow) navArrow.classList.remove('no-heading');
   const navLabel = document.getElementById('nav-hud-label');
   if (navLabel) navLabel.textContent = 'to plot';
+  const navDist = document.getElementById('nav-dist');
+  if (navDist) navDist.textContent = '--';
   releaseWakeLock();
 }
 
-let arrivedAtPlot = {};
-function updateNavigation() {
-  if (navTargetId == null || !myLocation) return;
+function updateNavigation(options) {
+  if (navTargetId == null) return;
   const plot = findPlotById(navTargetId);
   if (!plot) return;
+  const opts = options || {};
 
-  const dist = getDistance(myLocation.lat, myLocation.lng, plot.lat, plot.lng);
+  if (!navLocation) {
+    const navDist = document.getElementById('nav-dist');
+    if (navDist) navDist.textContent = '--';
+    if (navLine) { map.removeLayer(navLine); navLine = null; }
+    return;
+  }
+
+  const dist = getDistance(navLocation.lat, navLocation.lng, plot.lat, plot.lng);
   document.getElementById('nav-dist').textContent = formatDist(dist);
 
   // Direction arrow
-  const bearing = getBearing(myLocation.lat, myLocation.lng, plot.lat, plot.lng);
+  const bearing = getBearing(navLocation.lat, navLocation.lng, plot.lat, plot.lng);
   const activeHeading = getActiveHeading();
   const navArrow = document.getElementById('nav-arrow');
   const navLabel = document.getElementById('nav-hud-label');
@@ -10013,18 +10125,36 @@ function updateNavigation() {
 
   // Draw nav line
   if (navLine) map.removeLayer(navLine);
-  navLine = L.polyline([[myLocation.lat, myLocation.lng], [plot.lat, plot.lng]], {
+  navLine = L.polyline([[navLocation.lat, navLocation.lng], [plot.lat, plot.lng]], {
     color: '#3498db', weight: 3, dashArray: '8 8', opacity: 0.8, className: 'nav-line'
   }).addTo(map);
 
-  // Auto-arrive: if within 15 ft (~4.57m), vibrate and open plot popup
-  if (dist < 4.57 && !arrivedAtPlot[plot.id]) {
-    arrivedAtPlot[plot.id] = true;
+  if (dist >= NAV_TALLY_AUTO_REARM_DISTANCE_METERS) {
+    resetArrivalConfirmation();
+    return;
+  }
+
+  const acceptedFix = opts.acceptedFix || null;
+  const arrivalFixQualifies = !!acceptedFix &&
+    acceptedFix.accuracy != null &&
+    acceptedFix.accuracy <= NAV_ARRIVAL_MAX_ACCURACY_METERS &&
+    dist <= NAV_TALLY_AUTO_OPEN_DISTANCE_METERS;
+
+  // Auto-open the tally card once we get two qualifying fixes close to the plot center.
+  if (!arrivedAtPlot && arrivalFixQualifies) {
+    arrivalConfirmationCount += 1;
+  }
+
+  if (!arrivedAtPlot && arrivalConfirmationCount >= 2) {
+    arrivedAtPlot = true;
     vibrate([100, 50, 100, 50, 200]);
     map.setView([plot.lat, plot.lng], Math.max(map.getZoom(), 17), { animate: true });
-    setTimeout(() => openPlotPopup(plot), 300);
-  } else if (dist >= 10) {
-    arrivedAtPlot[plot.id] = false;
+    setTimeout(() => {
+      if (String(navTargetId) !== String(plot.id)) return;
+      const tallyOverlay = document.getElementById('tally-overlay');
+      if (tallyOverlay && tallyOverlay.classList.contains('open')) return;
+      openTallyModal(plot);
+    }, 300);
   }
 }
 
@@ -10044,7 +10174,7 @@ function refreshPlotList() {
   let html = '';
   plotMarkers.forEach(plot => {
     const isNav = String(navTargetId) === String(plot.id);
-    const dist = myLocation ? getDistance(myLocation.lat, myLocation.lng, plot.lat, plot.lng) : null;
+    const dist = navLocation ? getDistance(navLocation.lat, navLocation.lng, plot.lat, plot.lng) : null;
     const statusClass = isNav ? 'navigating' : (plot.completed ? 'complete' : 'pending');
     const itemClass = isNav ? 'active-nav' : (plot.completed ? 'completed' : '');
     const plotIdArg = getInlineIdArg(plot.id);
