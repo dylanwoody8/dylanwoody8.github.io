@@ -628,6 +628,71 @@
     font-size: 16px;
   }
 
+  .field-lock-btn {
+    position: fixed;
+    right: max(14px, calc(14px + env(safe-area-inset-right)));
+    bottom: calc(78px + var(--safe-bottom));
+    z-index: 1002;
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    border: 1px solid var(--orange);
+    background: var(--bg-deep);
+    color: var(--orange);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 18px rgba(0,0,0,0.45);
+    cursor: pointer;
+  }
+  .field-lock-btn svg {
+    width: 23px;
+    height: 23px;
+    stroke: currentColor;
+  }
+  .field-lock-btn.locked { display: none; }
+  .field-lock-shield {
+    position: fixed;
+    inset: 0;
+    z-index: 12000;
+    display: none;
+    align-items: flex-end;
+    justify-content: center;
+    padding: 0 16px calc(88px + var(--safe-bottom));
+    background: rgba(0,0,0,0.04);
+    touch-action: none;
+  }
+  .field-lock-shield.locked { display: flex; }
+  .field-lock-unlock {
+    min-width: 190px;
+    min-height: 52px;
+    border: 2px solid var(--orange);
+    border-radius: 999px;
+    background: var(--bg-deep);
+    color: var(--orange);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.78rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 9px;
+    box-shadow: 0 6px 28px rgba(0,0,0,0.6);
+    cursor: pointer;
+    user-select: none;
+    -webkit-user-select: none;
+  }
+  .field-lock-unlock svg {
+    width: 20px;
+    height: 20px;
+    stroke: currentColor;
+  }
+  .field-lock-unlock.holding {
+    background: var(--orange);
+    color: var(--bg-deep);
+  }
+
   /* â•â•â• PROGRESS BAR â•â•â• */
   .progress-strip {
     position: absolute;
@@ -2485,15 +2550,30 @@
     border: 1px solid var(--border-bright);
     border-radius: 14px;
     padding: 24px 20px;
-    max-width: 300px;
+    max-width: 340px;
     width: 100%;
     text-align: center;
+  }
+  .confirm-title {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-size: 1rem;
+    font-weight: 800;
+    color: var(--text-primary);
+    margin-bottom: 8px;
   }
   .confirm-msg {
     font-size: 0.85rem;
     color: var(--text-primary);
-    margin-bottom: 18px;
+    margin-bottom: 10px;
     line-height: 1.5;
+    white-space: pre-line;
+  }
+  .confirm-detail {
+    font-size: 0.68rem;
+    color: var(--orange);
+    margin-bottom: 18px;
+    line-height: 1.45;
+    white-space: pre-line;
   }
   .confirm-btns {
     display: flex;
@@ -3084,6 +3164,21 @@
     <button class="nav-hud-close" onclick="stopNavigation()" title="Stop navigation">&#x2715;</button>
   </div>
 
+  <button class="field-lock-btn" id="field-lock-btn" onclick="setFieldLock(true)" title="Lock screen while cruising">
+    <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
+  </button>
+  <div class="field-lock-shield" id="field-lock-shield" onclick="event.preventDefault(); event.stopPropagation();">
+    <button class="field-lock-unlock" id="field-lock-unlock"
+      onpointerdown="beginFieldUnlock(event)"
+      onpointerup="cancelFieldUnlock(event)"
+      onpointercancel="cancelFieldUnlock(event)"
+      onpointerleave="cancelFieldUnlock(event)"
+      onclick="event.preventDefault(); event.stopPropagation();">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 7.5-2"/></svg>
+      <span>Hold to Unlock</span>
+    </button>
+  </div>
+
   <!-- Layers Widget -->
   <div class="layers-widget" id="layers-widget">
     <div class="layers-widget-title">Basemap</div>
@@ -3552,16 +3647,18 @@
 <!-- Undo Toast -->
 <div class="toast-undo" id="toast-undo">
   <div class="toast-undo-text" id="undo-text"></div>
-  <button class="toast-undo-btn" onclick="undoLastToggle()">Undo</button>
+  <button class="toast-undo-btn" id="undo-action-btn" onclick="undoLastToggle()">Undo</button>
 </div>
 
 <!-- Confirm Dialog -->
 <div class="confirm-overlay" id="confirm-overlay">
   <div class="confirm-box">
+    <div class="confirm-title" id="confirm-title"></div>
     <div class="confirm-msg" id="confirm-msg"></div>
+    <div class="confirm-detail" id="confirm-detail"></div>
     <div class="confirm-btns">
-      <button class="confirm-no" onclick="confirmResolve(false)">Cancel</button>
-      <button class="confirm-yes" onclick="confirmResolve(true)">Confirm</button>
+      <button class="confirm-no" id="confirm-cancel-btn" onclick="confirmResolve(false)">Cancel</button>
+      <button class="confirm-yes" id="confirm-ok-btn" onclick="confirmResolve(true)">Confirm</button>
     </div>
   </div>
 </div>
@@ -3649,7 +3746,12 @@ let headingListenersAttached = false;
 let distUnit = 'ft';            // 'ft' or 'm'
 let wakeLock = null;
 let lastToggle = null;           // {id, previousState} for undo
+let lastSafetySnapshot = null;
+let fieldLocked = false;
+let fieldUnlockTimer = null;
 let _confirmCb = null;
+let _confirmConfig = null;
+let _confirmStep = 0;
 let _localSharedAccess = {};     // { "<email>::<cruiseId>": { cruiseId, shareCode, name, email, joinedAt } }
 const TALLY_DISPLAY_PRESETS = {
   standard: { label: 'Standard' },
@@ -6502,7 +6604,14 @@ async function loadCruiseFromCloud(cruiseId, options = {}) {
 
 // â”€â”€ Delete cruise â”€â”€
 async function deleteCruiseFromCloud(cruiseId) {
-  const ok = await showConfirm('Delete this cruise from the cloud? This cannot be undone.');
+  if (guardFieldLock()) return;
+  const ok = await showDangerConfirm({
+    title: 'Delete Cloud Cruise?',
+    message: 'Delete this cruise from the cloud?\nShared crew access to this cloud copy will be removed.',
+    confirmLabel: 'Delete Cloud',
+    finalMessage: 'Delete this cloud cruise now?',
+    finalDetail: 'This cloud delete cannot be recovered from this device.'
+  });
   if (!ok) return;
   try {
     const cruiseRef = fb_db.collection('cruises').doc(cruiseId);
@@ -9765,12 +9874,21 @@ function updatePlotMarkerStyle(plot) {
   plot.marker.setIcon(newIcon);
 }
 
-function deletePlot(id) {
+async function deletePlot(id) {
+  if (guardFieldLock()) return;
   const idx = plotMarkers.findIndex(p => String(p.id) === String(id));
   if (idx === -1) return;
+  const plot = plotMarkers[idx];
+  const ok = await showDangerConfirm({
+    title: 'Delete Plot ' + plot.id + '?',
+    message: 'Plot ' + plot.id + ' is ' + getPlotDataSummary(plot) + '.\nDeleting it removes this plot marker and its saved plot data from the job.',
+    confirmLabel: 'Delete Plot',
+    finalMessage: 'Delete Plot ' + plot.id + ' now?'
+  });
+  if (!ok) return;
+  createSafetySnapshot('Plot ' + plot.id + ' deleted');
   rememberDeletedPlotIds([id]);
   if (String(navTargetId) === String(id)) stopNavigation();
-  const plot = plotMarkers[idx];
   plotLayer.removeLayer(plot.marker);
   plotMarkers.splice(idx, 1);
   map.closePopup();
@@ -9780,12 +9898,21 @@ function deletePlot(id) {
   checkSyncNeeded();
   saveSession();
   toast('Plot ' + id + ' deleted');
+  showSafetyRecoverToast('Plot ' + id + ' deleted');
 }
 
 async function clearPlots() {
+  if (guardFieldLock()) return;
   if (plotMarkers.length === 0) { toast('No plots to clear'); return; }
-  const ok = await showConfirm('Clear all ' + plotMarkers.length + ' plots?');
+  const summary = getPlotSetSummary(plotMarkers);
+  const ok = await showDangerConfirm({
+    title: 'Clear All Plots?',
+    message: 'This removes ' + formatPlotSetSummary(summary) + ' from the current job.',
+    confirmLabel: 'Clear Plots',
+    finalMessage: 'Clear all ' + summary.total + ' plot' + (summary.total === 1 ? '' : 's') + ' now?'
+  });
   if (!ok) return;
+  createSafetySnapshot('All plots cleared');
   rememberDeletedPlotIds(plotMarkers.map(p => p.id));
   plotMarkers.forEach(p => plotLayer.removeLayer(p.marker));
   plotMarkers = [];
@@ -9793,8 +9920,10 @@ async function clearPlots() {
   closePanel();
   updateStats();
   updateEmptyHint();
+  checkSyncNeeded();
   saveSession();
   toast('All plots cleared');
+  showSafetyRecoverToast('All plots cleared');
 }
 
 // â”€â”€ Polygon checklist for grid â”€â”€
@@ -9822,12 +9951,19 @@ function checkAllPolys(checked) {
 }
 
 async function deletePolygonAt(index) {
+  if (guardFieldLock()) return;
   const poly = allPolygons[index];
   if (!poly) return;
 
   const label = poly.name || ('Boundary ' + (index + 1));
-  const ok = await showConfirm('Delete boundary "' + label + '"? Existing plots will stay in the job.');
+  const ok = await showDangerConfirm({
+    title: 'Delete Boundary?',
+    message: 'Delete "' + label + '" from this job?\nExisting plots will stay, but acreage and reports may change.',
+    confirmLabel: 'Delete Boundary',
+    finalMessage: 'Delete boundary "' + label + '" now?'
+  });
   if (!ok) return;
+  createSafetySnapshot('Boundary deleted');
 
   try {
     if (poly.layer && poly.layer.editing) poly.layer.editing.disable();
@@ -9844,10 +9980,12 @@ async function deletePolygonAt(index) {
   saveSession();
   map.closePopup();
   toast('Boundary deleted: ' + label);
+  showSafetyRecoverToast('Boundary deleted');
 }
 
 // â”€â”€ Generate cruise grid â”€â”€
-function generatePlots() {
+async function generatePlots() {
+  if (guardFieldLock()) return;
   if (!activeJobId) {
     toast('Create a job first');
     return;
@@ -9860,6 +9998,19 @@ function generatePlots() {
   if (selectedPolygons.length === 0) {
     toast('Select at least one polygon');
     return;
+  }
+
+  const replacingExisting = plotMarkers.length > 0;
+  if (replacingExisting) {
+    const summary = getPlotSetSummary(plotMarkers);
+    const ok = await showDangerConfirm({
+      title: 'Replace Current Grid?',
+      message: 'Generate Grid will replace the current grid and remove ' + formatPlotSetSummary(summary) + '.',
+      confirmLabel: 'Replace Grid',
+      finalMessage: 'Replace the current grid now?'
+    });
+    if (!ok) return;
+    createSafetySnapshot('Grid replaced');
   }
 
   // Clear existing
@@ -9931,6 +10082,7 @@ function generatePlots() {
   }
   toast(plotMarkers.length + ' plots generated');
   saveSession();
+  if (replacingExisting) showSafetyRecoverToast('Grid replaced');
 }
 
 function sortByLineOrder(points) {
@@ -10199,18 +10351,46 @@ function flyToPlot(id) {
   setTimeout(() => openPlotPopup(plot), 400);
 }
 
-function markAllComplete() {
+async function markAllComplete() {
+  if (guardFieldLock()) return;
+  if (plotMarkers.length === 0) { toast('No plots to update'); return; }
+  const summary = getPlotSetSummary(plotMarkers);
+  const ok = await showDangerConfirm({
+    title: 'Mark All Complete?',
+    message: 'This changes the status of ' + formatPlotSetSummary(summary) + '.',
+    confirmLabel: 'Mark Complete',
+    finalMessage: 'Mark every plot complete now?'
+  });
+  if (!ok) return;
+  createSafetySnapshot('All plots marked complete');
   plotMarkers.forEach(p => { p.completed = true; updatePlotMarkerStyle(p); });
   updateStats();
   refreshPlotList();
+  checkSyncNeeded();
+  saveSession();
   toast('All plots marked complete');
+  showSafetyRecoverToast('All plots marked complete');
 }
 
-function resetAllPlots() {
+async function resetAllPlots() {
+  if (guardFieldLock()) return;
+  if (plotMarkers.length === 0) { toast('No plots to update'); return; }
+  const summary = getPlotSetSummary(plotMarkers);
+  const ok = await showDangerConfirm({
+    title: 'Reset All to Pending?',
+    message: 'This changes the completion status for ' + formatPlotSetSummary(summary) + '. Tree records stay on the plots, but all plots become pending.',
+    confirmLabel: 'Reset Pending',
+    finalMessage: 'Reset every plot to pending now?'
+  });
+  if (!ok) return;
+  createSafetySnapshot('All plots reset to pending');
   plotMarkers.forEach(p => { p.completed = false; updatePlotMarkerStyle(p); });
   updateStats();
   refreshPlotList();
+  checkSyncNeeded();
+  saveSession();
   toast('All plots reset to pending');
+  showSafetyRecoverToast('All plots reset to pending');
 }
 
 // â”€â”€ Import/Export â”€â”€
@@ -10707,12 +10887,20 @@ async function importOfflineBackupFromFile(event) {
     const payload = JSON.parse(text);
     if (!payload || !Array.isArray(payload.jobs)) throw new Error('Invalid backup file');
 
-    const ok = await showConfirm('Import offline backup "' + file.name + '"? This will replace the jobs currently stored on this device.');
+    if (guardFieldLock()) return;
+    const ok = await showDangerConfirm({
+      title: 'Import Backup?',
+      message: 'Import "' + file.name + '"?\nThis replaces the jobs currently stored on this device.',
+      confirmLabel: 'Import Backup',
+      finalMessage: 'Replace local jobs with "' + file.name + '" now?'
+    });
     if (!ok) return;
 
+    createSafetySnapshot('Backup import replaced jobs');
     await applyOfflineBackupPayload(payload);
     closePanel();
     toast('Offline backup imported');
+    showSafetyRecoverToast('Backup import replaced jobs');
   } catch (e) {
     console.error('Offline backup import failed:', e);
     toast('Backup import failed');
@@ -10722,14 +10910,23 @@ async function importOfflineBackupFromFile(event) {
 }
 
 async function clearEverything() {
+  if (guardFieldLock()) return;
   if (!activeJobId) {
     toast('No active job');
     return;
   }
   const job = allJobs.find(j => j.id === activeJobId);
   const jobName = job ? job.name : 'this job';
-  const ok = await showConfirm('Clear all boundaries and plots in "' + jobName + '"? This cannot be undone.');
+  const summary = getPlotSetSummary(plotMarkers);
+  const ok = await showDangerConfirm({
+    title: 'Clear Job Data?',
+    message: 'This clears all boundaries and ' + formatPlotSetSummary(summary) + ' in "' + jobName + '".',
+    confirmLabel: 'Clear Data',
+    finalMessage: 'Clear boundaries and plots in "' + jobName + '" now?'
+  });
   if (!ok) return;
+  createSafetySnapshot('Job data cleared');
+  rememberDeletedPlotIds(plotMarkers.map(p => p.id));
   tractLayer.clearLayers();
   tractBoundary = null;
   allPolygons = [];
@@ -10741,8 +10938,10 @@ async function clearEverything() {
   updateTractInfo();
   updateEmptyHint();
   closePanel();
+  checkSyncNeeded();
   saveSession();
   toast('Job cleared');
+  showSafetyRecoverToast('Job data cleared');
 }
 
 // â”€â”€ Calculations â”€â”€
@@ -10810,29 +11009,251 @@ function toggleDistUnit() {
   updateNavigation();
 }
 
+function normalizeConfirmConfig(input, options) {
+  const opts = options || {};
+  const base = typeof input === 'object' && input !== null ? input : { message: String(input || '') };
+  return {
+    title: base.title || opts.title || 'Confirm Action',
+    message: base.message || base.body || opts.message || '',
+    detail: base.detail || opts.detail || '',
+    finalMessage: base.finalMessage || opts.finalMessage || '',
+    finalDetail: base.finalDetail || opts.finalDetail || '',
+    confirmLabel: base.confirmLabel || opts.confirmLabel || 'Confirm',
+    firstConfirmLabel: base.firstConfirmLabel || opts.firstConfirmLabel || 'Continue',
+    cancelLabel: base.cancelLabel || opts.cancelLabel || 'Cancel',
+    strong: !!(base.strong || opts.strong)
+  };
+}
+
+function renderConfirmDialog() {
+  const cfg = _confirmConfig || normalizeConfirmConfig('');
+  const isFinal = cfg.strong && _confirmStep > 0;
+  const title = isFinal ? 'Final Check' : cfg.title;
+  const message = isFinal ? (cfg.finalMessage || cfg.message) : cfg.message;
+  const detail = isFinal
+    ? (cfg.finalDetail || 'Tap ' + cfg.confirmLabel + ' to finish this action.')
+    : (cfg.detail || (cfg.strong ? 'This takes two taps so accidental touches do not change field data.' : ''));
+  const titleEl = document.getElementById('confirm-title');
+  const msgEl = document.getElementById('confirm-msg');
+  const detailEl = document.getElementById('confirm-detail');
+  const cancelBtn = document.getElementById('confirm-cancel-btn');
+  const okBtn = document.getElementById('confirm-ok-btn');
+  if (titleEl) {
+    titleEl.textContent = title;
+    titleEl.style.display = title ? 'block' : 'none';
+  }
+  if (msgEl) msgEl.textContent = message;
+  if (detailEl) {
+    detailEl.textContent = detail;
+    detailEl.style.display = detail ? 'block' : 'none';
+  }
+  if (cancelBtn) cancelBtn.textContent = cfg.cancelLabel;
+  if (okBtn) okBtn.textContent = isFinal ? cfg.confirmLabel : (cfg.strong ? cfg.firstConfirmLabel : cfg.confirmLabel);
+}
+
 // â”€â”€ Custom confirm dialog (mobile-friendly, no native alert) â”€â”€
-function showConfirm(msg) {
+function showConfirm(input, options) {
   return new Promise(resolve => {
+    if (_confirmCb) _confirmCb(false);
     _confirmCb = resolve;
-    document.getElementById('confirm-msg').textContent = msg;
+    _confirmConfig = normalizeConfirmConfig(input, options);
+    _confirmStep = 0;
+    renderConfirmDialog();
     document.getElementById('confirm-overlay').classList.add('open');
   });
 }
 function confirmResolve(val) {
+  if (val && _confirmConfig && _confirmConfig.strong && _confirmStep === 0) {
+    _confirmStep = 1;
+    renderConfirmDialog();
+    return;
+  }
   document.getElementById('confirm-overlay').classList.remove('open');
-  if (_confirmCb) { _confirmCb(val); _confirmCb = null; }
+  const cb = _confirmCb;
+  _confirmCb = null;
+  _confirmConfig = null;
+  _confirmStep = 0;
+  if (cb) cb(!!val);
+}
+
+function guardFieldLock() {
+  if (!fieldLocked) return false;
+  toast('Hold Unlock to edit');
+  return true;
+}
+
+function setFieldLock(locked) {
+  fieldLocked = !!locked;
+  if (fieldUnlockTimer) {
+    clearTimeout(fieldUnlockTimer);
+    fieldUnlockTimer = null;
+  }
+  const lockBtn = document.getElementById('field-lock-btn');
+  const shield = document.getElementById('field-lock-shield');
+  const unlockBtn = document.getElementById('field-lock-unlock');
+  if (lockBtn) lockBtn.classList.toggle('locked', fieldLocked);
+  if (shield) shield.classList.toggle('locked', fieldLocked);
+  if (unlockBtn) unlockBtn.classList.remove('holding');
+  if (fieldLocked) {
+    closePanel();
+    map.closePopup();
+    toast('Screen locked');
+  } else {
+    toast('Screen unlocked');
+  }
+}
+
+function beginFieldUnlock(event) {
+  if (event) {
+    event.preventDefault();
+    event.stopPropagation();
+  }
+  if (!fieldLocked || fieldUnlockTimer) return;
+  const btn = document.getElementById('field-lock-unlock');
+  if (btn) btn.classList.add('holding');
+  fieldUnlockTimer = setTimeout(() => {
+    fieldUnlockTimer = null;
+    setFieldLock(false);
+  }, 900);
+}
+
+function cancelFieldUnlock(event) {
+  if (event) {
+    event.preventDefault();
+    event.stopPropagation();
+  }
+  if (fieldUnlockTimer) {
+    clearTimeout(fieldUnlockTimer);
+    fieldUnlockTimer = null;
+  }
+  const btn = document.getElementById('field-lock-unlock');
+  if (btn) btn.classList.remove('holding');
+}
+
+function getPlotDataSummary(plot) {
+  const trees = (plot && Array.isArray(plot.trees)) ? plot.trees.length : 0;
+  if (trees > 0) return trees + ' tallied tree' + (trees === 1 ? '' : 's');
+  if (plot && plot.noTally) return 'marked No Tally';
+  if (plot && plot.completed) return 'marked complete';
+  return 'pending with no tree data';
+}
+
+function getPlotSetSummary(plots) {
+  const list = Array.isArray(plots) ? plots : [];
+  const completed = list.filter(p => p && p.completed).length;
+  const noTally = list.filter(p => p && p.noTally).length;
+  const trees = list.reduce((sum, p) => sum + ((p && Array.isArray(p.trees)) ? p.trees.length : 0), 0);
+  return {
+    total: list.length,
+    completed,
+    noTally,
+    trees
+  };
+}
+
+function formatPlotSetSummary(summary) {
+  const parts = [summary.total + ' plot' + (summary.total === 1 ? '' : 's')];
+  if (summary.completed) parts.push(summary.completed + ' complete');
+  if (summary.trees) parts.push(summary.trees + ' tallied tree' + (summary.trees === 1 ? '' : 's'));
+  if (summary.noTally) parts.push(summary.noTally + ' no-tally');
+  return parts.join(', ');
+}
+
+function showDangerConfirm(config) {
+  return showConfirm({
+    ...config,
+    strong: true,
+    detail: config.detail || 'This takes two taps so accidental touches do not change field data.',
+    finalDetail: config.finalDetail || 'A recovery option will appear immediately after this action when plot data is affected.'
+  });
+}
+
+function createSafetySnapshot(label) {
+  try {
+    const snapshot = {
+      label: label || 'Field data changed',
+      savedAt: Date.now(),
+      payload: buildOfflineBackupPayload()
+    };
+    lastSafetySnapshot = snapshot;
+    localStorage.setItem(LOCAL_SAFETY_SNAPSHOT_KEY, JSON.stringify(snapshot));
+    return snapshot;
+  } catch (e) {
+    console.warn('Safety snapshot failed:', e);
+    return null;
+  }
+}
+
+function getLastSafetySnapshot() {
+  if (lastSafetySnapshot && lastSafetySnapshot.payload) return lastSafetySnapshot;
+  try {
+    const raw = localStorage.getItem(LOCAL_SAFETY_SNAPSHOT_KEY);
+    if (!raw) return null;
+    const snapshot = JSON.parse(raw);
+    if (snapshot && snapshot.payload && Array.isArray(snapshot.payload.jobs)) {
+      lastSafetySnapshot = snapshot;
+      return snapshot;
+    }
+  } catch (e) {
+    console.warn('Safety snapshot read failed:', e);
+  }
+  return null;
+}
+
+function showSafetyRecoverToast(label) {
+  const snapshot = getLastSafetySnapshot();
+  if (!snapshot) return;
+  lastToggle = null;
+  const text = document.getElementById('undo-text');
+  const btn = document.getElementById('undo-action-btn');
+  const el = document.getElementById('toast-undo');
+  if (text) text.textContent = (label || snapshot.label || 'Change saved') + '. Recover previous data?';
+  if (btn) btn.textContent = 'Recover';
+  if (el) {
+    el.classList.add('show');
+    clearTimeout(el._t);
+    el._t = setTimeout(() => { el.classList.remove('show'); }, 15000);
+  }
+}
+
+async function recoverLastSafetySnapshot() {
+  const snapshot = getLastSafetySnapshot();
+  if (!snapshot) {
+    toast('Nothing to recover');
+    return;
+  }
+  try {
+    await applyOfflineBackupPayload(snapshot.payload);
+    lastSafetySnapshot = null;
+    localStorage.removeItem(LOCAL_SAFETY_SNAPSHOT_KEY);
+    document.getElementById('toast-undo').classList.remove('show');
+    const btn = document.getElementById('undo-action-btn');
+    if (btn) btn.textContent = 'Undo';
+    checkSyncNeeded();
+    await saveSession();
+    toast('Recovered previous data');
+  } catch (e) {
+    console.error('Recovery failed:', e);
+    toast('Recovery failed');
+  }
 }
 
 // â”€â”€ Undo last plot toggle â”€â”€
 function showUndoToast(plotId, wasCompleted) {
   lastToggle = { id: plotId, previousState: wasCompleted };
+  const btn = document.getElementById('undo-action-btn');
+  if (btn) btn.textContent = 'Undo';
   document.getElementById('undo-text').textContent = 'Plot ' + plotId + ' marked ' + (wasCompleted ? 'pending' : 'complete');
   const el = document.getElementById('toast-undo');
   el.classList.add('show');
   clearTimeout(el._t);
   el._t = setTimeout(() => { el.classList.remove('show'); lastToggle = null; }, 5000);
 }
-function undoLastToggle() {
+async function undoLastToggle() {
+  if (!lastToggle && getLastSafetySnapshot()) {
+    await recoverLastSafetySnapshot();
+    return;
+  }
   if (!lastToggle) return;
   const plot = findPlotById(lastToggle.id);
   if (plot) {
@@ -10843,6 +11264,8 @@ function undoLastToggle() {
   }
   document.getElementById('toast-undo').classList.remove('show');
   lastToggle = null;
+  const btn = document.getElementById('undo-action-btn');
+  if (btn) btn.textContent = 'Undo';
 }
 
 // â”€â”€ Wake Lock (keep screen on during navigation) â”€â”€
@@ -10885,6 +11308,7 @@ function openDB() {
 }
 
 const LOCAL_OFFLINE_BACKUP_KEY = 'cruisenav-offline-backup-v1';
+const LOCAL_SAFETY_SNAPSHOT_KEY = 'cruisenav-last-safety-snapshot-v1';
 const LOCAL_OFFLINE_BACKUP_VERSION = 1;
 
 function buildOfflineBackupPayload() {
@@ -11368,10 +11792,19 @@ async function renameJob(jobId) {
 }
 
 async function deleteJob(jobId) {
+  if (guardFieldLock()) return;
   const job = allJobs.find(j => j.id === jobId);
   if (!job) return;
-  const ok = await showConfirm('Delete job "' + job.name + '"? All boundaries and plots in this job will be lost.');
+  const jobPlots = Array.isArray(job.plots) ? job.plots : [];
+  const summary = getPlotSetSummary(jobPlots);
+  const ok = await showDangerConfirm({
+    title: 'Delete Job?',
+    message: 'Delete "' + job.name + '" and its ' + formatPlotSetSummary(summary) + '?\nAll boundaries and cruise settings in this job will be removed.',
+    confirmLabel: 'Delete Job',
+    finalMessage: 'Delete job "' + job.name + '" now?'
+  });
   if (!ok) return;
+  createSafetySnapshot('Job deleted');
 
   allJobs = allJobs.filter(j => j.id !== jobId);
 
@@ -11404,6 +11837,7 @@ async function deleteJob(jobId) {
   refreshJobsList();
   saveOfflineBackupMirror();
   toast('Job deleted');
+  showSafetyRecoverToast('Job deleted');
 }
 
 function refreshJobsList() {
