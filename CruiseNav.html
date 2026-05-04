@@ -5381,6 +5381,9 @@ function addPolygonToMap(name, coords) {
 
 function formatCloudSyncError(action, error) {
   const msg = String((error && error.message) || error || '').trim();
+  if (/already exists under this account|open the correct cruise from My Cloud Cruises|already exists on this device/i.test(msg)) {
+    return msg;
+  }
   if (/missing or insufficient permissions|permission[- ]denied/i.test(msg)) {
     return action + ' failed. Check Firestore rules for cruises and cruises/*/userData.';
   }
@@ -5436,6 +5439,53 @@ function isPermissionDeniedError(error) {
 
 function normalizeEmail(value) {
   return String(value || '').trim().toLowerCase();
+}
+
+function cleanJobName(name) {
+  return String(name || '').replace(/\s+/g, ' ').trim();
+}
+
+function normalizeJobName(name) {
+  return cleanJobName(name).toLowerCase();
+}
+
+function getCloudCruiseName(activeJob) {
+  const fallback = 'Cruise ' + new Date().toLocaleDateString();
+  return cleanJobName(activeJob && activeJob.name) || fallback;
+}
+
+function buildLocalJobNameConflictMessage(name) {
+  return 'A job named "' + (cleanJobName(name) || 'Untitled Job') + '" already exists on this device. Choose a different name.';
+}
+
+function buildCloudCruiseNameConflictMessage(name, actionWord) {
+  return 'Another cloud cruise named "' + (cleanJobName(name) || 'Untitled Cruise') + '" already exists under this account. Rename this job before ' + actionWord + '.';
+}
+
+function findLocalJobNameConflict(name, excludeJobId = null) {
+  const normalizedName = normalizeJobName(name);
+  if (!normalizedName) return null;
+  return (allJobs || []).find(job => job && job.id !== excludeJobId && normalizeJobName(job.name) === normalizedName) || null;
+}
+
+async function loadOwnerCruiseDocs() {
+  if (!fb_db || !fb_user) return [];
+  const snap = await fb_db.collection('cruises').where('ownerId', '==', fb_user.uid).get({ source: 'server' });
+  return snap.docs || [];
+}
+
+function findCruiseDocsByNormalizedName(docs, name, excludeCruiseId = null) {
+  const normalizedName = normalizeJobName(name);
+  if (!normalizedName || !Array.isArray(docs)) return [];
+  return docs.filter(doc => {
+    if (!doc || doc.id === excludeCruiseId || !doc.data) return false;
+    return normalizeJobName((doc.data() || {}).name) === normalizedName;
+  });
+}
+
+async function findOwnerCruiseNameConflicts(name, excludeCruiseId = null) {
+  const docs = await loadOwnerCruiseDocs();
+  return findCruiseDocsByNormalizedName(docs, name, excludeCruiseId);
 }
 
 function getCurrentUserEmail() {
@@ -5672,11 +5722,21 @@ async function saveCruiseToCloud() {
   if (allPolygons.length === 0 && plotMarkers.length === 0) { toast('Nothing to save'); return; }
 
   const activeJob = normalizeJobCruiseSettings(allJobs.find(j => j.id === activeJobId));
-  const defaultName = activeJob ? activeJob.name : 'Cruise ' + new Date().toLocaleDateString();
-  const name = prompt('Cruise name:', defaultName);
-  if (!name) return;
+  const name = getCloudCruiseName(activeJob);
+  const linkedCruiseId = (activeJob && activeJob.cloudCruiseId) || window._activeCloudCruiseId || null;
+
+  if (linkedCruiseId) {
+    closePanel();
+    await manualCloudSync();
+    return;
+  }
 
   try {
+    const conflicts = await findOwnerCruiseNameConflicts(name);
+    if (conflicts.length) {
+      throw new Error(buildCloudCruiseNameConflictMessage(name, 'saving'));
+    }
+
     const cruiseData = {
       name: name,
       ownerId: fb_user.uid,
@@ -5877,6 +5937,10 @@ async function manualCloudSync() {
   btn.classList.add('sync-active');
   btn.classList.remove('sync-pending');
   const activeJob = normalizeJobCruiseSettings(allJobs.find(j => j.id === activeJobId));
+  if (!window._activeCloudCruiseId && activeJob && activeJob.cloudCruiseId) {
+    window._activeCloudCruiseId = activeJob.cloudCruiseId;
+    window._activeCloudCruiseOwner = activeJob.cloudCruiseOwner || window._activeCloudCruiseOwner || null;
+  }
 
   console.log('[SYNC] Starting. cloudCruiseId=' + (window._activeCloudCruiseId || 'NONE') + ', plots=' + plotMarkers.length + ', completed=' + plotMarkers.filter(p=>p.completed).length);
 
@@ -5887,46 +5951,36 @@ async function manualCloudSync() {
     if (!window._activeCloudCruiseId) {
       // No cloud cruise linked yet. Check if one already exists in Firestore for this user
       // before creating a duplicate.
-      const name = (activeJob ? activeJob.name : null) || 'Cruise ' + new Date().toLocaleDateString();
+      const name = getCloudCruiseName(activeJob);
 
-      // Search for an existing cruise with the same owner and the best local match
-      // so a stale device re-links instead of creating duplicates.
+      // Search for an existing cruise with the same owner and only auto-link when
+      // there is one clear structural match. Name alone is not enough.
       let existingCruiseId = null;
+      let relinkBlockedMessage = '';
       try {
         const localPlotIds = new Set(plotMarkers.map(p => String(p.id)));
-        const normalizedName = String(name || '').trim().toLowerCase();
-        const existingSnap = await fb_db.collection('cruises')
-          .where('ownerId', '==', fb_user.uid)
-          .get({ source: 'server' });
+        const ownerCruiseDocs = await loadOwnerCruiseDocs();
+        const sameNameDocs = findCruiseDocsByNormalizedName(ownerCruiseDocs, name);
+        const overlapMatches = ownerCruiseDocs.filter(doc => {
+          const d = doc.data() || {};
+          const cloudPlots = parseJsonArray(d.plotsJson);
+          return cloudPlots.some(cp => localPlotIds.has(String(cp.id)));
+        });
 
-        if (!existingSnap.empty) {
-          let bestDoc = null;
-          let bestScore = -1;
-          let bestTime = 0;
-          existingSnap.forEach(doc => {
-            const d = doc.data();
-            const cloudPlots = parseJsonArray(d.plotsJson);
-            const overlap = cloudPlots.reduce((count, cp) => count + (localPlotIds.has(String(cp.id)) ? 1 : 0), 0);
-            const cloudName = String(d.name || '').trim().toLowerCase();
-            let score = 0;
-            if (normalizedName && cloudName === normalizedName) score += 1000;
-            if (overlap > 0) score += overlap * 10;
-            if ((d.polyCount || 0) === allPolygons.length) score += 25;
-            if ((d.plotCount != null ? d.plotCount : cloudPlots.length) === plotMarkers.length) score += 10;
-            const t = d.updatedAt ? d.updatedAt.toMillis() : 0;
-            if (score > bestScore || (score === bestScore && t > bestTime)) {
-              bestScore = score;
-              bestTime = t;
-              bestDoc = doc;
-            }
-          });
-          if (bestDoc && (bestScore > 0 || existingSnap.size === 1)) {
-            existingCruiseId = bestDoc.id;
-            console.log('[SYNC] Found existing cloud cruise: ' + existingCruiseId + ', linking instead of creating new (score=' + bestScore + ')');
-          }
+        if (overlapMatches.length === 1) {
+          existingCruiseId = overlapMatches[0].id;
+          console.log('[SYNC] Found existing cloud cruise: ' + existingCruiseId + ', linking instead of creating new (overlap match)');
+        } else if (overlapMatches.length > 1) {
+          relinkBlockedMessage = 'Multiple cloud cruises look like this job. Open the correct cruise from My Cloud Cruises before syncing.';
+        } else if (sameNameDocs.length) {
+          relinkBlockedMessage = 'Another cloud cruise named "' + name + '" already exists under this account. Open that cruise from My Cloud Cruises or rename this job before syncing.';
         }
       } catch(searchErr) {
         console.warn('[SYNC] Could not search for existing cruises:', searchErr);
+      }
+
+      if (!existingCruiseId && relinkBlockedMessage) {
+        throw new Error(relinkBlockedMessage);
       }
 
       if (existingCruiseId) {
@@ -6225,7 +6279,14 @@ window.addEventListener('online', function() {
 async function updateCruiseInCloud(cruiseId) {
   if (!fb_user) return;
   const activeJob = normalizeJobCruiseSettings(allJobs.find(j => j.id === activeJobId));
+  const cruiseName = getCloudCruiseName(activeJob);
   try {
+    if (!window._activeCloudCruiseOwner || window._activeCloudCruiseOwner === fb_user.uid) {
+      const conflicts = await findOwnerCruiseNameConflicts(cruiseName, cruiseId);
+      if (conflicts.length) {
+        throw new Error(buildCloudCruiseNameConflictMessage(cruiseName, 'syncing'));
+      }
+    }
     const ownerFields = (!window._activeCloudCruiseOwner || window._activeCloudCruiseOwner === fb_user.uid) ? {
       ownerId: fb_user.uid,
       ownerName: fb_user.displayName || fb_user.email,
@@ -6234,6 +6295,7 @@ async function updateCruiseInCloud(cruiseId) {
     // Update shared cruise metadata (polygons, plot locations, settings)
     await fb_db.collection('cruises').doc(cruiseId).update({
       ...ownerFields,
+      name: cruiseName,
       updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
       polygonsJson: JSON.stringify(allPolygons.map(getPolygonSerializableData)),
       plotsJson: JSON.stringify(plotMarkers.map(p => ({ id: p.id, lat: p.lat, lng: p.lng }))),
@@ -6411,6 +6473,14 @@ async function loadCruiseFromCloud(cruiseId, options = {}) {
       toast('Access denied'); return;
     }
 
+    const linkedLocalJob = allJobs.find(j => j.cloudCruiseId === cruiseId) || null;
+    const cloudCruiseName = cleanJobName(d.name || 'Cloud Cruise') || 'Cloud Cruise';
+    const conflictingLocalJob = findLocalJobNameConflict(cloudCruiseName, linkedLocalJob ? linkedLocalJob.id : null);
+    if (conflictingLocalJob) {
+      toast('A different local job named "' + cloudCruiseName + '" already exists on this device. Rename that job before loading this cloud cruise.');
+      return;
+    }
+
     // Detect new multi-user format vs legacy
     const hasNewFormat = d.polygonsJson || d.plotsJson;
 
@@ -6517,8 +6587,7 @@ async function loadCruiseFromCloud(cruiseId, options = {}) {
       }
       if (data.plots && data.plots.length) {
         data.plots.forEach(pd => {
-          addPlot(pd.id, pd.lat, pd.lng);
-          const plot = plotMarkers.find(p => p.id === pd.id);
+          const plot = addPlot(pd.id, pd.lat, pd.lng);
           if (plot) {
             if (pd.trees && pd.trees.length) plot.trees = JSON.parse(JSON.stringify(pd.trees));
             if (pd.completed) { plot.completed = true; updatePlotMarkerStyle(plot); }
@@ -6533,13 +6602,13 @@ async function loadCruiseFromCloud(cruiseId, options = {}) {
 
     // Find or create a local job linked to this cloud cruise
     // First check if any existing job is already linked to this cloud cruise ID
-    let localJob = allJobs.find(j => j.cloudCruiseId === cruiseId);
+    let localJob = linkedLocalJob;
     if (!localJob) {
       // No linked job found, create a new local job
       const newJobId = 'job_' + Date.now();
       localJob = {
         id: newJobId,
-        name: d.name || 'Cloud Cruise',
+        name: cloudCruiseName,
         plots: [],
         polygons: [],
         deletedPlotIds: [],
@@ -6558,7 +6627,7 @@ async function loadCruiseFromCloud(cruiseId, options = {}) {
     // Update the local job with current cloud/map data
     localJob.cloudCruiseId = cruiseId;
     localJob.cloudCruiseOwner = d.ownerId || localJob.cloudCruiseOwner || null;
-    localJob.name = d.name || localJob.name;
+    localJob.name = cloudCruiseName || localJob.name;
     localJob.cruiseType = d.cruiseType || localJob.cruiseType || deriveCruiseTypeFromLegacyBaf(d.baf);
     localJob.baf = d.baf || localJob.baf;
     localJob.logRule = d.logRule || localJob.logRule;
@@ -9395,12 +9464,56 @@ function startManualPlot() {
   map.once('click', onManualPlotClick);
 }
 
+function normalizePlotNumericId(id) {
+  const num = Number(id);
+  return Number.isInteger(num) && num > 0 ? num : null;
+}
+
+function getUsedPlotIdSet() {
+  const usedIds = new Set();
+  plotMarkers.forEach(plot => {
+    const plotId = normalizePlotNumericId(plot && plot.id);
+    if (plotId != null) usedIds.add(plotId);
+  });
+  return usedIds;
+}
+
+function getNextAvailablePlotIdFromUsedSet(usedIds) {
+  const ids = usedIds || new Set();
+  let maxId = 0;
+  ids.forEach(id => {
+    if (id > maxId) maxId = id;
+  });
+  let nextId = Math.max(maxId + 1, 1);
+  while (ids.has(nextId)) nextId += 1;
+  return nextId;
+}
+
+function getNextAvailablePlotId() {
+  return getNextAvailablePlotIdFromUsedSet(getUsedPlotIdSet());
+}
+
+function resolveUniquePlotId(requestedId) {
+  const usedIds = getUsedPlotIdSet();
+  const normalizedId = normalizePlotNumericId(requestedId);
+  if (normalizedId != null && !usedIds.has(normalizedId)) {
+    return normalizedId;
+  }
+
+  const nextId = getNextAvailablePlotIdFromUsedSet(usedIds);
+  if (normalizedId == null) {
+    console.warn('Invalid plot ID requested; using next available plot ID instead.', requestedId, nextId);
+  } else {
+    console.warn('Duplicate plot ID requested; using next available plot ID instead.', normalizedId, nextId);
+  }
+  return nextId;
+}
+
 function onManualPlotClick(e) {
   placingPlot = false;
   document.getElementById('draw-hint').classList.remove('show');
-  const id = plotMarkers.length + 1;
-  addPlot(id, e.latlng.lat, e.latlng.lng, { clearDeleted: true });
-  toast('Plot ' + id + ' placed');
+  const plot = addPlot(getNextAvailablePlotId(), e.latlng.lat, e.latlng.lng, { clearDeleted: true });
+  if (plot) toast('Plot ' + plot.id + ' placed');
 }
 
 // â”€â”€ Edit mode â”€â”€
@@ -9764,22 +9877,24 @@ function updateLocationHeading() {
 // â”€â”€ Plot management â”€â”€
 function addPlot(id, lat, lng, options) {
   const opts = options || {};
-  if (opts.clearDeleted) clearDeletedPlotId(id);
+  const finalId = resolveUniquePlotId(id);
+  if (opts.clearDeleted) clearDeletedPlotId(finalId);
   const size = 28;
   const icon = L.divIcon({
     className: '',
-    html: '<div class="cruise-plot-marker pending" id="plot-marker-' + id + '" style="width:' + size + 'px;height:' + size + 'px;">' + id + '</div>',
+    html: '<div class="cruise-plot-marker pending" id="plot-marker-' + finalId + '" style="width:' + size + 'px;height:' + size + 'px;">' + finalId + '</div>',
     iconSize: [size, size],
     iconAnchor: [size/2, size/2]
   });
 
   const marker = L.marker([lat, lng], { icon, draggable: false }).addTo(plotLayer);
-  const plot = { id, lat, lng, completed: false, marker, trees: [] };
+  const plot = { id: finalId, lat, lng, completed: false, marker, trees: [] };
   plotMarkers.push(plot);
 
   marker.on('click', () => openPlotPopup(plot));
   updateStats();
   updateEmptyHint();
+  return plot;
 }
 
 function openPlotPopup(plot) {
@@ -11684,8 +11799,7 @@ function loadJob(jobId, skipSave) {
   if (job.plots && job.plots.length) {
     job.plots.forEach(pd => {
       if (deletedPlotIdSet.has(String(pd.id))) return;
-      addPlot(pd.id, pd.lat, pd.lng);
-      const plot = plotMarkers.find(p => p.id === pd.id);
+      const plot = addPlot(pd.id, pd.lat, pd.lng);
       if (plot) {
         if (pd.trees && pd.trees.length) plot.trees = JSON.parse(JSON.stringify(pd.trees));
         if (pd.noTally) plot.noTally = true;
@@ -11717,8 +11831,13 @@ function updateJobLabel() {
 }
 
 async function createNewJob() {
-  const name = prompt('Job name:', '');
-  if (!name || !name.trim()) return;
+  const enteredName = prompt('Job name:', '');
+  const name = cleanJobName(enteredName);
+  if (!name) return;
+  if (findLocalJobNameConflict(name)) {
+    toast(buildLocalJobNameConflictMessage(name));
+    return;
+  }
 
   // Save current job before creating new one
   if (activeJobId) {
@@ -11733,7 +11852,7 @@ async function createNewJob() {
 
   const job = {
     id: 'job_' + Date.now(),
-    name: name.trim(),
+    name: name,
     plots: [],
     polygons: [],
     deletedPlotIds: [],
@@ -11766,15 +11885,20 @@ async function createNewJob() {
   activeJobId = job.id;
   saveSession();
   closePanel();
-  toast('Job created: ' + name.trim());
+  toast('Job created: ' + name);
 }
 
 async function renameJob(jobId) {
   const job = allJobs.find(j => j.id === jobId);
   if (!job) return;
-  const name = prompt('Rename job:', job.name);
-  if (!name || !name.trim()) return;
-  job.name = name.trim();
+  const enteredName = prompt('Rename job:', job.name);
+  const name = cleanJobName(enteredName);
+  if (!name) return;
+  if (findLocalJobNameConflict(name, job.id)) {
+    toast(buildLocalJobNameConflictMessage(name));
+    return;
+  }
+  job.name = name;
   job.updatedAt = Date.now();
 
   try {
@@ -11787,7 +11911,7 @@ async function renameJob(jobId) {
   updateJobLabel();
   refreshJobsList();
   saveOfflineBackupMirror();
-  toast('Renamed to: ' + name.trim());
+  toast('Renamed to: ' + name);
 }
 
 async function deleteJob(jobId) {
