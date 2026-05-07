@@ -3907,13 +3907,15 @@ async function firebaseSignOut() {
 
 // â”€â”€ Sawtimber Tree Scale Tables â”€â”€
 // Source: USDA Agriculture Handbook No. 222, Mesavage and Girard tables.
-// Exact published values included for form classes 76-80, DBH classes 10-40
+// Published Mesavage/Girard values are included for form classes 76-80, DBH classes 10-40
 // (even-inch classes), and 16-foot log counts 1.0 through 5.0 with half-log increments.
+// Missing higher steps are extrapolated at runtime through 6.0 logs by carrying forward
+// the final 0.5-log increment for each DBH row.
 // Legacy 0.5-log support for International and Doyle is retained separately because
 // those values are outside the Mesavage/Girard 1-log minimum tables.
 
 const FORM_CLASS_OPTIONS = [76, 77, 78, 79, 80];
-const EXACT_LOG_STEPS = [1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5];
+const EXACT_LOG_STEPS = [1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5, 5.5, 6];
 const LEGACY_SUBLOG_STEPS = { scribner: [], international: [0.5], doyle: [0.5] };
 const LEGACY_HALF_LOG_FALLBACKS = {
   international: { 12:30, 14:40, 16:60, 18:70, 20:90, 22:110, 24:130, 26:160, 28:190, 30:220, 32:260, 34:290, 36:330, 38:370, 40:420, 42:460 },
@@ -4140,6 +4142,40 @@ const VOLUME_TABLES = JSON.parse(atob([
   'MjExOSwiNC41IjoyMzA4LCI1IjoyNDk2fSwiNDAiOnsiMSI6Nzg0LCIxLjUiOjEwOTksIjIiOjE0MTQsIjIuNSI6MTY5NiwiMyI6MTk3OSwiMy41IjoyMTk2',
   'LCI0IjoyNDEzLCI0LjUiOjI2MTYsIjUiOjI4MTl9fX19',
 ].join('')));
+
+function formatBackfillLogStep(step) {
+  return Number.isInteger(step) ? String(step) : step.toFixed(1).replace(/\.0$/, '');
+}
+
+function backfillSawtimberLogSteps(volumeTables) {
+  const maxStep = EXACT_LOG_STEPS[EXACT_LOG_STEPS.length - 1];
+  Object.values(volumeTables || {}).forEach(formClasses => {
+    Object.values(formClasses || {}).forEach(dbhRows => {
+      Object.values(dbhRows || {}).forEach(row => {
+        const availableSteps = Object.keys(row || {})
+          .map(Number)
+          .filter(step => Number.isFinite(step) && step >= 1)
+          .sort((a, b) => a - b);
+        if (availableSteps.length < 2) return;
+        let previousStep = availableSteps[availableSteps.length - 2];
+        let currentStep = availableSteps[availableSteps.length - 1];
+        const previousValue = Number(row[formatBackfillLogStep(previousStep)]);
+        const currentValue = Number(row[formatBackfillLogStep(currentStep)]);
+        const lastIncrement = currentValue - previousValue;
+        if (!Number.isFinite(lastIncrement)) return;
+        for (let nextStep = currentStep + 0.5; nextStep <= maxStep + 1e-9; nextStep += 0.5) {
+          const nextKey = formatBackfillLogStep(nextStep);
+          if (row[nextKey] != null) continue;
+          row[nextKey] = Number(row[formatBackfillLogStep(currentStep)]) + lastIncrement;
+          currentStep = nextStep;
+        }
+      });
+    });
+  });
+  return volumeTables;
+}
+
+backfillSawtimberLogSteps(VOLUME_TABLES);
 const LOG_RULES = {
   scribner: { id: 'scribner', name: 'Scribner Decimal C', steps: EXACT_LOG_STEPS.slice(), unit: 'BF' },
   international: { id: 'international', name: 'International 1/4"', steps: LEGACY_SUBLOG_STEPS.international.concat(EXACT_LOG_STEPS), unit: 'BF' },
@@ -4489,8 +4525,8 @@ function getLogSteps(rule, dbh, formClass) {
   const legacySteps = (LEGACY_SUBLOG_STEPS[normalizedRule] || []).slice();
   const lookup = getVolumeRow(normalizedRule, resolvedFormClass, dbh);
   if (!lookup.row) return baseSteps;
-  const publishedSteps = EXACT_LOG_STEPS.filter(step => lookup.row[formatLogStepKey(step)] != null);
-  return legacySteps.concat(publishedSteps);
+  const availableSteps = EXACT_LOG_STEPS.filter(step => lookup.row[formatLogStepKey(step)] != null);
+  return legacySteps.concat(availableSteps);
 }
 
 // Get active log rule for current job
