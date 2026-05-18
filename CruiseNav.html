@@ -866,6 +866,63 @@
     color: var(--text-muted);
     line-height: 1.5;
   }
+  .report-advanced {
+    margin-bottom: 14px;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    background: rgba(0,0,0,0.08);
+    overflow: hidden;
+  }
+  .report-advanced summary {
+    cursor: pointer;
+    list-style: none;
+    padding: 11px 13px;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.6px;
+    text-transform: uppercase;
+    color: var(--text-primary);
+  }
+  .report-advanced summary::-webkit-details-marker { display: none; }
+  .report-advanced[open] summary {
+    border-bottom: 1px solid rgba(45,90,39,0.3);
+  }
+  .report-advanced-body {
+    padding: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .report-factor-note {
+    font-size: 0.68rem;
+    color: var(--text-muted);
+    line-height: 1.45;
+  }
+  .report-factor-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 8px;
+  }
+  .report-factor-item {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+  }
+  .report-factor-item label {
+    font-size: 0.68rem;
+    color: var(--text-secondary);
+    line-height: 1.35;
+  }
+  .report-factor-item input {
+    width: 100%;
+    padding: 8px 10px;
+    font-size: 0.76rem;
+  }
+  .report-factor-actions {
+    display: flex;
+    justify-content: flex-end;
+  }
   .notice-report {
     display: flex;
     flex-direction: column;
@@ -2163,7 +2220,8 @@
     flex-shrink: 0;
   }
 
-  .help-overlay {
+  .help-overlay,
+  .testing-overlay {
     position: fixed;
     inset: 0;
     z-index: 10020;
@@ -2173,8 +2231,10 @@
     justify-content: center;
     padding: 12px;
   }
-  .help-overlay.open { display: flex; }
-  .help-modal {
+  .help-overlay.open,
+  .testing-overlay.open { display: flex; }
+  .help-modal,
+  .testing-modal {
     width: min(980px, 100%);
     max-height: min(92vh, 920px);
     background:
@@ -2186,6 +2246,10 @@
     overflow: hidden;
     display: flex;
     flex-direction: column;
+  }
+  .testing-modal {
+    width: min(720px, 100%);
+    max-height: min(88vh, 760px);
   }
   .help-header {
     display: flex;
@@ -2355,10 +2419,70 @@
   .help-actions {
     display: flex;
     gap: 10px;
-    width: 340px;
+    width: 460px;
     max-width: 100%;
   }
-  .help-actions .btn { margin: 0; }
+  .help-actions .btn { margin: 0; flex: 1; }
+  .testing-body {
+    padding: 18px 20px 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+  .testing-copy {
+    font-size: 0.76rem;
+    line-height: 1.75;
+    color: var(--text-secondary);
+  }
+  .testing-contact-card {
+    border: 1px solid rgba(106, 191, 75, 0.16);
+    border-radius: 14px;
+    background: rgba(255,255,255,0.03);
+    padding: 14px 16px;
+  }
+  .testing-contact-name {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-size: 0.92rem;
+    font-weight: 800;
+    color: var(--text-primary);
+    margin-bottom: 8px;
+  }
+  .testing-contact-links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px 14px;
+  }
+  .testing-contact-links a {
+    color: var(--accent-glow);
+    text-decoration: none;
+    font-size: 0.74rem;
+    font-weight: 700;
+  }
+  .testing-contact-links a:active,
+  .testing-contact-links a:hover { text-decoration: underline; }
+  .testing-optin {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 12px 14px;
+    border-radius: 12px;
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(106, 191, 75, 0.16);
+    color: var(--text-secondary);
+    font-size: 0.72rem;
+    line-height: 1.55;
+    cursor: pointer;
+  }
+  .testing-optin input[type="checkbox"] {
+    margin-top: 2px;
+    accent-color: var(--accent);
+    width: 16px;
+    height: 16px;
+    flex-shrink: 0;
+  }
+  .testing-actions {
+    width: 220px;
+  }
   @media (max-width: 820px) {
     .help-hero,
     .help-grid {
@@ -2371,6 +2495,9 @@
     .help-actions {
       width: 100%;
       flex-direction: column;
+    }
+    .testing-actions {
+      width: 100%;
     }
   }
 
@@ -3076,7 +3203,43 @@
         <div class="help-footer-note">Open this guide anytime from More -> Help Guide.</div>
         <div class="help-actions">
           <button class="btn btn-secondary" type="button" onclick="dismissHelpGuide()">Close</button>
+          <button class="btn btn-secondary" type="button" onclick="dismissHelpGuide(); setTimeout(openTestingNotice, 90)">Testing Notice</button>
           <button class="btn btn-primary" type="button" onclick="dismissHelpGuide()">Start Cruising</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="testing-overlay" id="testing-overlay">
+    <div class="testing-modal" role="dialog" aria-modal="true" aria-labelledby="testing-title">
+      <div class="help-header">
+        <div>
+          <div class="help-eyebrow">CruiseNav Notice</div>
+          <div class="help-title" id="testing-title">Testing Notice</div>
+          <div class="help-sub">Please read this before using CruiseNav in the field.</div>
+        </div>
+        <button class="help-close" type="button" onclick="dismissTestingNotice()" aria-label="Close testing notice">&#x2715;</button>
+      </div>
+      <div class="testing-body">
+        <div class="testing-copy">CruiseNav is still in a testing phase, so please keep that in mind while using the app.</div>
+        <div class="testing-copy">Updates are happening every week, and new versions are published on Sundays. Please export all reports before Sunday in case some data goes missing during an update.</div>
+        <div class="testing-copy">If you have any questions, concerns, or ideas for improving the app, please call or email Dylan Woody.</div>
+        <div class="testing-contact-card">
+          <div class="testing-contact-name">Dylan Woody</div>
+          <div class="testing-contact-links">
+            <a href="tel:9109755166">910-975-5166</a>
+            <a href="mailto:dylan.woody16@gmail.com">dylan.woody16@gmail.com</a>
+          </div>
+        </div>
+        <label class="testing-optin" for="testing-hide-checkbox">
+          <input type="checkbox" id="testing-hide-checkbox">
+          <span>Do not show this again on this device</span>
+        </label>
+      </div>
+      <div class="help-footer">
+        <div class="help-footer-note">You can reopen this notice anytime from More -> Help Guide.</div>
+        <div class="help-actions testing-actions">
+          <button class="btn btn-primary" type="button" onclick="dismissTestingNotice()">Continue</button>
         </div>
       </div>
     </div>
@@ -3481,6 +3644,51 @@
       <div class="field-label">Acres</div>
       <input class="field-input" id="report-acres" type="number" step="0.1" min="0" placeholder="Auto" style="padding:8px 10px;font-size:0.8rem" onchange="generateCruiseReport()">
     </div>
+  </div>
+  <div style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap;">
+    <details class="report-advanced" id="report-conversion-factors" style="width:100%">
+      <summary>Custom Tons Conversion Factors</summary>
+      <div class="report-advanced-body">
+        <div class="report-factor-note">Temporary for this report only. Does not save to the job or cloud.</div>
+        <div class="report-factor-grid">
+          <div class="report-factor-item">
+            <label for="report-factor-pine-sawtimber">Pine Sawtimber tons/MBF</label>
+            <input class="field-input" id="report-factor-pine-sawtimber" type="number" step="0.01" min="0" inputmode="decimal" onchange="generateCruiseReport()">
+          </div>
+          <div class="report-factor-item">
+            <label for="report-factor-pine-cns">Pine Chip-N-Saw tons/MBF</label>
+            <input class="field-input" id="report-factor-pine-cns" type="number" step="0.01" min="0" inputmode="decimal" onchange="generateCruiseReport()">
+          </div>
+          <div class="report-factor-item">
+            <label for="report-factor-softwood-sawtimber">Softwood Sawtimber tons/MBF</label>
+            <input class="field-input" id="report-factor-softwood-sawtimber" type="number" step="0.01" min="0" inputmode="decimal" onchange="generateCruiseReport()">
+          </div>
+          <div class="report-factor-item">
+            <label for="report-factor-softwood-cns">Softwood Chip-N-Saw tons/MBF</label>
+            <input class="field-input" id="report-factor-softwood-cns" type="number" step="0.01" min="0" inputmode="decimal" onchange="generateCruiseReport()">
+          </div>
+          <div class="report-factor-item">
+            <label for="report-factor-hardwood-sawtimber">Hardwood Sawtimber tons/MBF</label>
+            <input class="field-input" id="report-factor-hardwood-sawtimber" type="number" step="0.01" min="0" inputmode="decimal" onchange="generateCruiseReport()">
+          </div>
+          <div class="report-factor-item">
+            <label for="report-factor-hardwood-cns">Hardwood Chip-N-Saw tons/MBF</label>
+            <input class="field-input" id="report-factor-hardwood-cns" type="number" step="0.01" min="0" inputmode="decimal" onchange="generateCruiseReport()">
+          </div>
+          <div class="report-factor-item">
+            <label for="report-factor-mix-sawtimber">Mix Sawtimber tons/MBF</label>
+            <input class="field-input" id="report-factor-mix-sawtimber" type="number" step="0.01" min="0" inputmode="decimal" onchange="generateCruiseReport()">
+          </div>
+          <div class="report-factor-item">
+            <label for="report-factor-mix-cns">Mix Chip-N-Saw tons/MBF</label>
+            <input class="field-input" id="report-factor-mix-cns" type="number" step="0.01" min="0" inputmode="decimal" onchange="generateCruiseReport()">
+          </div>
+        </div>
+        <div class="report-factor-actions">
+          <button class="btn btn-secondary" type="button" style="margin:0;font-size:0.68rem;padding:8px 12px" onclick="resetReportConversionFactors()">Reset to Defaults</button>
+        </div>
+      </div>
+    </details>
   </div>
   <div style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap;">
     <button class="btn btn-secondary" style="flex:1;margin:0;font-size:0.7rem;padding:10px" onclick="generateCruiseReport()">
@@ -4306,12 +4514,46 @@ function getActiveJobTotalAcres() {
   return getTotalAcresFromPolygonItems(allPolygons);
 }
 
+const DEFAULT_PLOT_STATE_VERSION = 1;
+
+function normalizePlotStateVersion(value, fallback) {
+  const parsed = Math.floor(Number(value));
+  if (Number.isFinite(parsed) && parsed >= DEFAULT_PLOT_STATE_VERSION) return parsed;
+  if (fallback !== undefined) return normalizePlotStateVersion(fallback);
+  return DEFAULT_PLOT_STATE_VERSION;
+}
+
+function getCruisePlotStateVersion(data) {
+  return normalizePlotStateVersion(data && data.plotStateVersion, DEFAULT_PLOT_STATE_VERSION);
+}
+
+function getJobCloudPlotStateVersion(job) {
+  if (!job) return null;
+  if (job.cloudCruiseId) {
+    return normalizePlotStateVersion(job.cloudPlotStateVersion, DEFAULT_PLOT_STATE_VERSION);
+  }
+  const parsed = Math.floor(Number(job.cloudPlotStateVersion));
+  return Number.isFinite(parsed) && parsed >= DEFAULT_PLOT_STATE_VERSION ? parsed : null;
+}
+
+function setJobCloudPlotStateVersion(job, version) {
+  if (!job) return null;
+  if (!job.cloudCruiseId && version == null) {
+    job.cloudPlotStateVersion = null;
+    return null;
+  }
+  const normalized = normalizePlotStateVersion(version, DEFAULT_PLOT_STATE_VERSION);
+  job.cloudPlotStateVersion = normalized;
+  return normalized;
+}
+
 function normalizeJobCruiseSettings(job) {
   if (!job) return job;
   if (!LOG_RULES[job.logRule]) job.logRule = 'scribner';
   job.formClass = normalizeFormClass(job.formClass);
   if (!Array.isArray(job.species) || job.species.length === 0) job.species = getDefaultCruiseSpecies();
   job.deletedPlotIds = normalizeDeletedPlotIds(job.deletedPlotIds);
+  job.cloudPlotStateVersion = getJobCloudPlotStateVersion(job);
   if (!job.cruiseType || !CRUISE_METHOD_MAP[job.cruiseType]) {
     job.cruiseType = deriveCruiseTypeFromLegacyBaf(job.baf);
   }
@@ -5504,6 +5746,52 @@ function findLocalJobNameConflict(name, excludeJobId = null) {
   return (allJobs || []).find(job => job && job.id !== excludeJobId && normalizeJobName(job.name) === normalizedName) || null;
 }
 
+function findLocalJobsByNormalizedName(name, excludeJobId = null) {
+  const normalizedName = normalizeJobName(name);
+  if (!normalizedName) return [];
+  return (allJobs || []).filter(job => job && job.id !== excludeJobId && normalizeJobName(job.name) === normalizedName);
+}
+
+function resolveLocalJobForCloudCruise(cruiseId, cloudCruiseName, originLocalJobId) {
+  const linkedLocalJob = (allJobs || []).find(job => job && job.cloudCruiseId === cruiseId) || null;
+  if (linkedLocalJob) return { job: linkedLocalJob };
+
+  const originJobId = String(originLocalJobId || '').trim();
+  if (originJobId) {
+    const originLocalJob = (allJobs || []).find(job => job && job.id === originJobId) || null;
+    if (originLocalJob) {
+      if (originLocalJob.cloudCruiseId && originLocalJob.cloudCruiseId !== cruiseId) {
+        return {
+          job: null,
+          blockMessage: 'The original local job "' + (cleanJobName(originLocalJob.name) || cloudCruiseName || 'Job') + '" is already linked to a different cloud cruise. Open that cruise first or rename the local job before loading this one.'
+        };
+      }
+      return { job: originLocalJob };
+    }
+  }
+
+  const sameNameJobs = findLocalJobsByNormalizedName(cloudCruiseName);
+  if (sameNameJobs.length === 1) {
+    const sameNameJob = sameNameJobs[0];
+    if (!sameNameJob.cloudCruiseId || sameNameJob.cloudCruiseId === cruiseId) {
+      return { job: sameNameJob };
+    }
+    return {
+      job: null,
+      blockMessage: 'A local job named "' + cloudCruiseName + '" is already linked to a different cloud cruise. Rename that job before loading this cloud cruise.'
+    };
+  }
+
+  if (sameNameJobs.length > 1) {
+    return {
+      job: null,
+      blockMessage: 'Multiple local jobs named "' + cloudCruiseName + '" exist on this device. Rename the extra copies before loading this cloud cruise.'
+    };
+  }
+
+  return { job: null };
+}
+
 async function loadOwnerCruiseDocs() {
   if (!fb_db || !fb_user) return [];
   const snap = await fb_db.collection('cruises').where('ownerId', '==', fb_user.uid).get({ source: 'server' });
@@ -5778,6 +6066,7 @@ async function saveCruiseToCloud() {
       ownerId: fb_user.uid,
       ownerName: fb_user.displayName || fb_user.email,
       ownerEmail: getCurrentUserEmail(),
+      originLocalJobId: (activeJob && activeJob.id) || null,
       shareCode: generateShareCode(),
       sharedWith: [],
       cruiseType: (activeJob && activeJob.cruiseType) || 'baf_20',
@@ -5788,6 +6077,7 @@ async function saveCruiseToCloud() {
       deletedPlotIdsJson: JSON.stringify(getActiveJobDeletedPlotIds()),
       createdAt: firebase.firestore.FieldValue.serverTimestamp(),
       updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+      plotStateVersion: DEFAULT_PLOT_STATE_VERSION,
       // Polygons/boundaries stored on main doc (shared by all)
       polygonsJson: JSON.stringify(allPolygons.map(getPolygonSerializableData)),
       // All plot locations stored on main doc (shared by all)
@@ -5803,7 +6093,8 @@ async function saveCruiseToCloud() {
     const docRef = await fb_db.collection('cruises').add(cruiseData);
 
     // Save this user's plot tree data to sub-collection
-    await saveUserPlotData(docRef.id);
+    if (activeJob) setJobCloudPlotStateVersion(activeJob, DEFAULT_PLOT_STATE_VERSION);
+    await saveUserPlotData(docRef.id, { plotStateVersion: DEFAULT_PLOT_STATE_VERSION });
 
     window._activeCloudCruiseId = docRef.id;
     window._activeCloudCruiseOwner = fb_user.uid;
@@ -5813,8 +6104,10 @@ async function saveCruiseToCloud() {
     if (linkJob) {
       linkJob.cloudCruiseId = docRef.id;
       linkJob.cloudCruiseOwner = fb_user.uid;
+      setJobCloudPlotStateVersion(linkJob, DEFAULT_PLOT_STATE_VERSION);
       linkJob.updatedAt = Date.now();
     }
+    await saveSession({ skipCloudSync: true });
 
     await tryEnsureCruiseShareCode(docRef.id, name, cruiseData.shareCode);
 
@@ -5845,10 +6138,54 @@ function getCompletedPlotsForSync() {
     .sort((a, b) => String(a.id).localeCompare(String(b.id)));
 }
 
-async function saveUserPlotData(cruiseId) {
+function getActiveCloudLinkedJob() {
+  const job = normalizeJobCruiseSettings(allJobs.find(j => j.id === activeJobId));
+  return job && job.cloudCruiseId ? job : null;
+}
+
+function syncActiveJobCloudPlotStateVersion(version) {
+  const job = getActiveCloudLinkedJob();
+  if (!job) return null;
+  const normalized = setJobCloudPlotStateVersion(job, version);
+  job.updatedAt = Date.now();
+  return normalized;
+}
+
+async function reconcileCloudPlotStateVersion(cruiseId, cruiseData, options = {}) {
+  const activeJob = getActiveCloudLinkedJob();
+  const remoteVersion = getCruisePlotStateVersion(cruiseData);
+  if (!activeJob || activeJob.cloudCruiseId !== cruiseId) {
+    return { remoteVersion, resetApplied: false };
+  }
+
+  const localVersion = getJobCloudPlotStateVersion(activeJob);
+  if (remoteVersion <= localVersion) {
+    if (activeJob.cloudPlotStateVersion !== remoteVersion) {
+      activeJob.cloudPlotStateVersion = remoteVersion;
+      activeJob.updatedAt = Date.now();
+    }
+    return { remoteVersion, resetApplied: false };
+  }
+
+  clearAllPlotCompletionData();
+  activeJob.cloudPlotStateVersion = remoteVersion;
+  activeJob.updatedAt = Date.now();
+  await saveSession({ skipCloudSync: true });
+  if (!options.silentToast) {
+    toast(options.message || 'This cloud cruise was reset on another device. Local plot tallies were cleared.');
+  }
+  return { remoteVersion, resetApplied: true };
+}
+
+async function saveUserPlotData(cruiseId, options = {}) {
   if (!fb_user || !cruiseId) return;
+  const activeJob = getActiveCloudLinkedJob();
+  const plotStateVersion = normalizePlotStateVersion(
+    options.plotStateVersion,
+    getJobCloudPlotStateVersion(activeJob)
+  );
   const myPlots = getCompletedPlotsForSync();
-  console.log('[PUSH] saveUserPlotData: cruiseId=' + cruiseId + ', completedPlots=' + myPlots.length + ', plotIds=' + myPlots.map(p=>p.id).join(',') + ', treeCounts=' + myPlots.map(p=>(p.trees||[]).length).join(','));
+  console.log('[PUSH] saveUserPlotData: cruiseId=' + cruiseId + ', completedPlots=' + myPlots.length + ', version=' + plotStateVersion + ', plotIds=' + myPlots.map(p=>p.id).join(',') + ', treeCounts=' + myPlots.map(p=>(p.trees||[]).length).join(','));
 
   try {
     await fb_db.collection('cruises').doc(cruiseId)
@@ -5857,8 +6194,10 @@ async function saveUserPlotData(cruiseId) {
         userName: fb_user.displayName || fb_user.email,
         userEmail: getCurrentUserEmail(),
         plots: JSON.stringify(myPlots),
+        plotStateVersion: plotStateVersion,
         updatedAt: firebase.firestore.FieldValue.serverTimestamp()
       });
+    syncActiveJobCloudPlotStateVersion(plotStateVersion);
     // Clear pending flag on successful sync
     setSyncPending(false);
   } catch(e) {
@@ -5943,6 +6282,14 @@ function markActiveCruiseOwnedByCurrentUser() {
 async function syncExistingCruiseState(cruiseId, options = {}) {
   const silent = !!options.silent;
   await ensureActiveCloudCruiseOwner(cruiseId);
+  const cruiseDoc = await fb_db.collection('cruises').doc(cruiseId).get({ source: 'server' });
+  if (!cruiseDoc.exists) throw new Error('Cruise not found');
+  const cruiseData = cruiseDoc.data() || {};
+  if (cruiseData.ownerId) window._activeCloudCruiseOwner = cruiseData.ownerId;
+  await reconcileCloudPlotStateVersion(cruiseId, cruiseData, {
+    silentToast: false,
+    message: 'This cloud cruise was reset in the cloud. Local plot tallies were cleared before sync.'
+  });
   if (window._activeCloudCruiseOwner === fb_user.uid) {
     await updateCruiseInCloud(cruiseId);
     await pullOtherUsersPlotData(cruiseId, { silent: true, skipPlotLocations: true, skipBoundaries: true });
@@ -6040,6 +6387,7 @@ async function manualCloudSync() {
           ownerId: fb_user.uid,
           ownerName: fb_user.displayName || fb_user.email,
           ownerEmail: getCurrentUserEmail(),
+          originLocalJobId: (activeJob && activeJob.id) || null,
           shareCode: generateShareCode(),
           sharedWith: [],
           cruiseType: (activeJob && activeJob.cruiseType) || 'baf_20',
@@ -6049,6 +6397,7 @@ async function manualCloudSync() {
           species: (activeJob && activeJob.species) || [],
           createdAt: firebase.firestore.FieldValue.serverTimestamp(),
           updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+          plotStateVersion: DEFAULT_PLOT_STATE_VERSION,
           polygonsJson: JSON.stringify(allPolygons.map(getPolygonSerializableData)),
           plotsJson: JSON.stringify(plotMarkers.map(p => ({ id: p.id, lat: p.lat, lng: p.lng }))),
           plotCount: plotMarkers.length,
@@ -6059,7 +6408,8 @@ async function manualCloudSync() {
         };
 
         const docRef = await fb_db.collection('cruises').add(cruiseData);
-        await saveUserPlotData(docRef.id);
+        if (activeJob) setJobCloudPlotStateVersion(activeJob, DEFAULT_PLOT_STATE_VERSION);
+        await saveUserPlotData(docRef.id, { plotStateVersion: DEFAULT_PLOT_STATE_VERSION });
 
         window._activeCloudCruiseId = docRef.id;
         window._activeCloudCruiseOwner = fb_user.uid;
@@ -6071,8 +6421,10 @@ async function manualCloudSync() {
       if (activeJob) {
         activeJob.cloudCruiseId = window._activeCloudCruiseId;
         activeJob.cloudCruiseOwner = window._activeCloudCruiseOwner || activeJob.cloudCruiseOwner || null;
+        activeJob.cloudPlotStateVersion = getJobCloudPlotStateVersion(activeJob);
         activeJob.updatedAt = Date.now();
       }
+      await saveSession({ skipCloudSync: true });
     } else {
       // Cloud cruise exists, sync everything
       toast('Syncing to ' + window._activeCloudCruiseId.substring(0,6) + '...');
@@ -6129,6 +6481,11 @@ async function pullOtherUsersPlotData(cruiseId, options = {}) {
     if (!cruiseDoc.exists) { console.log('[PULL] Cruise doc not found!'); return { newPlotsCount: 0, newBoundariesCount: 0, updatedPlotsCount: 0 }; }
     const d = cruiseDoc.data();
     if (d.ownerId) window._activeCloudCruiseOwner = d.ownerId;
+    const remotePlotStateVersion = getCruisePlotStateVersion(d);
+    await reconcileCloudPlotStateVersion(cruiseId, d, {
+      silentToast: false,
+      message: 'This cloud cruise was reset in the cloud. Local plot tallies were cleared.'
+    });
     console.log('[PULL] Got cruise doc. plotsJson length=' + (d.plotsJson||'').length + ', userData docs=' + (userSnap ? userSnap.size : 'NO_ACCESS'));
 
     // Track what's new
@@ -6201,6 +6558,8 @@ async function pullOtherUsersPlotData(cruiseId, options = {}) {
         const ud = udoc.data();
         const cruiserName = ud.userName || ud.userEmail || udoc.id;
         contributors.push(cruiserName);
+        const userPlotStateVersion = getCruisePlotStateVersion(ud);
+        if (userPlotStateVersion !== remotePlotStateVersion) return;
 
         const userPlots = parseJsonArray(ud.plots);
         const docTime = ud.updatedAt ? ud.updatedAt.toMillis() : 0;
@@ -6316,6 +6675,10 @@ async function updateCruiseInCloud(cruiseId) {
   if (!fb_user) return;
   const activeJob = normalizeJobCruiseSettings(allJobs.find(j => j.id === activeJobId));
   const cruiseName = getCloudCruiseName(activeJob);
+  const plotStateVersion = normalizePlotStateVersion(
+    getJobCloudPlotStateVersion(activeJob),
+    DEFAULT_PLOT_STATE_VERSION
+  );
   try {
     if (!window._activeCloudCruiseOwner || window._activeCloudCruiseOwner === fb_user.uid) {
       const conflicts = await findOwnerCruiseNameConflicts(cruiseName, cruiseId);
@@ -6333,6 +6696,7 @@ async function updateCruiseInCloud(cruiseId) {
       ...ownerFields,
       name: cruiseName,
       updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+      plotStateVersion: plotStateVersion,
       polygonsJson: JSON.stringify(allPolygons.map(getPolygonSerializableData)),
       plotsJson: JSON.stringify(plotMarkers.map(p => ({ id: p.id, lat: p.lat, lng: p.lng }))),
       plotCount: plotMarkers.length,
@@ -6349,7 +6713,7 @@ async function updateCruiseInCloud(cruiseId) {
     });
 
     // Save this user's plot tree data
-    await saveUserPlotData(cruiseId);
+    await saveUserPlotData(cruiseId, { plotStateVersion: plotStateVersion });
 
   } catch(e) {
     console.error('Update error:', e);
@@ -6509,16 +6873,17 @@ async function loadCruiseFromCloud(cruiseId, options = {}) {
       toast('Access denied'); return;
     }
 
-    const linkedLocalJob = allJobs.find(j => j.cloudCruiseId === cruiseId) || null;
     const cloudCruiseName = cleanJobName(d.name || 'Cloud Cruise') || 'Cloud Cruise';
-    const conflictingLocalJob = findLocalJobNameConflict(cloudCruiseName, linkedLocalJob ? linkedLocalJob.id : null);
-    if (conflictingLocalJob) {
-      toast('A different local job named "' + cloudCruiseName + '" already exists on this device. Rename that job before loading this cloud cruise.');
+    const localJobResolution = resolveLocalJobForCloudCruise(cruiseId, cloudCruiseName, d.originLocalJobId);
+    if (localJobResolution.blockMessage) {
+      toast(localJobResolution.blockMessage);
       return;
     }
+    const resolvedLocalJob = localJobResolution.job || null;
 
     // Detect new multi-user format vs legacy
     const hasNewFormat = d.polygonsJson || d.plotsJson;
+    const remotePlotStateVersion = hasNewFormat ? getCruisePlotStateVersion(d) : DEFAULT_PLOT_STATE_VERSION;
 
     // Pre-fetch userData sub-collection BEFORE clearing anything
     let userSnap = null;
@@ -6576,6 +6941,8 @@ async function loadCruiseFromCloud(cruiseId, options = {}) {
         userSnap.forEach(udoc => {
           const ud = udoc.data();
           contributors.push(ud.userName || ud.userEmail || udoc.id);
+          const userPlotStateVersion = getCruisePlotStateVersion(ud);
+          if (userPlotStateVersion !== remotePlotStateVersion) return;
           const userPlots = parseJsonArray(ud.plots);
           const docTime = ud.updatedAt ? ud.updatedAt.toMillis() : 0;
           userPlots.forEach(up => {
@@ -6636,9 +7003,8 @@ async function loadCruiseFromCloud(cruiseId, options = {}) {
     window._activeCloudCruiseId = cruiseId;
     window._activeCloudCruiseOwner = d.ownerId;
 
-    // Find or create a local job linked to this cloud cruise
-    // First check if any existing job is already linked to this cloud cruise ID
-    let localJob = linkedLocalJob;
+    // Find or create a local job for this cloud cruise
+    let localJob = resolvedLocalJob;
     if (!localJob) {
       // No linked job found, create a new local job
       const newJobId = 'job_' + Date.now();
@@ -6655,6 +7021,7 @@ async function loadCruiseFromCloud(cruiseId, options = {}) {
         formClass: normalizeFormClass(d.formClass),
         species: d.species || [],
         cloudCruiseId: cruiseId,
+        cloudPlotStateVersion: remotePlotStateVersion,
         createdAt: Date.now(),
         updatedAt: Date.now()
       };
@@ -6669,6 +7036,7 @@ async function loadCruiseFromCloud(cruiseId, options = {}) {
     localJob.logRule = d.logRule || localJob.logRule;
     localJob.formClass = normalizeFormClass(d.formClass || localJob.formClass);
     localJob.species = (d.species && d.species.length) ? d.species : localJob.species;
+    localJob.cloudPlotStateVersion = remotePlotStateVersion;
     localJob.deletedPlotIds = normalizeDeletedPlotIds(parseJsonArray(d.deletedPlotIdsJson));
     localJob.plots = plotMarkers.map(p => ({
       id: p.id, lat: p.lat, lng: p.lng, completed: p.completed,
@@ -6686,6 +7054,7 @@ async function loadCruiseFromCloud(cruiseId, options = {}) {
     updateTractInfo();
     updateEmptyHint();
     refreshPolyChecklist();
+    refreshJobsList();
     closePanel();
     queueMapRefresh({ fitBounds: allPolygons.length > 0, delay: 120, followupDelay: 500 });
 
@@ -7908,6 +8277,58 @@ function toggleSpeciesRef() {
 // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 
 let _reportJobId = null;
+const NOTICE_CONVERSION_FACTOR_FIELDS = [
+  { groupKey: 'Pine', product: 'sawtimber' },
+  { groupKey: 'Pine', product: 'cns' },
+  { groupKey: 'Softwood', product: 'sawtimber' },
+  { groupKey: 'Softwood', product: 'cns' },
+  { groupKey: 'Hardwood', product: 'sawtimber' },
+  { groupKey: 'Hardwood', product: 'cns' },
+  { groupKey: 'Mix', product: 'sawtimber' },
+  { groupKey: 'Mix', product: 'cns' }
+];
+
+function cloneNoticeConversionFactors(source) {
+  return JSON.parse(JSON.stringify(source || NOTICE_CONVERSION_FACTORS));
+}
+
+function getReportConversionFactorInputId(groupKey, product) {
+  return 'report-factor-' + String(groupKey || '').toLowerCase() + '-' + String(product || '').toLowerCase();
+}
+
+function populateReportConversionFactorInputs(sourceTable) {
+  const table = sourceTable || NOTICE_CONVERSION_FACTORS;
+  NOTICE_CONVERSION_FACTOR_FIELDS.forEach(field => {
+    const input = document.getElementById(getReportConversionFactorInputId(field.groupKey, field.product));
+    const group = table[field.groupKey] || NOTICE_CONVERSION_FACTORS[field.groupKey];
+    const factor = group && group[field.product];
+    if (input && factor) input.value = Number(factor.tonsPerMbf).toFixed(2);
+  });
+}
+
+function getActiveReportConversionFactors() {
+  const table = cloneNoticeConversionFactors(NOTICE_CONVERSION_FACTORS);
+  let usesCustomTonsFactors = false;
+
+  NOTICE_CONVERSION_FACTOR_FIELDS.forEach(field => {
+    const input = document.getElementById(getReportConversionFactorInputId(field.groupKey, field.product));
+    const defaultValue = Number(NOTICE_CONVERSION_FACTORS[field.groupKey][field.product].tonsPerMbf);
+    const parsed = parseFloat(input && typeof input.value === 'string' ? input.value : '');
+    const activeValue = Number.isFinite(parsed) && parsed > 0 ? parsed : defaultValue;
+    table[field.groupKey][field.product].tonsPerMbf = activeValue;
+    if (Math.abs(activeValue - defaultValue) > 1e-9) usesCustomTonsFactors = true;
+  });
+
+  return {
+    table: table,
+    usesCustomTonsFactors: usesCustomTonsFactors
+  };
+}
+
+function resetReportConversionFactors() {
+  populateReportConversionFactorInputs();
+  generateCruiseReport();
+}
 
 function captureGridSettingsToJob(job) {
   if (!job) return;
@@ -8019,10 +8440,11 @@ function getNoticeRuleShortName(rule) {
   return (LOG_RULES[rule] || LOG_RULES.scribner).name;
 }
 
-function getNoticeConversionFactors(code, product) {
+function getNoticeConversionFactors(code, product, conversionTable) {
   if (product === 'pulpwood' || product === 'all') return null;
   const groupKey = getNoticeGroupKey(code);
-  const table = NOTICE_CONVERSION_FACTORS[groupKey] || NOTICE_CONVERSION_FACTORS.Mix;
+  const sourceTable = conversionTable || NOTICE_CONVERSION_FACTORS;
+  const table = sourceTable[groupKey] || sourceTable.Mix || NOTICE_CONVERSION_FACTORS.Mix;
   return table[product === 'cns' ? 'cns' : 'sawtimber'] || null;
 }
 
@@ -8145,7 +8567,7 @@ function getNoticeProductLabel(product) {
   return 'All Products';
 }
 
-function buildNoticeReportModel(plots, cruiseConfig, rule, formClass, totalAcres) {
+function buildNoticeReportModel(plots, cruiseConfig, rule, formClass, totalAcres, conversionTable) {
   const allDonePlots = (plots || []).filter(plot => plot && plot.completed);
   const divisor = getCruisePlotDivisor(cruiseConfig, allDonePlots.length);
   const speciesMap = {};
@@ -8177,7 +8599,7 @@ function buildNoticeReportModel(plots, cruiseConfig, rule, formClass, totalAcres
       const treesTotal = totalAcres > 0 ? treesAc * totalAcres : 1;
       const baAc = metrics.ba / divisor;
       const logs = parseFloat(tree.logs) || 0;
-      const factors = getNoticeConversionFactors(spp, product);
+      const factors = getNoticeConversionFactors(spp, product, conversionTable);
       if (product !== 'pulpwood' && factors) estimatedFieldsUsed = true;
 
       const bfAc = product === 'pulpwood' ? 0 : (metrics.volume / divisor);
@@ -8319,7 +8741,10 @@ function renderNoticeFrontSummary(context) {
     'Pulpwood uses the RGT16 green-ton table from tallied DBH and 16-ft merchantable log counts.'
   ];
   const noteBits = [];
-  if (context.model.estimatedFieldsUsed) noteBits.push('Sawtimber tons and cubic-foot values are estimated from default species-class conversion factors so the report can mirror notice-style tables.');
+  if (context.model.estimatedFieldsUsed) {
+    if (context.usesCustomTonsFactors) noteBits.push('Sawtimber and chip-n-saw tons use temporary custom report conversion factors; cubic-foot values still use the built-in defaults.');
+    else noteBits.push('Sawtimber tons and cubic-foot values are estimated from default species-class conversion factors so the report can mirror notice-style tables.');
+  }
   noteBits.push('CruiseNav does not currently tally separate topwood or hardwood palletwood products, so those low-grade stems remain grouped under pulpwood.');
   if (context.totalAcres <= 0) noteBits.push('Because tract acres are not set, tract total trees and volumes fall back to tallied tree counts and per-tree volumes.');
 
@@ -8716,6 +9141,7 @@ function generateCruiseReport() {
   const ruleName = (LOG_RULES[rule] || LOG_RULES.scribner).name;
   const ruleShort = getNoticeRuleShortName(rule);
   const formClass = normalizeFormClass(document.getElementById('report-formclass').value || 78);
+  const reportConversionFactors = getActiveReportConversionFactors();
   const stats = buildCruiseStats(allDonePlots, cruiseConfig, rule, formClass, totalAcres);
 
   const cruiserNames = new Set();
@@ -8733,7 +9159,7 @@ function generateCruiseReport() {
     job.mstate
   ].filter(Boolean).join(', ');
 
-  const model = buildNoticeReportModel(allDonePlots, cruiseConfig, rule, formClass, totalAcres);
+  const model = buildNoticeReportModel(allDonePlots, cruiseConfig, rule, formClass, totalAcres, reportConversionFactors.table);
   const html = '<div class="notice-report">' +
     renderNoticeFrontSummary({
       model: model,
@@ -8745,6 +9171,7 @@ function generateCruiseReport() {
       ruleName: ruleName,
       ruleShort: ruleShort,
       formClass: formClass,
+      usesCustomTonsFactors: reportConversionFactors.usesCustomTonsFactors,
       cruiserList: cruiserList,
       totalTreeCount: stats.totalTreeCount,
       locationSummary: locationSummary
@@ -9179,6 +9606,7 @@ function initReportPanel() {
 
   const acresInput = document.getElementById('report-acres');
   acresInput.value = '';
+  populateReportConversionFactorInputs();
   if (_reportJobId === activeJobId) {
     let totalAc = 0;
     allPolygons.forEach(p => { try { totalAc += calcAcres(p.layer); } catch(e) {} });
@@ -9207,6 +9635,7 @@ function switchReportJob(jobId) {
 
   const acresInput = document.getElementById('report-acres');
   acresInput.value = '';
+  populateReportConversionFactorInputs();
   if (jobId === activeJobId) {
     let totalAc = 0;
     allPolygons.forEach(p => { try { totalAc += calcAcres(p.layer); } catch(e) {} });
@@ -9310,6 +9739,48 @@ function openHelpGuide() {
 function dismissHelpGuide() {
   const overlay = document.getElementById('help-overlay');
   if (!overlay) return;
+  overlay.classList.remove('open');
+  queueMapRefresh({ fitBounds: allPolygons.length > 0, delay: 80 });
+}
+
+const TESTING_NOTICE_HIDE_KEY = 'cruisenav-testing-notice-hidden';
+
+function shouldShowTestingNotice() {
+  try {
+    return localStorage.getItem(TESTING_NOTICE_HIDE_KEY) !== '1';
+  } catch(e) {
+    return true;
+  }
+}
+
+function setTestingNoticeHiddenPreference(hidden) {
+  try {
+    if (hidden) localStorage.setItem(TESTING_NOTICE_HIDE_KEY, '1');
+    else localStorage.removeItem(TESTING_NOTICE_HIDE_KEY);
+  } catch(e) {}
+}
+
+function syncTestingNoticeCheckbox() {
+  const cb = document.getElementById('testing-hide-checkbox');
+  if (!cb) return;
+  cb.checked = !shouldShowTestingNotice();
+}
+
+function openTestingNotice() {
+  const overlay = document.getElementById('testing-overlay');
+  if (!overlay) return;
+  const helpOverlay = document.getElementById('help-overlay');
+  if (helpOverlay) helpOverlay.classList.remove('open');
+  syncTestingNoticeCheckbox();
+  overlay.classList.add('open');
+  queueMapRefresh({ fitBounds: false, delay: 80 });
+}
+
+function dismissTestingNotice() {
+  const overlay = document.getElementById('testing-overlay');
+  if (!overlay) return;
+  const cb = document.getElementById('testing-hide-checkbox');
+  setTestingNoticeHiddenPreference(!!(cb && cb.checked));
   overlay.classList.remove('open');
   queueMapRefresh({ fitBounds: allPolygons.length > 0, delay: 80 });
 }
@@ -10025,6 +10496,23 @@ function updatePlotMarkerStyle(plot) {
   plot.marker.setIcon(newIcon);
 }
 
+function clearPlotCompletionData(plot) {
+  if (!plot) return;
+  plot.completed = false;
+  plot.trees = [];
+  plot.noTally = false;
+  plot.cruiser = '';
+  updatePlotMarkerStyle(plot);
+}
+
+function clearAllPlotCompletionData() {
+  plotMarkers.forEach(plot => clearPlotCompletionData(plot));
+  if (navTargetId != null) stopNavigation();
+  updateStats();
+  updateTractInfo();
+  refreshPlotList();
+}
+
 async function deletePlot(id) {
   if (guardFieldLock()) return;
   const idx = plotMarkers.findIndex(p => String(p.id) === String(id));
@@ -10526,6 +11014,75 @@ async function resetAllPlots() {
   if (guardFieldLock()) return;
   if (plotMarkers.length === 0) { toast('No plots to update'); return; }
   const summary = getPlotSetSummary(plotMarkers);
+  const activeJob = getActiveCloudLinkedJob();
+  const linkedCruiseId = (activeJob && activeJob.cloudCruiseId) || window._activeCloudCruiseId || null;
+
+  if (linkedCruiseId) {
+    if (!fb_user) {
+      toast('Sign in as the cruise owner to reset this cloud cruise.');
+      return;
+    }
+    window._activeCloudCruiseId = linkedCruiseId;
+    window._activeCloudCruiseOwner = (activeJob && activeJob.cloudCruiseOwner) || window._activeCloudCruiseOwner || null;
+    await ensureActiveCloudCruiseOwner(linkedCruiseId);
+    if (window._activeCloudCruiseOwner !== fb_user.uid) {
+      toast('Only the cruise owner can reset a cloud cruise.');
+      return;
+    }
+
+    const ok = await showDangerConfirm({
+      title: 'Reset Shared Cruise?',
+      message: 'This clears tallies and completion status for ' + formatPlotSetSummary(summary) + ' on every device using this cruise.',
+      confirmLabel: 'Reset Shared Cruise',
+      finalMessage: 'Clear every tally and reset this shared cruise now?',
+      finalDetail: 'This will clear plot tallies for the whole cloud cruise.'
+    });
+    if (!ok) return;
+
+    createSafetySnapshot('Cloud cruise reset to pending');
+
+    try {
+      const cruiseRef = fb_db.collection('cruises').doc(linkedCruiseId);
+      const cruiseDoc = await cruiseRef.get({ source: 'server' });
+      if (!cruiseDoc.exists) { toast('Cruise not found'); return; }
+
+      const cruiseData = cruiseDoc.data() || {};
+      const nextPlotStateVersion = getCruisePlotStateVersion(cruiseData) + 1;
+      await cruiseRef.update({
+        updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+        completedCount: 0,
+        plotStateVersion: nextPlotStateVersion
+      });
+
+      clearAllPlotCompletionData();
+      if (activeJob) {
+        activeJob.cloudCruiseOwner = cruiseData.ownerId || activeJob.cloudCruiseOwner || null;
+        activeJob.cloudCruiseId = linkedCruiseId;
+        activeJob.cloudPlotStateVersion = nextPlotStateVersion;
+        activeJob.updatedAt = Date.now();
+      }
+
+      let userDataSyncFailed = false;
+      try {
+        await saveUserPlotData(linkedCruiseId, { plotStateVersion: nextPlotStateVersion });
+      } catch (userDataErr) {
+        userDataSyncFailed = true;
+        console.warn('Cloud reset userData sync failed:', userDataErr);
+      }
+
+      _lastSyncedPlotHash = getPlotHash();
+      _lastSyncedPlotLocationHash = getPlotLocationHash();
+      if (!userDataSyncFailed) setSyncPending(false);
+      await saveSession({ skipCloudSync: !userDataSyncFailed });
+      toast(userDataSyncFailed ? 'Shared cruise reset. Empty tallies will retry syncing.' : 'Shared cruise reset to pending');
+      showSafetyRecoverToast('Shared cruise reset');
+    } catch (e) {
+      console.error('Cloud reset failed:', e);
+      toast(formatCloudSyncError('Reset', e));
+    }
+    return;
+  }
+
   const ok = await showDangerConfirm({
     title: 'Reset All to Pending?',
     message: 'This changes the completion status for ' + formatPlotSetSummary(summary) + '. Tree records stay on the plots, but all plots become pending.',
@@ -10536,6 +11093,7 @@ async function resetAllPlots() {
   createSafetySnapshot('All plots reset to pending');
   plotMarkers.forEach(p => { p.completed = false; updatePlotMarkerStyle(p); });
   updateStats();
+  updateTractInfo();
   refreshPlotList();
   checkSyncNeeded();
   saveSession();
@@ -12241,9 +12799,14 @@ buildThemeSwatches();
   // Dismiss loading screen
   setTimeout(() => {
     const ls = document.getElementById('loading-screen');
-    ls.classList.add('hidden');
-    setTimeout(() => ls.remove(), 500);
+    if (ls) {
+      ls.classList.add('hidden');
+      setTimeout(() => ls.remove(), 500);
+    }
     queueMapRefresh({ fitBounds: allPolygons.length > 0, delay: 80, followupDelay: 420 });
+    if (shouldShowTestingNotice()) {
+      setTimeout(() => openTestingNotice(), 140);
+    }
   }, 600);
 })();
 
