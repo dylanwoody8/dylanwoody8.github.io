@@ -2801,73 +2801,6 @@
     background: var(--orange);
     border: 2px solid var(--bg-deep);
   }
-  .sync-status-bar {
-    position: absolute;
-    top: calc(var(--topbar-height) + 10px);
-    left: 10px;
-    right: 10px;
-    z-index: 998;
-    display: none;
-    align-items: center;
-    gap: 10px;
-    padding: 10px 12px;
-    border-radius: 10px;
-    border: 1px solid var(--border);
-    background: rgba(13, 26, 13, 0.94);
-    box-shadow: 0 8px 20px rgba(0,0,0,0.24);
-    backdrop-filter: blur(10px);
-    cursor: pointer;
-  }
-  .sync-status-bar.show { display: flex; }
-  .sync-status-bar.pending {
-    border-color: var(--orange);
-    background: rgba(58, 42, 16, 0.95);
-  }
-  .sync-status-bar.synced {
-    border-color: var(--accent-dim);
-    background: rgba(19, 38, 21, 0.94);
-  }
-  .sync-status-bar.blocked {
-    border-color: var(--red);
-    background: rgba(58, 26, 26, 0.95);
-  }
-  .sync-status-bar.active {
-    border-color: var(--blue);
-    background: rgba(26, 42, 58, 0.95);
-  }
-  .sync-status-dot {
-    width: 11px;
-    height: 11px;
-    border-radius: 50%;
-    flex-shrink: 0;
-    background: var(--text-muted);
-    box-shadow: 0 0 0 3px rgba(255,255,255,0.06);
-  }
-  .sync-status-bar.pending .sync-status-dot { background: var(--orange); }
-  .sync-status-bar.synced .sync-status-dot { background: var(--accent); }
-  .sync-status-bar.blocked .sync-status-dot { background: var(--red); }
-  .sync-status-bar.active .sync-status-dot {
-    background: var(--blue);
-    animation: sync-pulse 1.4s ease infinite;
-  }
-  .sync-status-copy {
-    min-width: 0;
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
-  }
-  .sync-status-title {
-    font-family: 'Plus Jakarta Sans', sans-serif;
-    font-size: 0.78rem;
-    font-weight: 800;
-    color: var(--text-primary);
-    line-height: 1.2;
-  }
-  .sync-status-meta {
-    font-size: 0.62rem;
-    color: var(--text-secondary);
-    line-height: 1.35;
-  }
   .cloud-sync-card {
     margin-bottom: 12px;
     padding: 12px;
@@ -3412,14 +3345,6 @@
   <!-- Progress Strip -->
   <div class="progress-strip"><div class="progress-fill" id="progress-fill"></div></div>
 
-  <div class="sync-status-bar" id="sync-status-bar" onclick="openCloudPanel()">
-    <div class="sync-status-dot" id="sync-status-dot"></div>
-    <div class="sync-status-copy">
-      <div class="sync-status-title" id="sync-status-title">Cloud sync inactive</div>
-      <div class="sync-status-meta" id="sync-status-meta">Tap to open Cloud Sync.</div>
-    </div>
-  </div>
-
   <!-- Map -->
   <div id="map"></div>
 
@@ -3945,7 +3870,10 @@
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17,8 12,3 7,8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
       Save Current Cruise
     </button>
-    <div class="cloud-sync-card">
+    <button class="btn btn-secondary" id="cloud-sync-toggle" type="button" style="margin-bottom:12px;" onclick="toggleCloudSyncStatus()" aria-expanded="false">
+      Show Sync Status
+    </button>
+    <div class="cloud-sync-card" id="cloud-sync-card" hidden>
       <div class="cloud-sync-card-head">
         <div class="cloud-sync-card-title">Cloud Sync Status</div>
         <button class="btn btn-secondary" type="button" style="margin:0;padding:8px 10px;font-size:0.62rem;" onclick="exportCloudSyncDebug()">Export Sync Log</button>
@@ -6577,10 +6505,6 @@ function showSyncWarningOnce(reason) {
 }
 
 function refreshSyncStatusUI() {
-  const bar = document.getElementById('sync-status-bar');
-  const dot = document.getElementById('sync-status-dot');
-  const title = document.getElementById('sync-status-title');
-  const meta = document.getElementById('sync-status-meta');
   const btn = document.getElementById('btn-sync');
   const cardState = document.getElementById('cloud-sync-card-state');
   const cardGrid = document.getElementById('cloud-sync-grid');
@@ -6588,43 +6512,28 @@ function refreshSyncStatusUI() {
   const completedPlotIds = getCompletedPlotIdsForSync();
   const effectivePending = getEffectiveSyncPending();
 
-  let tone = 'synced';
   let titleText = 'Cloud sync inactive';
   let metaText = 'Tap to open Cloud Sync.';
 
   if (_syncInFlight) {
-    tone = 'active';
     titleText = 'Syncing to cloud';
     metaText = (completedPlotIds.length || plotMarkers.length)
       ? (completedPlotIds.length + ' completed plot' + (completedPlotIds.length === 1 ? '' : 's') + ' in flight.')
       : 'Sync is running in the background.';
   } else if (effectivePending) {
     if (!fb_user) {
-      tone = 'blocked';
       titleText = 'Saved locally only';
       metaText = 'Sign in on this device to push ' + completedPlotIds.length + ' completed plot' + (completedPlotIds.length === 1 ? '' : 's') + ' to cloud.';
     } else if (!navigator.onLine) {
-      tone = 'pending';
       titleText = 'Saved locally • Offline';
       metaText = 'Waiting to retry cloud sync when the connection returns.';
     } else {
-      tone = 'pending';
       titleText = 'Saved locally';
       metaText = 'Cloud sync pending for ' + completedPlotIds.length + ' completed plot' + (completedPlotIds.length === 1 ? '' : 's') + '.';
     }
   } else if (window._activeCloudCruiseId) {
-    tone = 'synced';
     titleText = 'Synced to cloud';
     metaText = 'Last sync ' + formatSyncTimestamp(_lastSuccessfulCloudSyncAt) + ' • ' + completedPlotIds.length + ' completed plot' + (completedPlotIds.length === 1 ? '' : 's') + '.';
-  }
-
-  if (bar && dot && title && meta) {
-    const shouldShowBar = !!window._activeCloudCruiseId || effectivePending || _syncInFlight;
-    bar.classList.toggle('show', shouldShowBar);
-    bar.classList.remove('pending', 'synced', 'blocked', 'active');
-    if (shouldShowBar) bar.classList.add(tone);
-    title.textContent = titleText;
-    meta.textContent = metaText;
   }
 
   if (btn) {
@@ -7916,6 +7825,7 @@ map.on('click', function() {
 
 // â”€â”€ Cloud panel (direct open) â”€â”€
 function openCloudPanel() {
+  _cloudSyncStatusVisible = false;
   openPanel('cloud');
   updateCloudPanelUI();
   // Auto-load My Cruises tab if signed in
@@ -7943,10 +7853,29 @@ function updateCloudPanelUI() {
     signedOut.style.display = 'block';
     signedIn.style.display = 'none';
   }
+  setCloudSyncStatusVisible(_cloudSyncStatusVisible);
   refreshSyncStatusUI();
 }
 
 let _activeCloudTab = 'mine';
+let _cloudSyncStatusVisible = false;
+
+function setCloudSyncStatusVisible(visible) {
+  _cloudSyncStatusVisible = !!visible;
+  const toggle = document.getElementById('cloud-sync-toggle');
+  const card = document.getElementById('cloud-sync-card');
+  if (toggle) {
+    toggle.textContent = _cloudSyncStatusVisible ? 'Hide Sync Status' : 'Show Sync Status';
+    toggle.setAttribute('aria-expanded', _cloudSyncStatusVisible ? 'true' : 'false');
+  }
+  if (card) card.hidden = !_cloudSyncStatusVisible;
+}
+
+function toggleCloudSyncStatus() {
+  setCloudSyncStatusVisible(!_cloudSyncStatusVisible);
+  if (_cloudSyncStatusVisible) refreshSyncStatusUI();
+}
+
 function switchCloudTab(tab) {
   _activeCloudTab = tab;
   document.getElementById('cloud-tab-mine').classList.toggle('active', tab === 'mine');
