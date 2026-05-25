@@ -866,33 +866,24 @@
     color: var(--text-muted);
     line-height: 1.5;
   }
-  .report-advanced {
+  .report-factor-card {
+    width: 100%;
     margin-bottom: 14px;
     border: 1px solid var(--border);
     border-radius: 10px;
     background: rgba(0,0,0,0.08);
-    overflow: hidden;
+    padding: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
   }
-  .report-advanced summary {
-    cursor: pointer;
-    list-style: none;
-    padding: 11px 13px;
+  .report-factor-heading {
     font-family: 'Plus Jakarta Sans', sans-serif;
     font-size: 0.72rem;
     font-weight: 700;
     letter-spacing: 0.6px;
     text-transform: uppercase;
     color: var(--text-primary);
-  }
-  .report-advanced summary::-webkit-details-marker { display: none; }
-  .report-advanced[open] summary {
-    border-bottom: 1px solid rgba(45,90,39,0.3);
-  }
-  .report-advanced-body {
-    padding: 12px;
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
   }
   .report-factor-note {
     font-size: 0.68rem;
@@ -921,7 +912,18 @@
   }
   .report-factor-actions {
     display: flex;
-    justify-content: flex-end;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  .report-factor-actions .btn {
+    margin: 0;
+    font-size: 0.68rem;
+    padding: 8px 12px;
+    flex: 1 1 160px;
+  }
+  .report-factor-actions .btn[disabled] {
+    opacity: 0.55;
+    cursor: not-allowed;
   }
   .notice-report {
     display: flex;
@@ -2799,6 +2801,136 @@
     background: var(--orange);
     border: 2px solid var(--bg-deep);
   }
+  .sync-status-bar {
+    position: absolute;
+    top: calc(var(--topbar-height) + 10px);
+    left: 10px;
+    right: 10px;
+    z-index: 998;
+    display: none;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 12px;
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    background: rgba(13, 26, 13, 0.94);
+    box-shadow: 0 8px 20px rgba(0,0,0,0.24);
+    backdrop-filter: blur(10px);
+    cursor: pointer;
+  }
+  .sync-status-bar.show { display: flex; }
+  .sync-status-bar.pending {
+    border-color: var(--orange);
+    background: rgba(58, 42, 16, 0.95);
+  }
+  .sync-status-bar.synced {
+    border-color: var(--accent-dim);
+    background: rgba(19, 38, 21, 0.94);
+  }
+  .sync-status-bar.blocked {
+    border-color: var(--red);
+    background: rgba(58, 26, 26, 0.95);
+  }
+  .sync-status-bar.active {
+    border-color: var(--blue);
+    background: rgba(26, 42, 58, 0.95);
+  }
+  .sync-status-dot {
+    width: 11px;
+    height: 11px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    background: var(--text-muted);
+    box-shadow: 0 0 0 3px rgba(255,255,255,0.06);
+  }
+  .sync-status-bar.pending .sync-status-dot { background: var(--orange); }
+  .sync-status-bar.synced .sync-status-dot { background: var(--accent); }
+  .sync-status-bar.blocked .sync-status-dot { background: var(--red); }
+  .sync-status-bar.active .sync-status-dot {
+    background: var(--blue);
+    animation: sync-pulse 1.4s ease infinite;
+  }
+  .sync-status-copy {
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+  .sync-status-title {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-size: 0.78rem;
+    font-weight: 800;
+    color: var(--text-primary);
+    line-height: 1.2;
+  }
+  .sync-status-meta {
+    font-size: 0.62rem;
+    color: var(--text-secondary);
+    line-height: 1.35;
+  }
+  .cloud-sync-card {
+    margin-bottom: 12px;
+    padding: 12px;
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    background: var(--bg-deep);
+  }
+  .cloud-sync-card-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    margin-bottom: 8px;
+  }
+  .cloud-sync-card-title {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-size: 0.8rem;
+    font-weight: 800;
+    color: var(--accent);
+  }
+  .cloud-sync-card-state {
+    font-size: 0.68rem;
+    color: var(--text-secondary);
+    margin-bottom: 10px;
+    line-height: 1.45;
+  }
+  .cloud-sync-grid {
+    display: grid;
+    grid-template-columns: minmax(110px, 140px) 1fr;
+    gap: 6px 10px;
+    margin-bottom: 10px;
+    font-size: 0.62rem;
+  }
+  .cloud-sync-grid-label {
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    font-weight: 700;
+  }
+  .cloud-sync-grid-value {
+    color: var(--text-primary);
+    word-break: break-word;
+    line-height: 1.45;
+  }
+  .cloud-sync-event-list {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    max-height: 120px;
+    overflow-y: auto;
+    padding-top: 8px;
+    border-top: 1px solid var(--border);
+    font-size: 0.6rem;
+    color: var(--text-secondary);
+  }
+  .cloud-sync-event-item {
+    line-height: 1.45;
+    word-break: break-word;
+  }
+  .cloud-sync-event-empty {
+    color: var(--text-muted);
+    font-style: italic;
+  }
 
   /* â•â•â• JOBS LIST â•â•â• */
   .job-item {
@@ -3280,6 +3412,14 @@
   <!-- Progress Strip -->
   <div class="progress-strip"><div class="progress-fill" id="progress-fill"></div></div>
 
+  <div class="sync-status-bar" id="sync-status-bar" onclick="openCloudPanel()">
+    <div class="sync-status-dot" id="sync-status-dot"></div>
+    <div class="sync-status-copy">
+      <div class="sync-status-title" id="sync-status-title">Cloud sync inactive</div>
+      <div class="sync-status-meta" id="sync-status-meta">Tap to open Cloud Sync.</div>
+    </div>
+  </div>
+
   <!-- Map -->
   <div id="map"></div>
 
@@ -3648,50 +3788,48 @@
       <input class="field-input" id="report-acres" type="number" step="0.1" min="0" placeholder="Auto" style="padding:8px 10px;font-size:0.8rem" onchange="generateCruiseReport()">
     </div>
   </div>
-  <div style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap;">
-    <details class="report-advanced" id="report-conversion-factors" style="width:100%">
-      <summary>Custom Tons Conversion Factors</summary>
-      <div class="report-advanced-body">
-        <div class="report-factor-note">Temporary for this report only. Does not save to the job or cloud.</div>
-        <div class="report-factor-grid">
-          <div class="report-factor-item">
-            <label for="report-factor-pine-sawtimber">Pine Sawtimber tons/MBF</label>
-            <input class="field-input" id="report-factor-pine-sawtimber" type="number" step="0.01" min="0" inputmode="decimal" onchange="generateCruiseReport()">
-          </div>
-          <div class="report-factor-item">
-            <label for="report-factor-pine-cns">Pine Chip-N-Saw tons/MBF</label>
-            <input class="field-input" id="report-factor-pine-cns" type="number" step="0.01" min="0" inputmode="decimal" onchange="generateCruiseReport()">
-          </div>
-          <div class="report-factor-item">
-            <label for="report-factor-softwood-sawtimber">Softwood Sawtimber tons/MBF</label>
-            <input class="field-input" id="report-factor-softwood-sawtimber" type="number" step="0.01" min="0" inputmode="decimal" onchange="generateCruiseReport()">
-          </div>
-          <div class="report-factor-item">
-            <label for="report-factor-softwood-cns">Softwood Chip-N-Saw tons/MBF</label>
-            <input class="field-input" id="report-factor-softwood-cns" type="number" step="0.01" min="0" inputmode="decimal" onchange="generateCruiseReport()">
-          </div>
-          <div class="report-factor-item">
-            <label for="report-factor-hardwood-sawtimber">Hardwood Sawtimber tons/MBF</label>
-            <input class="field-input" id="report-factor-hardwood-sawtimber" type="number" step="0.01" min="0" inputmode="decimal" onchange="generateCruiseReport()">
-          </div>
-          <div class="report-factor-item">
-            <label for="report-factor-hardwood-cns">Hardwood Chip-N-Saw tons/MBF</label>
-            <input class="field-input" id="report-factor-hardwood-cns" type="number" step="0.01" min="0" inputmode="decimal" onchange="generateCruiseReport()">
-          </div>
-          <div class="report-factor-item">
-            <label for="report-factor-mix-sawtimber">Mix Sawtimber tons/MBF</label>
-            <input class="field-input" id="report-factor-mix-sawtimber" type="number" step="0.01" min="0" inputmode="decimal" onchange="generateCruiseReport()">
-          </div>
-          <div class="report-factor-item">
-            <label for="report-factor-mix-cns">Mix Chip-N-Saw tons/MBF</label>
-            <input class="field-input" id="report-factor-mix-cns" type="number" step="0.01" min="0" inputmode="decimal" onchange="generateCruiseReport()">
-          </div>
-        </div>
-        <div class="report-factor-actions">
-          <button class="btn btn-secondary" type="button" style="margin:0;font-size:0.68rem;padding:8px 12px" onclick="resetReportConversionFactors()">Reset to Defaults</button>
-        </div>
+  <div class="report-factor-card" id="report-conversion-factors">
+    <div class="report-factor-heading">Tons Conversion Factors</div>
+    <div class="report-factor-note">Applies to this report immediately. Save as My Defaults to auto-fill these values on this device. Job and cloud data are not changed.</div>
+    <div class="report-factor-grid">
+      <div class="report-factor-item">
+        <label for="report-factor-pine-sawtimber">Pine Sawtimber tons/MBF</label>
+        <input class="field-input" id="report-factor-pine-sawtimber" type="number" step="0.01" min="0" inputmode="decimal" onchange="generateCruiseReport()">
       </div>
-    </details>
+      <div class="report-factor-item">
+        <label for="report-factor-pine-cns">Pine Chip-N-Saw tons/MBF</label>
+        <input class="field-input" id="report-factor-pine-cns" type="number" step="0.01" min="0" inputmode="decimal" onchange="generateCruiseReport()">
+      </div>
+      <div class="report-factor-item">
+        <label for="report-factor-softwood-sawtimber">Softwood Sawtimber tons/MBF</label>
+        <input class="field-input" id="report-factor-softwood-sawtimber" type="number" step="0.01" min="0" inputmode="decimal" onchange="generateCruiseReport()">
+      </div>
+      <div class="report-factor-item">
+        <label for="report-factor-softwood-cns">Softwood Chip-N-Saw tons/MBF</label>
+        <input class="field-input" id="report-factor-softwood-cns" type="number" step="0.01" min="0" inputmode="decimal" onchange="generateCruiseReport()">
+      </div>
+      <div class="report-factor-item">
+        <label for="report-factor-hardwood-sawtimber">Hardwood Sawtimber tons/MBF</label>
+        <input class="field-input" id="report-factor-hardwood-sawtimber" type="number" step="0.01" min="0" inputmode="decimal" onchange="generateCruiseReport()">
+      </div>
+      <div class="report-factor-item">
+        <label for="report-factor-hardwood-cns">Hardwood Chip-N-Saw tons/MBF</label>
+        <input class="field-input" id="report-factor-hardwood-cns" type="number" step="0.01" min="0" inputmode="decimal" onchange="generateCruiseReport()">
+      </div>
+      <div class="report-factor-item">
+        <label for="report-factor-mix-sawtimber">Mix Sawtimber tons/MBF</label>
+        <input class="field-input" id="report-factor-mix-sawtimber" type="number" step="0.01" min="0" inputmode="decimal" onchange="generateCruiseReport()">
+      </div>
+      <div class="report-factor-item">
+        <label for="report-factor-mix-cns">Mix Chip-N-Saw tons/MBF</label>
+        <input class="field-input" id="report-factor-mix-cns" type="number" step="0.01" min="0" inputmode="decimal" onchange="generateCruiseReport()">
+      </div>
+    </div>
+    <div class="report-factor-actions">
+      <button class="btn btn-secondary" type="button" onclick="saveReportConversionFactorDefaults()">Save as My Defaults</button>
+      <button class="btn btn-secondary" id="report-factor-use-saved" type="button" onclick="useSavedReportConversionFactors()" disabled>Use My Defaults</button>
+      <button class="btn btn-secondary" type="button" onclick="useAppReportConversionFactors()">Use App Defaults</button>
+    </div>
   </div>
   <div style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap;">
     <button class="btn btn-secondary" style="flex:1;margin:0;font-size:0.7rem;padding:10px" onclick="generateCruiseReport()">
@@ -3807,6 +3945,17 @@
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17,8 12,3 7,8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
       Save Current Cruise
     </button>
+    <div class="cloud-sync-card">
+      <div class="cloud-sync-card-head">
+        <div class="cloud-sync-card-title">Cloud Sync Status</div>
+        <button class="btn btn-secondary" type="button" style="margin:0;padding:8px 10px;font-size:0.62rem;" onclick="exportCloudSyncDebug()">Export Sync Log</button>
+      </div>
+      <div class="cloud-sync-card-state" id="cloud-sync-card-state">No cloud cruise is linked to the active job yet.</div>
+      <div class="cloud-sync-grid" id="cloud-sync-grid"></div>
+      <div class="cloud-sync-event-list" id="cloud-sync-events">
+        <div class="cloud-sync-event-empty">No recent sync events yet.</div>
+      </div>
+    </div>
     <div class="cloud-tabs">
       <button class="cloud-tab active" id="cloud-tab-mine" onclick="switchCloudTab('mine')">My Cruises</button>
       <button class="cloud-tab" id="cloud-tab-shared" onclick="switchCloudTab('shared')">Shared With Me</button>
@@ -3964,6 +4113,7 @@ let _confirmCb = null;
 let _confirmConfig = null;
 let _confirmStep = 0;
 let _localSharedAccess = {};     // { "<email>::<cruiseId>": { cruiseId, shareCode, name, email, joinedAt } }
+let reportConversionFactorDefaults = null;
 const TALLY_DISPLAY_PRESETS = {
   standard: { label: 'Standard' },
   one_screen: { label: 'One-Screen Entry - Woody Favorite' },
@@ -4051,8 +4201,17 @@ try {
   // Listen for auth state changes
   fb_auth.onAuthStateChanged(user => {
     fb_user = user;
+    recordSyncEvent('auth-state-changed', {
+      reason: user ? 'signed-in' : 'signed-out'
+    });
     if (fb_user && window._activeCloudCruiseId && !window._activeCloudCruiseOwner) {
       ensureActiveCloudCruiseOwner(window._activeCloudCruiseId).catch(() => {});
+    }
+    if (fb_user && window._activeCloudCruiseId && getEffectiveSyncPending()) {
+      queuePendingCloudSyncRetry('auth-restored', 1200);
+    } else if (!fb_user && window._activeCloudCruiseId && getEffectiveSyncPending()) {
+      setSyncPending(true, { reason: 'signed-out' });
+      showSyncWarningOnce('signed-out');
     }
     updateAuthUI();
   });
@@ -4086,6 +4245,7 @@ function updateAuthUI() {
   // Also sync cloud panel and sync button if it's open
   updateCloudPanelUI();
   updateSyncButton();
+  refreshSyncStatusUI();
 }
 
 async function firebaseSignIn() {
@@ -5420,12 +5580,19 @@ function tallySavePlot() {
   plot.noTally = false;
   updatePlotMarkerStyle(plot);
   updateStats();
-  saveSession();
+  recordSyncEvent('plot-saved-local', {
+    reason: 'plot-save',
+    plotId: String(plot.id),
+    treeCount: tallyTrees.length,
+    completedCount: getCompletedPlotIdsForSync().length,
+    plotIds: getCompletedPlotIdsForSync()
+  });
+  checkSyncNeeded('plot-save');
+  saveSession({ skipCloudSync: true });
+  scheduleCloudSync('plot-save', { delayMs: 200, force: true });
   closeTallyModal();
   toast('Plot ' + plot.id + ' saved: ' + tallyTrees.length + ' trees');
   vibrate([50, 30, 50]);
-  // Mark sync as pending if we have a cloud cruise
-  checkSyncNeeded();
 }
 
 function tallySaveAndNav() {
@@ -5450,11 +5617,19 @@ function tallyNoTally() {
   plot.noTally = true;
   updatePlotMarkerStyle(plot);
   updateStats();
-  saveSession();
+  recordSyncEvent('plot-saved-local', {
+    reason: 'plot-no-tally',
+    plotId: String(plot.id),
+    treeCount: 0,
+    completedCount: getCompletedPlotIdsForSync().length,
+    plotIds: getCompletedPlotIdsForSync()
+  });
+  checkSyncNeeded('plot-no-tally');
+  saveSession({ skipCloudSync: true });
+  scheduleCloudSync('plot-no-tally', { delayMs: 200, force: true });
   closeTallyModal();
   toast('Plot ' + plot.id + ': No tally');
   vibrate([30]);
-  checkSyncNeeded();
 }
 
 function tallyClearTrees() {
@@ -6054,6 +6229,11 @@ async function saveCruiseToCloud() {
   }
 
   try {
+    recordSyncEvent('cloud-save-start', {
+      reason: linkedCruiseId ? 'linked-sync' : 'initial-save',
+      completedCount: getCompletedPlotIdsForSync().length,
+      plotIds: getCompletedPlotIdsForSync()
+    });
     const conflicts = await findOwnerCruiseNameConflicts(name);
     if (conflicts.length) {
       throw new Error(buildCloudCruiseNameConflictMessage(name, 'saving'));
@@ -6111,12 +6291,26 @@ async function saveCruiseToCloud() {
 
     _lastSyncedPlotHash = getPlotHash();
     _lastSyncedPlotLocationHash = getPlotLocationHash();
+    _lastSuccessfulCloudSyncAt = Date.now();
+    _lastSuccessfulCloudSyncPlotIds = getCompletedPlotIdsForSync();
+    _lastSyncErrorMessage = '';
+    setSyncPending(false);
+    recordSyncEvent('cloud-save-success', {
+      cruiseId: docRef.id,
+      completedCount: _lastSuccessfulCloudSyncPlotIds.length,
+      plotIds: _lastSuccessfulCloudSyncPlotIds
+    });
+    await saveSession({ skipCloudSync: true });
     updateSyncButton();
 
     toast('Saved: ' + name);
     closePanel();
   } catch(e) {
     console.error('Save error:', e);
+    _lastSyncErrorMessage = formatCloudSyncError('Save', e);
+    setSyncPending(true, { reason: 'error' });
+    recordSyncEvent('cloud-save-failed', { error: _lastSyncErrorMessage });
+    saveSession({ skipCloudSync: true });
     toast(formatCloudSyncError('Save', e));
   }
 }
@@ -6195,21 +6389,48 @@ async function saveUserPlotData(cruiseId, options = {}) {
         plotStateVersion: plotStateVersion,
         updatedAt: firebase.firestore.FieldValue.serverTimestamp()
       });
+    recordSyncEvent('user-data-write-success', {
+      cruiseId: cruiseId,
+      completedCount: myPlots.length,
+      plotIds: myPlots.map(p => String(p.id)),
+      version: plotStateVersion
+    });
     syncActiveJobCloudPlotStateVersion(plotStateVersion);
     // Clear pending flag on successful sync
     setSyncPending(false);
   } catch(e) {
     console.error('Save user data error:', e);
+    _lastSyncErrorMessage = formatCloudSyncError('Sync', e);
+    recordSyncEvent('user-data-write-failed', {
+      cruiseId: cruiseId,
+      completedCount: myPlots.length,
+      plotIds: myPlots.map(p => String(p.id)),
+      version: plotStateVersion,
+      error: _lastSyncErrorMessage
+    });
     // Mark as pending since sync failed (likely offline)
-    setSyncPending(true);
+    setSyncPending(true, { reason: !fb_user ? 'signed-out' : (!navigator.onLine ? 'offline' : 'error') });
     throw e;
   }
 }
 
 // â”€â”€ Sync state tracking â”€â”€
 let _syncPending = false;
+let _syncInFlight = false;
 let _lastSyncedPlotHash = '';
 let _lastSyncedPlotLocationHash = '';
+let _lastSuccessfulCloudSyncAt = 0;
+let _lastSuccessfulCloudSyncPlotIds = [];
+let _lastSyncErrorMessage = '';
+let _lastSyncPendingReason = '';
+let _syncEventLog = [];
+let _lastSyncWarningKey = '';
+let _lastSyncWarningAt = 0;
+const MAX_SYNC_EVENT_LOG = 80;
+
+function getCompletedPlotIdsForSync() {
+  return getCompletedPlotsForSync().map(plot => String(plot.id));
+}
 
 function getPlotHash() {
   // Hash the full completed-plot payload so tree edits are detected
@@ -6229,13 +6450,237 @@ function getPlotLocationHash() {
   );
 }
 
-function setSyncPending(pending) {
-  _syncPending = pending;
+function hasUnsyncedCloudChanges() {
+  if (!window._activeCloudCruiseId) return false;
+  const plotHash = getPlotHash();
+  const locationHash = getPlotLocationHash();
+  const treeChanges = plotHash !== _lastSyncedPlotHash && plotHash !== '';
+  const layoutChanges = locationHash !== _lastSyncedPlotLocationHash;
+  return treeChanges || layoutChanges;
+}
+
+function getEffectiveSyncPending() {
+  return _syncPending || hasUnsyncedCloudChanges();
+}
+
+function getCloudSyncModeLabel() {
+  if (!window._activeCloudCruiseId) return 'Local Only';
+  if (!fb_user) return 'Signed Out';
+  if (window._activeCloudCruiseOwner && window._activeCloudCruiseOwner === fb_user.uid) return 'Owner';
+  return 'Shared User';
+}
+
+function formatSyncTimestamp(value) {
+  if (!value) return '--';
+  try {
+    return new Date(value).toLocaleString([], {
+      month: 'numeric',
+      day: 'numeric',
+      hour: 'numeric',
+      minute: '2-digit'
+    });
+  } catch (e) {
+    return '--';
+  }
+}
+
+function buildSyncEventMessage(entry) {
+  if (!entry) return '';
+  const parts = [entry.type];
+  if (entry.reason) parts.push('reason=' + entry.reason);
+  if (entry.mode) parts.push('mode=' + entry.mode);
+  if (entry.completedCount != null) parts.push('plots=' + entry.completedCount);
+  if (entry.version != null) parts.push('version=' + entry.version);
+  if (entry.error) parts.push('error=' + entry.error);
+  if (entry.online === false) parts.push('offline');
+  if (entry.hidden) parts.push('hidden');
+  return parts.join(' • ');
+}
+
+function recordSyncEvent(type, details = {}) {
+  const entry = {
+    at: Date.now(),
+    type: type,
+    cruiseId: window._activeCloudCruiseId || null,
+    activeJobId: activeJobId || null,
+    userId: fb_user ? fb_user.uid : null,
+    online: navigator.onLine,
+    hidden: document.visibilityState === 'hidden',
+    ...details
+  };
+  _syncEventLog.push(entry);
+  if (_syncEventLog.length > MAX_SYNC_EVENT_LOG) {
+    _syncEventLog.splice(0, _syncEventLog.length - MAX_SYNC_EVENT_LOG);
+  }
+  console.log('[SYNCDBG]', type, entry);
+  refreshSyncStatusUI();
+}
+
+function buildSyncStateSnapshot() {
+  return {
+    pending: getEffectiveSyncPending(),
+    lastPendingReason: _lastSyncPendingReason || '',
+    lastSyncedPlotHash: _lastSyncedPlotHash || '',
+    lastSyncedPlotLocationHash: _lastSyncedPlotLocationHash || '',
+    lastSuccessfulCloudSyncAt: _lastSuccessfulCloudSyncAt || 0,
+    lastSuccessfulCloudSyncPlotIds: (_lastSuccessfulCloudSyncPlotIds || []).slice(),
+    lastSyncErrorMessage: _lastSyncErrorMessage || '',
+    syncEventLog: (_syncEventLog || []).slice(-40)
+  };
+}
+
+function applySyncStateSnapshot(syncState) {
+  const state = syncState || {};
+  _syncPending = !!state.pending;
+  _syncInFlight = false;
+  _lastSyncPendingReason = state.lastPendingReason || '';
+  _lastSyncedPlotHash = state.lastSyncedPlotHash || '';
+  _lastSyncedPlotLocationHash = state.lastSyncedPlotLocationHash || '';
+  _lastSuccessfulCloudSyncAt = Number(state.lastSuccessfulCloudSyncAt) || 0;
+  _lastSuccessfulCloudSyncPlotIds = Array.isArray(state.lastSuccessfulCloudSyncPlotIds)
+    ? state.lastSuccessfulCloudSyncPlotIds.map(id => String(id))
+    : [];
+  _lastSyncErrorMessage = state.lastSyncErrorMessage || '';
+  _syncEventLog = Array.isArray(state.syncEventLog)
+    ? state.syncEventLog.slice(-MAX_SYNC_EVENT_LOG)
+    : [];
+}
+
+function buildSessionStatePayload() {
+  return {
+    activeJobId: activeJobId,
+    distUnit: distUnit,
+    navHeadingMode: navHeadingMode,
+    tallyDisplayPreset: tallyDisplayPreset,
+    basemap: currentBasemap,
+    reportConversionFactorDefaults: getSavedReportConversionFactorDefaults(),
+    cloudCruiseId: window._activeCloudCruiseId || null,
+    cloudCruiseOwner: window._activeCloudCruiseOwner || null,
+    localSharedAccess: Object.values(_localSharedAccess || {}),
+    syncState: buildSyncStateSnapshot()
+  };
+}
+
+function showSyncWarningOnce(reason) {
+  const warningKey = String(reason || 'pending') + '|' + String(window._activeCloudCruiseId || '');
+  const now = Date.now();
+  if (_lastSyncWarningKey === warningKey && (now - _lastSyncWarningAt) < 12000) return;
+  _lastSyncWarningKey = warningKey;
+  _lastSyncWarningAt = now;
+  if (reason === 'signed-out') {
+    toast('Saved locally only. Sign in on this device to sync this cruise.');
+  } else if (reason === 'offline') {
+    toast('Saved locally. Offline - cloud sync will retry when connection returns.');
+  } else if (reason === 'error') {
+    toast('Saved locally. Cloud sync still needs attention.');
+  }
+}
+
+function refreshSyncStatusUI() {
+  const bar = document.getElementById('sync-status-bar');
+  const dot = document.getElementById('sync-status-dot');
+  const title = document.getElementById('sync-status-title');
+  const meta = document.getElementById('sync-status-meta');
+  const btn = document.getElementById('btn-sync');
+  const cardState = document.getElementById('cloud-sync-card-state');
+  const cardGrid = document.getElementById('cloud-sync-grid');
+  const cardEvents = document.getElementById('cloud-sync-events');
+  const completedPlotIds = getCompletedPlotIdsForSync();
+  const effectivePending = getEffectiveSyncPending();
+
+  let tone = 'synced';
+  let titleText = 'Cloud sync inactive';
+  let metaText = 'Tap to open Cloud Sync.';
+
+  if (_syncInFlight) {
+    tone = 'active';
+    titleText = 'Syncing to cloud';
+    metaText = (completedPlotIds.length || plotMarkers.length)
+      ? (completedPlotIds.length + ' completed plot' + (completedPlotIds.length === 1 ? '' : 's') + ' in flight.')
+      : 'Sync is running in the background.';
+  } else if (effectivePending) {
+    if (!fb_user) {
+      tone = 'blocked';
+      titleText = 'Saved locally only';
+      metaText = 'Sign in on this device to push ' + completedPlotIds.length + ' completed plot' + (completedPlotIds.length === 1 ? '' : 's') + ' to cloud.';
+    } else if (!navigator.onLine) {
+      tone = 'pending';
+      titleText = 'Saved locally • Offline';
+      metaText = 'Waiting to retry cloud sync when the connection returns.';
+    } else {
+      tone = 'pending';
+      titleText = 'Saved locally';
+      metaText = 'Cloud sync pending for ' + completedPlotIds.length + ' completed plot' + (completedPlotIds.length === 1 ? '' : 's') + '.';
+    }
+  } else if (window._activeCloudCruiseId) {
+    tone = 'synced';
+    titleText = 'Synced to cloud';
+    metaText = 'Last sync ' + formatSyncTimestamp(_lastSuccessfulCloudSyncAt) + ' • ' + completedPlotIds.length + ' completed plot' + (completedPlotIds.length === 1 ? '' : 's') + '.';
+  }
+
+  if (bar && dot && title && meta) {
+    const shouldShowBar = !!window._activeCloudCruiseId || effectivePending || _syncInFlight;
+    bar.classList.toggle('show', shouldShowBar);
+    bar.classList.remove('pending', 'synced', 'blocked', 'active');
+    if (shouldShowBar) bar.classList.add(tone);
+    title.textContent = titleText;
+    meta.textContent = metaText;
+  }
+
+  if (btn) {
+    btn.title = effectivePending
+      ? (!fb_user ? 'Saved locally only. Sign in to sync.' : 'Sync pending. Tap to sync now.')
+      : (window._activeCloudCruiseId ? 'Cloud sync is up to date' : 'Sync now');
+  }
+
+  if (cardState) {
+    const linkedCruiseId = window._activeCloudCruiseId || '--';
+    const lastError = _lastSyncErrorMessage ? (' Last issue: ' + _lastSyncErrorMessage) : '';
+    cardState.textContent = titleText + ' — ' + metaText + (linkedCruiseId !== '--' ? (' Cruise ' + linkedCruiseId.substring(0, 6) + '.') : '') + lastError;
+  }
+
+  if (cardGrid) {
+    const rows = [
+      ['Linked Cruise', window._activeCloudCruiseId || '--'],
+      ['User ID', fb_user ? fb_user.uid : 'Signed out'],
+      ['Mode', getCloudSyncModeLabel()],
+      ['Pending', effectivePending ? 'Yes' : 'No'],
+      ['Pending Reason', _lastSyncPendingReason || '--'],
+      ['Last Success', formatSyncTimestamp(_lastSuccessfulCloudSyncAt)],
+      ['Local Completed Plots', completedPlotIds.length ? completedPlotIds.join(', ') : '--'],
+      ['Last Synced Plots', _lastSuccessfulCloudSyncPlotIds.length ? _lastSuccessfulCloudSyncPlotIds.join(', ') : '--']
+    ];
+    cardGrid.innerHTML = rows.map(row => (
+      '<div class="cloud-sync-grid-label">' + escapeHtml(row[0]) + '</div>' +
+      '<div class="cloud-sync-grid-value">' + escapeHtml(String(row[1])) + '</div>'
+    )).join('');
+  }
+
+  if (cardEvents) {
+    const recentEvents = (_syncEventLog || []).slice(-6).reverse();
+    if (!recentEvents.length) {
+      cardEvents.innerHTML = '<div class="cloud-sync-event-empty">No recent sync events yet.</div>';
+    } else {
+      cardEvents.innerHTML = recentEvents.map(entry => (
+        '<div class="cloud-sync-event-item"><strong>' + escapeHtml(formatSyncTimestamp(entry.at)) + '</strong> — ' +
+        escapeHtml(buildSyncEventMessage(entry)) + '</div>'
+      )).join('');
+    }
+  }
+}
+
+function setSyncPending(pending, options = {}) {
+  _syncPending = !!pending;
+  if (_syncPending) {
+    _lastSyncPendingReason = options.reason || _lastSyncPendingReason || 'pending';
+  } else if (!options.preserveReason) {
+    _lastSyncPendingReason = '';
+  }
   const btn = document.getElementById('btn-sync');
   const badge = document.getElementById('sync-badge');
   if (!btn) return;
 
-  if (pending) {
+  if (_syncPending) {
     btn.classList.add('sync-pending');
     btn.classList.remove('sync-done');
     if (badge) badge.style.display = 'block';
@@ -6243,16 +6688,34 @@ function setSyncPending(pending) {
     btn.classList.remove('sync-pending');
     if (badge) badge.style.display = 'none';
   }
+  refreshSyncStatusUI();
 }
 
-function checkSyncNeeded() {
+function setSyncInFlight(active) {
+  _syncInFlight = !!active;
+  const btn = document.getElementById('btn-sync');
+  if (btn) {
+    btn.classList.toggle('sync-active', _syncInFlight);
+    if (_syncInFlight) btn.classList.remove('sync-done');
+  }
+  refreshSyncStatusUI();
+}
+
+function checkSyncNeeded(reason) {
   if (!window._activeCloudCruiseId) return;
-  const plotHash = getPlotHash();
-  const locationHash = getPlotLocationHash();
-  const treeChanges = plotHash !== _lastSyncedPlotHash && plotHash !== '';
-  const layoutChanges = locationHash !== _lastSyncedPlotLocationHash;
-  if (treeChanges || layoutChanges) {
-    setSyncPending(true);
+  const effectiveReason = !fb_user
+    ? 'signed-out'
+    : (!navigator.onLine ? 'offline' : (reason || 'local-edit'));
+  if (hasUnsyncedCloudChanges()) {
+    setSyncPending(true, { reason: effectiveReason });
+    recordSyncEvent('local-change-pending', {
+      reason: effectiveReason,
+      completedCount: getCompletedPlotIdsForSync().length,
+      plotIds: getCompletedPlotIdsForSync()
+    });
+    if (effectiveReason === 'signed-out' || effectiveReason === 'offline') {
+      showSyncWarningOnce(effectiveReason);
+    }
   }
 }
 
@@ -6261,11 +6724,13 @@ function updateSyncButton() {
   const btn = document.getElementById('btn-sync');
   if (!btn) return;
   const hasData = allPolygons.length > 0 || plotMarkers.length > 0;
-  if (fb_user && hasData) {
+  const showForLinkedCruise = !!window._activeCloudCruiseId && hasData;
+  if ((fb_user && hasData) || showForLinkedCruise) {
     btn.style.display = 'flex';
   } else {
     btn.style.display = 'none';
   }
+  refreshSyncStatusUI();
 }
 
 function markActiveCruiseOwnedByCurrentUser() {
@@ -6289,6 +6754,7 @@ async function syncExistingCruiseState(cruiseId, options = {}) {
     message: 'This cloud cruise was reset in the cloud. Local plot tallies were cleared before sync.'
   });
   if (window._activeCloudCruiseOwner === fb_user.uid) {
+    recordSyncEvent('sync-path-selected', { reason: options.reason || 'sync-existing', mode: 'owner' });
     await updateCruiseInCloud(cruiseId);
     await pullOtherUsersPlotData(cruiseId, { silent: true, skipPlotLocations: true, skipBoundaries: true });
     return 'owner';
@@ -6297,6 +6763,7 @@ async function syncExistingCruiseState(cruiseId, options = {}) {
     try {
       await updateCruiseInCloud(cruiseId);
       markActiveCruiseOwnedByCurrentUser();
+      recordSyncEvent('sync-path-selected', { reason: options.reason || 'sync-existing', mode: 'owner-claimed' });
       await pullOtherUsersPlotData(cruiseId, { silent: true, skipPlotLocations: true, skipBoundaries: true });
       return 'owner-claimed';
     } catch (e) {
@@ -6304,6 +6771,7 @@ async function syncExistingCruiseState(cruiseId, options = {}) {
       console.warn('[SYNC] Main cruise update denied while owner was unknown; falling back to userData sync.');
     }
   }
+  recordSyncEvent('sync-path-selected', { reason: options.reason || 'sync-existing', mode: 'shared' });
   await pullOtherUsersPlotData(cruiseId, { silent: true });
   await saveUserPlotData(cruiseId);
   if (!silent) console.log('[SYNC] Used shared-user sync path for cruise ' + cruiseId);
@@ -6313,10 +6781,11 @@ async function syncExistingCruiseState(cruiseId, options = {}) {
 async function manualCloudSync() {
   if (!fb_user) { toast('Sign in first'); return; }
   if (allPolygons.length === 0 && plotMarkers.length === 0) { toast('Nothing to sync'); return; }
+  if (_syncInFlight) { toast('Sync already in progress'); return; }
 
   const btn = document.getElementById('btn-sync');
-  btn.classList.add('sync-active');
-  btn.classList.remove('sync-pending');
+  setSyncInFlight(true);
+  if (btn) btn.classList.remove('sync-pending');
   const activeJob = normalizeJobCruiseSettings(allJobs.find(j => j.id === activeJobId));
   if (!window._activeCloudCruiseId && activeJob && activeJob.cloudCruiseId) {
     window._activeCloudCruiseId = activeJob.cloudCruiseId;
@@ -6324,6 +6793,11 @@ async function manualCloudSync() {
   }
 
   console.log('[SYNC] Starting. cloudCruiseId=' + (window._activeCloudCruiseId || 'NONE') + ', plots=' + plotMarkers.length + ', completed=' + plotMarkers.filter(p=>p.completed).length);
+  recordSyncEvent('manual-sync-start', {
+    reason: 'manual',
+    completedCount: getCompletedPlotIdsForSync().length,
+    plotIds: getCompletedPlotIdsForSync()
+  });
 
   try {
     if (window._activeCloudCruiseId) {
@@ -6426,7 +6900,7 @@ async function manualCloudSync() {
     } else {
       // Cloud cruise exists, sync everything
       toast('Syncing to ' + window._activeCloudCruiseId.substring(0,6) + '...');
-      const syncMode = await syncExistingCruiseState(window._activeCloudCruiseId);
+      const syncMode = await syncExistingCruiseState(window._activeCloudCruiseId, { reason: 'manual' });
       console.log('[SYNC] Push complete (' + syncMode + ' path)');
     }
 
@@ -6439,19 +6913,33 @@ async function manualCloudSync() {
 
     _lastSyncedPlotHash = getPlotHash();
     _lastSyncedPlotLocationHash = getPlotLocationHash();
+    _lastSuccessfulCloudSyncAt = Date.now();
+    _lastSuccessfulCloudSyncPlotIds = getCompletedPlotIdsForSync();
+    _lastSyncErrorMessage = '';
     setSyncPending(false);
-    btn.classList.remove('sync-active');
-    btn.classList.add('sync-done');
+    recordSyncEvent('manual-sync-success', {
+      reason: 'manual',
+      completedCount: _lastSuccessfulCloudSyncPlotIds.length,
+      plotIds: _lastSuccessfulCloudSyncPlotIds
+    });
+    if (btn) btn.classList.add('sync-done');
     toast('Synced!');
     vibrate([50, 30, 50]);
-    setTimeout(() => { btn.classList.remove('sync-done'); }, 2000);
+    setTimeout(() => { if (btn) btn.classList.remove('sync-done'); }, 2000);
     // Update local job with merged data
-    saveSession();
+    saveSession({ skipCloudSync: true });
   } catch(e) {
-    btn.classList.remove('sync-active');
-    setSyncPending(true);
+    _lastSyncErrorMessage = formatCloudSyncError('Sync', e);
+    setSyncPending(true, { reason: !navigator.onLine ? 'offline' : 'error' });
+    recordSyncEvent('manual-sync-failed', {
+      reason: 'manual',
+      error: _lastSyncErrorMessage
+    });
     toast(formatCloudSyncError('Sync', e));
     console.error('Manual sync error:', e);
+    saveSession({ skipCloudSync: true });
+  } finally {
+    setSyncInFlight(false);
   }
 }
 
@@ -6662,9 +7150,45 @@ async function pullOtherUsersPlotData(cruiseId, options = {}) {
 
 // â”€â”€ Auto-retry sync when coming back online â”€â”€
 window.addEventListener('online', function() {
-  if (_syncPending && window._activeCloudCruiseId && fb_user) {
+  recordSyncEvent('network-online', {
+    reason: 'online-event',
+    pending: getEffectiveSyncPending()
+  });
+  if (getEffectiveSyncPending() && window._activeCloudCruiseId) {
     toast('Back online. Syncing...');
-    setTimeout(() => manualCloudSync(), 1500);
+    queuePendingCloudSyncRetry('network-online', 1200);
+  }
+});
+
+window.addEventListener('offline', function() {
+  recordSyncEvent('network-offline', {
+    reason: 'offline-event',
+    pending: getEffectiveSyncPending()
+  });
+  if (getEffectiveSyncPending()) {
+    setSyncPending(true, { reason: 'offline' });
+    showSyncWarningOnce('offline');
+  }
+});
+
+document.addEventListener('visibilitychange', function() {
+  if (document.visibilityState === 'hidden' && getEffectiveSyncPending() && window._activeCloudCruiseId) {
+    recordSyncEvent('app-hidden-with-pending-sync', {
+      reason: 'visibility-hidden',
+      completedCount: getCompletedPlotIdsForSync().length,
+      plotIds: getCompletedPlotIdsForSync()
+    });
+    scheduleCloudSync('visibility-hidden', { delayMs: 120, force: true });
+  }
+});
+
+window.addEventListener('pagehide', function() {
+  if (getEffectiveSyncPending() && window._activeCloudCruiseId) {
+    recordSyncEvent('pagehide-with-pending-sync', {
+      reason: 'pagehide',
+      completedCount: getCompletedPlotIdsForSync().length,
+      plotIds: getCompletedPlotIdsForSync()
+    });
   }
 });
 
@@ -6715,7 +7239,12 @@ async function updateCruiseInCloud(cruiseId) {
 
   } catch(e) {
     console.error('Update error:', e);
-    setSyncPending(true);
+    _lastSyncErrorMessage = formatCloudSyncError('Sync', e);
+    setSyncPending(true, { reason: !navigator.onLine ? 'offline' : 'error' });
+    recordSyncEvent('cruise-doc-update-failed', {
+      reason: 'update-cruise-doc',
+      error: _lastSyncErrorMessage
+    });
     throw e;
   }
 }
@@ -7059,6 +7588,7 @@ async function loadCruiseFromCloud(cruiseId, options = {}) {
     // Set up sync button and record baseline
     _lastSyncedPlotHash = getPlotHash();
     _lastSyncedPlotLocationHash = getPlotLocationHash();
+    _lastSyncErrorMessage = '';
     updateSyncButton();
     setSyncPending(false);
 
@@ -7413,6 +7943,7 @@ function updateCloudPanelUI() {
     signedOut.style.display = 'block';
     signedIn.style.display = 'none';
   }
+  refreshSyncStatusUI();
 }
 
 let _activeCloudTab = 'mine';
@@ -8294,14 +8825,49 @@ function getReportConversionFactorInputId(groupKey, product) {
   return 'report-factor-' + String(groupKey || '').toLowerCase() + '-' + String(product || '').toLowerCase();
 }
 
+function sanitizeReportConversionFactorDefaults(sourceTable) {
+  if (!sourceTable || typeof sourceTable !== 'object') return null;
+  const table = cloneNoticeConversionFactors(NOTICE_CONVERSION_FACTORS);
+  let hasAnyValidValue = false;
+
+  NOTICE_CONVERSION_FACTOR_FIELDS.forEach(field => {
+    const sourceGroup = sourceTable[field.groupKey];
+    const sourceFactor = sourceGroup && sourceGroup[field.product];
+    const parsed = Number(sourceFactor && sourceFactor.tonsPerMbf);
+    if (Number.isFinite(parsed) && parsed > 0) {
+      table[field.groupKey][field.product].tonsPerMbf = parsed;
+      hasAnyValidValue = true;
+    }
+  });
+
+  return hasAnyValidValue ? table : null;
+}
+
+function getSavedReportConversionFactorDefaults() {
+  return reportConversionFactorDefaults ? cloneNoticeConversionFactors(reportConversionFactorDefaults) : null;
+}
+
+function getPreferredReportConversionFactorTable() {
+  return getSavedReportConversionFactorDefaults() || cloneNoticeConversionFactors(NOTICE_CONVERSION_FACTORS);
+}
+
+function refreshReportConversionFactorActions() {
+  const useSavedBtn = document.getElementById('report-factor-use-saved');
+  if (!useSavedBtn) return;
+  const hasSavedDefaults = !!reportConversionFactorDefaults;
+  useSavedBtn.disabled = !hasSavedDefaults;
+  useSavedBtn.title = hasSavedDefaults ? 'Load your saved device defaults' : 'Save device defaults to enable this option';
+}
+
 function populateReportConversionFactorInputs(sourceTable) {
-  const table = sourceTable || NOTICE_CONVERSION_FACTORS;
+  const table = sanitizeReportConversionFactorDefaults(sourceTable) || getPreferredReportConversionFactorTable();
   NOTICE_CONVERSION_FACTOR_FIELDS.forEach(field => {
     const input = document.getElementById(getReportConversionFactorInputId(field.groupKey, field.product));
     const group = table[field.groupKey] || NOTICE_CONVERSION_FACTORS[field.groupKey];
     const factor = group && group[field.product];
     if (input && factor) input.value = Number(factor.tonsPerMbf).toFixed(2);
   });
+  refreshReportConversionFactorActions();
 }
 
 function getActiveReportConversionFactors() {
@@ -8323,9 +8889,32 @@ function getActiveReportConversionFactors() {
   };
 }
 
-function resetReportConversionFactors() {
-  populateReportConversionFactorInputs();
+async function saveReportConversionFactorDefaults() {
+  reportConversionFactorDefaults = sanitizeReportConversionFactorDefaults(getActiveReportConversionFactors().table);
+  populateReportConversionFactorInputs(reportConversionFactorDefaults);
   generateCruiseReport();
+  await saveSession({ skipCloudSync: true });
+  toast('Conversion factors saved as device defaults');
+}
+
+function useSavedReportConversionFactors() {
+  const savedDefaults = getSavedReportConversionFactorDefaults();
+  if (!savedDefaults) {
+    refreshReportConversionFactorActions();
+    toast('No saved device defaults yet');
+    return;
+  }
+  populateReportConversionFactorInputs(savedDefaults);
+  generateCruiseReport();
+}
+
+function useAppReportConversionFactors() {
+  populateReportConversionFactorInputs(NOTICE_CONVERSION_FACTORS);
+  generateCruiseReport();
+}
+
+function resetReportConversionFactors() {
+  useAppReportConversionFactors();
 }
 
 function captureGridSettingsToJob(job) {
@@ -10461,8 +11050,16 @@ function markNoTally(id) {
   updatePlotMarkerStyle(plot);
   map.closePopup();
   updateStats();
-  saveSession();
-  checkSyncNeeded();
+  recordSyncEvent('plot-saved-local', {
+    reason: 'plot-no-tally',
+    plotId: String(plot.id),
+    treeCount: 0,
+    completedCount: getCompletedPlotIdsForSync().length,
+    plotIds: getCompletedPlotIdsForSync()
+  });
+  checkSyncNeeded('plot-no-tally');
+  saveSession({ skipCloudSync: true });
+  scheduleCloudSync('plot-no-tally', { delayMs: 200, force: true });
   toast('Plot ' + id + ': No tally (0 trees)');
   vibrate([30]);
 }
@@ -12046,16 +12643,7 @@ function buildOfflineBackupPayload() {
     kind: 'offline-backup',
     version: LOCAL_OFFLINE_BACKUP_VERSION,
     savedAt: Date.now(),
-    session: {
-      activeJobId: activeJobId,
-      distUnit: distUnit,
-      navHeadingMode: navHeadingMode,
-      tallyDisplayPreset: tallyDisplayPreset,
-      basemap: currentBasemap,
-      cloudCruiseId: window._activeCloudCruiseId || null,
-      cloudCruiseOwner: window._activeCloudCruiseOwner || null,
-      localSharedAccess: Object.values(_localSharedAccess || {})
-    },
+    session: buildSessionStatePayload(),
     jobs: clonedJobs.map(job => normalizeJobCruiseSettings(job))
   };
 }
@@ -12098,6 +12686,7 @@ function applyBackupSessionState(session) {
   }
   setNavHeadingMode(session && session.navHeadingMode, { skipSave: true });
   setTallyDisplayPreset(session && session.tallyDisplayPreset, { skipSave: true, silent: true });
+  reportConversionFactorDefaults = sanitizeReportConversionFactorDefaults(session && session.reportConversionFactorDefaults);
   _localSharedAccess = {};
   if (Array.isArray(session && session.localSharedAccess)) {
     session.localSharedAccess.forEach(entry => {
@@ -12107,6 +12696,9 @@ function applyBackupSessionState(session) {
   }
   window._activeCloudCruiseId = session && session.cloudCruiseId ? session.cloudCruiseId : null;
   window._activeCloudCruiseOwner = session && session.cloudCruiseOwner ? session.cloudCruiseOwner : null;
+  applySyncStateSnapshot(session && session.syncState);
+  populateReportConversionFactorInputs();
+  refreshSyncStatusUI();
 }
 
 function clearLoadedJobState() {
@@ -12138,15 +12730,18 @@ async function applyOfflineBackupPayload(payload) {
     await new Promise((res, rej) => { putTx.oncomplete = res; putTx.onerror = rej; });
 
     const stateTx = db.transaction('state', 'readwrite');
+    const restoredSyncState = session.syncState || {};
     stateTx.objectStore('state').put({
       activeJobId: session.activeJobId || null,
       distUnit: session.distUnit || distUnit,
       navHeadingMode: session.navHeadingMode || navHeadingMode,
       tallyDisplayPreset: session.tallyDisplayPreset || tallyDisplayPreset,
       basemap: Number.isFinite(Number(session.basemap)) ? Number(session.basemap) : currentBasemap,
+      reportConversionFactorDefaults: sanitizeReportConversionFactorDefaults(session.reportConversionFactorDefaults),
       cloudCruiseId: session.cloudCruiseId || null,
       cloudCruiseOwner: session.cloudCruiseOwner || null,
-      localSharedAccess: Array.isArray(session.localSharedAccess) ? session.localSharedAccess : []
+      localSharedAccess: Array.isArray(session.localSharedAccess) ? session.localSharedAccess : [],
+      syncState: restoredSyncState
     }, 'session');
     await new Promise((res, rej) => { stateTx.oncomplete = res; stateTx.onerror = rej; });
   } catch (e) {
@@ -12189,21 +12784,133 @@ async function restoreOfflineBackupMirror() {
 // â"€â"€ Debounced cloud sync â"€â"€
 let _cloudSyncTimer = null;
 
-function scheduleCloudSync() {
-  if (!window._activeCloudCruiseId || !fb_user) return;
+function scheduleCloudSync(reason = 'session-save', options = {}) {
+  if (!window._activeCloudCruiseId) return;
+  const delayMs = Number.isFinite(options.delayMs) ? options.delayMs : 3000;
+  const shouldForce = !!options.force;
+  if (!shouldForce && !getEffectiveSyncPending()) return;
+  if (!fb_user) {
+    setSyncPending(true, { reason: 'signed-out' });
+    _lastSyncErrorMessage = 'Not signed in on this device';
+    recordSyncEvent('sync-queue-blocked-auth', {
+      reason: reason,
+      completedCount: getCompletedPlotIdsForSync().length,
+      plotIds: getCompletedPlotIdsForSync()
+    });
+    showSyncWarningOnce('signed-out');
+    return;
+  }
   if (_cloudSyncTimer) clearTimeout(_cloudSyncTimer);
+  recordSyncEvent('sync-queued', {
+    reason: reason,
+    delayMs: delayMs,
+    completedCount: getCompletedPlotIdsForSync().length,
+    plotIds: getCompletedPlotIdsForSync()
+  });
   _cloudSyncTimer = setTimeout(async () => {
     _cloudSyncTimer = null;
-    try {
-      await syncExistingCruiseState(window._activeCloudCruiseId, { silent: true });
-      _lastSyncedPlotHash = getPlotHash();
-      _lastSyncedPlotLocationHash = getPlotLocationHash();
-      setSyncPending(false);
-    } catch(syncErr) {
-      console.warn('Auto-sync failed:', syncErr);
-      setSyncPending(true);
+    recordSyncEvent('sync-debounce-fired', {
+      reason: reason,
+      hidden: document.visibilityState === 'hidden',
+      online: navigator.onLine
+    });
+    await performBackgroundCloudSync(reason);
+  }, delayMs);
+}
+
+function queuePendingCloudSyncRetry(reason = 'retry', delayMs = 1500) {
+  if (!window._activeCloudCruiseId || !getEffectiveSyncPending()) return;
+  scheduleCloudSync(reason, { delayMs: delayMs, force: true });
+}
+
+async function performBackgroundCloudSync(reason = 'auto-sync') {
+  if (!window._activeCloudCruiseId) return false;
+  if (_syncInFlight) {
+    recordSyncEvent('sync-skipped-inflight', { reason: reason });
+    return false;
+  }
+  if (!fb_user) {
+    setSyncPending(true, { reason: 'signed-out' });
+    _lastSyncErrorMessage = 'Not signed in on this device';
+    recordSyncEvent('sync-skipped-no-auth', { reason: reason });
+    showSyncWarningOnce('signed-out');
+    return false;
+  }
+  if (!navigator.onLine) {
+    setSyncPending(true, { reason: 'offline' });
+    _lastSyncErrorMessage = 'Offline - waiting to retry';
+    recordSyncEvent('sync-skipped-offline', { reason: reason });
+    showSyncWarningOnce('offline');
+    return false;
+  }
+
+  setSyncInFlight(true);
+  recordSyncEvent('sync-start', {
+    reason: reason,
+    completedCount: getCompletedPlotIdsForSync().length,
+    plotIds: getCompletedPlotIdsForSync()
+  });
+  try {
+    const mode = await syncExistingCruiseState(window._activeCloudCruiseId, { silent: true, reason: reason });
+    _lastSyncedPlotHash = getPlotHash();
+    _lastSyncedPlotLocationHash = getPlotLocationHash();
+    _lastSuccessfulCloudSyncAt = Date.now();
+    _lastSuccessfulCloudSyncPlotIds = getCompletedPlotIdsForSync();
+    _lastSyncErrorMessage = '';
+    setSyncPending(false);
+    recordSyncEvent('sync-success', {
+      reason: reason,
+      mode: mode,
+      completedCount: _lastSuccessfulCloudSyncPlotIds.length,
+      plotIds: _lastSuccessfulCloudSyncPlotIds
+    });
+    await saveSession({ skipCloudSync: true });
+    return true;
+  } catch(syncErr) {
+    console.warn('Auto-sync failed:', syncErr);
+    _lastSyncErrorMessage = formatCloudSyncError('Sync', syncErr);
+    setSyncPending(true, { reason: !navigator.onLine ? 'offline' : 'error' });
+    recordSyncEvent('sync-failed', {
+      reason: reason,
+      error: _lastSyncErrorMessage
+    });
+    if (!navigator.onLine) showSyncWarningOnce('offline');
+    else showSyncWarningOnce('error');
+    await saveSession({ skipCloudSync: true });
+    return false;
+  } finally {
+    setSyncInFlight(false);
+  }
+}
+
+function exportCloudSyncDebug() {
+  const stamp = new Date().toISOString().replace(/[:.]/g, '-');
+  const payload = {
+    app: 'CruiseNav',
+    exportedAt: Date.now(),
+    activeJobId: activeJobId || null,
+    activeCruiseId: window._activeCloudCruiseId || null,
+    authUserId: fb_user ? fb_user.uid : null,
+    syncState: buildSyncStateSnapshot(),
+    status: {
+      mode: getCloudSyncModeLabel(),
+      pending: getEffectiveSyncPending(),
+      inFlight: _syncInFlight,
+      localCompletedPlotIds: getCompletedPlotIdsForSync(),
+      lastSyncedPlotIds: (_lastSuccessfulCloudSyncPlotIds || []).slice(),
+      lastSyncErrorMessage: _lastSyncErrorMessage || ''
     }
-  }, 3000); // Wait 3 seconds of inactivity before syncing
+  };
+  const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+  const href = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = href;
+  a.download = 'CruiseNav_sync_debug_' + stamp + '.json';
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(() => URL.revokeObjectURL(href), 1000);
+  toast('Sync log exported');
 }
 
 async function saveSession(opts) {
@@ -12228,19 +12935,15 @@ async function saveSession(opts) {
     // Save global state (active job ID, all jobs metadata, settings)
     const tx2 = db.transaction('state', 'readwrite');
     const store2 = tx2.objectStore('state');
-    store2.put({
-      activeJobId: activeJobId,
-      distUnit: distUnit,
-      navHeadingMode: navHeadingMode,
-      tallyDisplayPreset: tallyDisplayPreset,
-      basemap: currentBasemap,
-      cloudCruiseId: window._activeCloudCruiseId || null,
-      cloudCruiseOwner: window._activeCloudCruiseOwner || null,
-      localSharedAccess: Object.values(_localSharedAccess || {})
-    }, 'session');
+    store2.put(buildSessionStatePayload(), 'session');
     await new Promise((res, rej) => { tx2.oncomplete = res; tx2.onerror = rej; });
 
-    if (!opts || !opts.skipCloudSync) {
+    if (window._activeCloudCruiseId && hasUnsyncedCloudChanges()) {
+      const inferredReason = !fb_user ? 'signed-out' : (!navigator.onLine ? 'offline' : (_lastSyncPendingReason || 'local-save'));
+      setSyncPending(true, { reason: inferredReason });
+    }
+
+    if ((!opts || !opts.skipCloudSync) && (getEffectiveSyncPending() || (opts && opts.forceCloudSync))) {
       scheduleCloudSync();
     }
   } catch(e) { console.warn('Save error:', e); }
@@ -12276,31 +12979,7 @@ async function restoreSession() {
     const data = await new Promise((res, rej) => { req.onsuccess = () => res(req.result); req.onerror = rej; });
 
     if (data) {
-      // Restore basemap
-      if (data.basemap != null && data.basemap !== currentBasemap) {
-        map.removeLayer(basemaps[basemapOrder[currentBasemap]]);
-        currentBasemap = data.basemap;
-        basemaps[basemapOrder[currentBasemap]].addTo(map);
-      }
-      // Restore distance unit
-      if (data.distUnit) {
-        distUnit = data.distUnit;
-        document.getElementById('unit-toggle').textContent = distUnit;
-      }
-      setNavHeadingMode(data.navHeadingMode, { skipSave: true });
-      setTallyDisplayPreset(data.tallyDisplayPreset, { skipSave: true, silent: true });
-      _localSharedAccess = {};
-      if (Array.isArray(data.localSharedAccess)) {
-        data.localSharedAccess.forEach(entry => {
-          const key = getLocalSharedAccessKey(entry && entry.cruiseId, entry && entry.email);
-          if (key) _localSharedAccess[key] = entry;
-        });
-      }
-      // Restore cloud cruise link from session or from the active job
-      if (data.cloudCruiseId) {
-        window._activeCloudCruiseId = data.cloudCruiseId;
-        window._activeCloudCruiseOwner = data.cloudCruiseOwner || null;
-      }
+      applyBackupSessionState(data);
 
       // Restore active job
       if (data.activeJobId && allJobs.find(j => j.id === data.activeJobId)) {
@@ -12311,6 +12990,7 @@ async function restoreSession() {
           window._activeCloudCruiseId = restoredJob.cloudCruiseId;
           window._activeCloudCruiseOwner = data.cloudCruiseOwner || null;
         }
+        refreshSyncStatusUI();
         saveOfflineBackupMirror();
         return true;
       }
@@ -12806,6 +13486,15 @@ buildThemeSwatches();
   updateStats();
   updateJobLabel();
   updateSyncButton();
+  refreshSyncStatusUI();
+  if (restored && getEffectiveSyncPending() && window._activeCloudCruiseId) {
+    recordSyncEvent('session-restored-with-pending-sync', {
+      reason: 'session-restore',
+      completedCount: getCompletedPlotIdsForSync().length,
+      plotIds: getCompletedPlotIdsForSync()
+    });
+    queuePendingCloudSyncRetry('session-restore', 1200);
+  }
 
   // Dismiss loading screen
   setTimeout(() => {
