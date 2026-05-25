@@ -273,6 +273,14 @@
     display: flex;
     gap: 6px;
   }
+  .boundary-popup-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .boundary-popup-actions .popup-btn {
+    width: 100%;
+  }
   .popup-btn {
     flex: 1;
     padding: 10px 8px;
@@ -2614,6 +2622,54 @@
   }
   #draw-controls.active { display: flex; }
 
+  .boundary-edit-toolbar {
+    position: absolute;
+    bottom: 80px;
+    left: 0;
+    right: 0;
+    z-index: 1000;
+    display: none;
+    justify-content: center;
+    padding: 0 12px;
+  }
+  .boundary-edit-toolbar.open { display: flex; }
+  .boundary-edit-card {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 12px;
+    border-radius: 10px;
+    border: 1px solid var(--blue);
+    background: var(--bg-deep);
+    box-shadow: 0 10px 24px rgba(0,0,0,0.22);
+  }
+  .boundary-edit-copy {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+  }
+  .boundary-edit-title {
+    font-size: 0.65rem;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-weight: 700;
+  }
+  .boundary-edit-name {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-size: 0.82rem;
+    font-weight: 800;
+    color: var(--blue);
+    line-height: 1.2;
+  }
+  .boundary-edit-card .btn {
+    margin: 0;
+    width: auto;
+    padding: 10px 16px;
+    white-space: nowrap;
+  }
+
   .draw-point-count {
     background: var(--bg-deep);
     border: 1px solid var(--accent);
@@ -3393,6 +3449,16 @@
     </div>
   </div>
 
+  <div class="boundary-edit-toolbar" id="boundary-edit-toolbar">
+    <div class="boundary-edit-card">
+      <div class="boundary-edit-copy">
+        <div class="boundary-edit-title">Editing Boundary</div>
+        <div class="boundary-edit-name" id="boundary-edit-name">Boundary</div>
+      </div>
+      <button class="btn btn-primary" type="button" onclick="finishBoundaryEdit()">Done</button>
+    </div>
+  </div>
+
   <!-- Navigation HUD -->
   <div class="nav-hud" id="nav-hud">
     <div class="nav-hud-compass">
@@ -3999,6 +4065,8 @@ let locationWatchId = null;
 let isLocating = false;
 let isDrawing = false;
 let isEditing = false;
+let _editingBoundaryActionId = null;
+let _nextBoundaryActionId = 1;
 let navTargetId = null;          // plot id being navigated to
 let navLine = null;
 let currentDrawer = null;
@@ -5758,6 +5826,117 @@ function getPolygonDisplayName(poly, index) {
   return baseName;
 }
 
+function ensureBoundaryActionId(layer) {
+  if (!layer) return '';
+  if (!layer._boundaryActionId) {
+    layer._boundaryActionId = 'boundary_' + (_nextBoundaryActionId++);
+  }
+  return layer._boundaryActionId;
+}
+
+function findBoundaryByActionId(boundaryId) {
+  return allPolygons.find(poly => poly && poly.layer && String(ensureBoundaryActionId(poly.layer)) === String(boundaryId)) || null;
+}
+
+function setBoundaryEditToolbarVisible(visible, label) {
+  const toolbar = document.getElementById('boundary-edit-toolbar');
+  const name = document.getElementById('boundary-edit-name');
+  if (!toolbar || !name) return;
+  toolbar.classList.toggle('open', !!visible);
+  name.textContent = label || 'Boundary';
+}
+
+function buildBoundaryPopupHtml(poly) {
+  const layer = poly && poly.layer;
+  if (!layer) return '';
+  const boundaryIdArg = getInlineIdArg(ensureBoundaryActionId(layer));
+  const title = escapeHtml(getPolygonBaseName(poly && poly.name) || 'Boundary');
+  let info = 'Boundary';
+  try {
+    const acres = calcAcres(layer);
+    if (Number.isFinite(acres) && acres > 0) info = acres.toFixed(2) + ' acres';
+  } catch (e) {}
+  return '<div class="plot-popup">' +
+    '<div class="plot-popup-title">' + title + '</div>' +
+    '<div class="plot-popup-info">' + escapeHtml(info) + '</div>' +
+    '<div class="boundary-popup-actions">' +
+      '<button class="popup-btn popup-btn-complete" onclick="map.closePopup(); startBoundaryEdit(' + boundaryIdArg + ')">Edit Boundary</button>' +
+      '<button class="popup-btn popup-btn-nav" onclick="startBoundaryDrawFromPopup()">Draw Another Boundary</button>' +
+    '</div>' +
+  '</div>';
+}
+
+function bindBoundaryPopup(poly) {
+  if (!poly || !poly.layer) return;
+  ensureBoundaryActionId(poly.layer);
+  poly.layer.unbindPopup();
+  if (isEditing) return;
+  poly.layer.bindPopup(buildBoundaryPopupHtml(poly), { maxWidth: 260, closeButton: true });
+}
+
+function rebindAllBoundaryPopups() {
+  allPolygons.forEach(poly => bindBoundaryPopup(poly));
+}
+
+function disableAllBoundaryEditing() {
+  allPolygons.forEach(poly => {
+    try {
+      if (poly && poly.layer && poly.layer.editing) poly.layer.editing.disable();
+    } catch (e) {}
+  });
+}
+
+function resetBoundaryEditMode(options = {}) {
+  disableAllBoundaryEditing();
+  isEditing = false;
+  _editingBoundaryActionId = null;
+  setBoundaryEditToolbarVisible(false);
+  if (!options.skipPopupRestore) rebindAllBoundaryPopups();
+}
+
+function finishBoundaryEdit(options = {}) {
+  const hadActiveEdit = isEditing || !!_editingBoundaryActionId;
+  resetBoundaryEditMode(options);
+  if (!hadActiveEdit) return;
+  updateStats();
+  refreshPolyChecklist();
+  if (!options.skipSave) saveSession();
+  if (!options.silent) toast('Boundary edits saved');
+}
+
+function startBoundaryEdit(boundaryId) {
+  const poly = findBoundaryByActionId(boundaryId);
+  if (!poly || !poly.layer) {
+    toast('Boundary not found');
+    return;
+  }
+  if (isDrawing) cancelDraw();
+  map.closePopup();
+  disableAllBoundaryEditing();
+  allPolygons.forEach(item => {
+    if (item && item.layer) {
+      item.layer.closePopup();
+      item.layer.unbindPopup();
+    }
+  });
+  if (!poly.layer.editing || typeof poly.layer.editing.enable !== 'function') {
+    rebindAllBoundaryPopups();
+    toast('This boundary cannot be edited');
+    return;
+  }
+  poly.layer.editing.enable();
+  isEditing = true;
+  _editingBoundaryActionId = ensureBoundaryActionId(poly.layer);
+  setBoundaryEditToolbarVisible(true, getPolygonBaseName(poly.name) || 'Boundary');
+  toast('Edit mode: drag boundary vertices');
+}
+
+function startBoundaryDrawFromPopup() {
+  if (isEditing) finishBoundaryEdit({ silent: true });
+  map.closePopup();
+  startDrawBoundary();
+}
+
 function addPolygonToMap(name, coords) {
   if (!Array.isArray(coords) || coords.length === 0) return null;
   const latlngs = deserializePolygonCoordsToLatLngs(coords);
@@ -5765,7 +5944,9 @@ function addPolygonToMap(name, coords) {
   const layer = L.polygon(latlngs, { color: '#e53935', fillOpacity: 0, opacity: 1, fill: false, weight: 4 });
   tractLayer.addLayer(layer);
   if (!tractBoundary) tractBoundary = layer;
-  allPolygons.push({ layer: layer, name: name });
+  const poly = { layer: layer, name: name };
+  allPolygons.push(poly);
+  bindBoundaryPopup(poly);
   return layer;
 }
 
@@ -5825,13 +6006,9 @@ async function addIdentifiedParcelAsBoundary() {
     const name = polygonLayers.length > 1 ? (baseName + ' Part ' + (index + 1)) : baseName;
     tractLayer.addLayer(layer);
     if (!tractBoundary) tractBoundary = layer;
-    try {
-      const acres = calcAcres(layer);
-      layer.bindPopup('<div class="plot-popup"><div class="plot-popup-title">' + escapeHtml(name) + '</div><div class="plot-popup-info">' + acres.toFixed(2) + ' acres</div></div>');
-    } catch (e) {
-      layer.bindPopup('<div class="plot-popup"><div class="plot-popup-title">' + escapeHtml(name) + '</div></div>');
-    }
-    allPolygons.push({ layer: layer, name: name });
+    const poly = { layer: layer, name: name };
+    allPolygons.push(poly);
+    bindBoundaryPopup(poly);
   });
 
   setIdentifiedParcelBoundaryAction(null);
@@ -10424,6 +10601,9 @@ function startDrawBoundary() {
     cancelDraw();
     return;
   }
+  if (isEditing) {
+    finishBoundaryEdit({ silent: true });
+  }
   if (!activeJobId) {
     ensureActiveJob().then(ok => { if (ok) startDrawBoundary(); });
     return;
@@ -10529,13 +10709,13 @@ function finishDraw() {
   tractBoundary = polygon;
   tractLayer.addLayer(polygon);
 
-  const acres = calcAcres(polygon);
-  polygon.bindPopup('<div class="plot-popup"><div class="plot-popup-title">Drawn Boundary</div><div class="plot-popup-info">' + acres.toFixed(2) + ' acres</div></div>');
-
-  allPolygons.push({ layer: polygon, name: 'Drawn boundary' });
+  const poly = { layer: polygon, name: 'Drawn boundary' };
+  allPolygons.push(poly);
+  bindBoundaryPopup(poly);
   refreshPolyChecklist();
   updateTractInfo();
   updateEmptyHint();
+  const acres = calcAcres(polygon);
   toast('Boundary drawn: ' + acres.toFixed(1) + ' ac');
   saveSession();
   cancelDraw();
@@ -10567,10 +10747,10 @@ map.on(L.Draw.Event.CREATED, function(e) {
     tractLayer.addLayer(tractBoundary);
 
     const acres = calcAcres(tractBoundary);
-    tractBoundary.bindPopup('<div class="plot-popup"><div class="plot-popup-title">Drawn Boundary</div><div class="plot-popup-info">' + acres.toFixed(2) + ' acres</div></div>');
-
     // Register in allPolygons
-    allPolygons.push({ layer: tractBoundary, name: 'Drawn boundary' });
+    const poly = { layer: tractBoundary, name: 'Drawn boundary' };
+    allPolygons.push(poly);
+    bindBoundaryPopup(poly);
     refreshPolyChecklist();
 
     updateTractInfo();
@@ -10659,20 +10839,14 @@ function onManualPlotClick(e) {
 // â”€â”€ Edit mode â”€â”€
 function toggleEdit() {
   if (isEditing) {
-    // Save edits
-    tractLayer.eachLayer(l => {
-      if (l.editing) l.editing.disable();
-    });
-    isEditing = false;
-    toast('Edits saved');
-    updateTractInfo();
-  } else {
-    tractLayer.eachLayer(l => {
-      if (l.editing) l.editing.enable();
-    });
-    isEditing = true;
-    toast('Edit mode: drag vertices');
+    finishBoundaryEdit();
+    return;
   }
+  if (!allPolygons.length) {
+    toast('Draw or add a boundary first');
+    return;
+  }
+  toast('Tap a boundary to edit or draw another boundary');
 }
 
 // â”€â”€ GPS Location â”€â”€
@@ -11227,6 +11401,7 @@ async function deletePolygonAt(index) {
   if (guardFieldLock()) return;
   const poly = allPolygons[index];
   if (!poly) return;
+  const deletingEditedBoundary = poly.layer && _editingBoundaryActionId && String(ensureBoundaryActionId(poly.layer)) === String(_editingBoundaryActionId);
 
   const label = poly.name || ('Boundary ' + (index + 1));
   const ok = await showDangerConfirm({
@@ -11237,6 +11412,9 @@ async function deletePolygonAt(index) {
   });
   if (!ok) return;
   createSafetySnapshot('Boundary deleted');
+  if (deletingEditedBoundary) {
+    resetBoundaryEditMode({ skipPopupRestore: true });
+  }
 
   try {
     if (poly.layer && poly.layer.editing) poly.layer.editing.disable();
@@ -11245,6 +11423,7 @@ async function deletePolygonAt(index) {
   if (poly.layer) tractLayer.removeLayer(poly.layer);
   allPolygons.splice(index, 1);
   tractBoundary = allPolygons.length > 0 ? allPolygons[0].layer : null;
+  if (deletingEditedBoundary) rebindAllBoundaryPopups();
 
   refreshPolyChecklist();
   updateStats();
@@ -12055,7 +12234,9 @@ function loadGeoJSON(geojson, name) {
         polyIdx++;
         const firstProp = p ? Object.values(p).find(v => v && String(v).trim()) : null;
         const label = firstProp ? name + ': ' + firstProp : name + ' #' + polyIdx;
-        allPolygons.push({ layer: lyr, name: label });
+        const poly = { layer: lyr, name: label };
+        allPolygons.push(poly);
+        bindBoundaryPopup(poly);
       }
     }
   });
@@ -12729,6 +12910,7 @@ function applyBackupSessionState(session) {
 }
 
 function clearLoadedJobState() {
+  resetBoundaryEditMode({ skipPopupRestore: true });
   tractLayer.clearLayers();
   tractBoundary = null;
   allPolygons = [];
@@ -13077,6 +13259,7 @@ function loadJob(jobId, skipSave) {
   }
 
   // Clear map
+  resetBoundaryEditMode({ skipPopupRestore: true });
   tractLayer.clearLayers();
   tractBoundary = null;
   allPolygons = [];
