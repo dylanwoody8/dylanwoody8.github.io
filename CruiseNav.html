@@ -230,6 +230,17 @@
     font-style: italic;
     padding: 4px 0;
   }
+  .parcel-panel-actions {
+    display: none;
+    flex-direction: column;
+    gap: 8px;
+    padding: 10px 12px 12px;
+    border-top: 1px solid var(--border);
+    flex-shrink: 0;
+  }
+  .parcel-panel-actions .btn {
+    margin: 0;
+  }
 
   /* Hide leaflet draw toolbar, we use our own UI */
   .leaflet-draw-toolbar { display: none !important; }
@@ -5758,6 +5769,80 @@ function addPolygonToMap(name, coords) {
   return layer;
 }
 
+let _identifiedParcelFeature = null;
+
+function buildParcelBoundaryName(properties) {
+  const owner = String((properties && properties.ownname) || '').trim();
+  const parcelNo = String((properties && (properties.parno || properties.nparno)) || '').trim();
+  if (owner && parcelNo) return owner + ' - Parcel ' + parcelNo;
+  if (owner) return owner + ' Parcel';
+  if (parcelNo) return 'Parcel ' + parcelNo;
+  return 'Parcel boundary';
+}
+
+function setIdentifiedParcelBoundaryAction(feature) {
+  _identifiedParcelFeature = (feature && feature.geometry) ? cloneJson(feature) : null;
+  const actions = document.getElementById('parcel-panel-actions');
+  const button = document.getElementById('parcel-add-boundary-btn');
+  if (!actions || !button) return;
+  const enabled = !!_identifiedParcelFeature;
+  actions.style.display = enabled ? 'flex' : 'none';
+  button.disabled = !enabled;
+}
+
+async function addIdentifiedParcelAsBoundary() {
+  const feature = _identifiedParcelFeature && _identifiedParcelFeature.geometry
+    ? cloneJson(_identifiedParcelFeature)
+    : null;
+  if (!feature) {
+    setIdentifiedParcelBoundaryAction(null);
+    toast('Select a parcel first');
+    return;
+  }
+
+  const ok = await ensureActiveJob();
+  if (!ok) return;
+
+  let polygonLayers = [];
+  try {
+    const parcelLayer = L.geoJSON(feature.geometry, {
+      style: () => ({ color: '#e53935', fillOpacity: 0, opacity: 1, fill: false, weight: 4 })
+    });
+    parcelLayer.eachLayer(layer => {
+      if (layer instanceof L.Polygon) polygonLayers.push(layer);
+    });
+  } catch (e) {
+    console.warn('Parcel boundary conversion failed:', e);
+  }
+
+  if (!polygonLayers.length) {
+    toast('Selected parcel has no boundary geometry');
+    return;
+  }
+
+  const baseName = buildParcelBoundaryName(feature.properties || {});
+  polygonLayers.forEach((layer, index) => {
+    const name = polygonLayers.length > 1 ? (baseName + ' Part ' + (index + 1)) : baseName;
+    tractLayer.addLayer(layer);
+    if (!tractBoundary) tractBoundary = layer;
+    try {
+      const acres = calcAcres(layer);
+      layer.bindPopup('<div class="plot-popup"><div class="plot-popup-title">' + escapeHtml(name) + '</div><div class="plot-popup-info">' + acres.toFixed(2) + ' acres</div></div>');
+    } catch (e) {
+      layer.bindPopup('<div class="plot-popup"><div class="plot-popup-title">' + escapeHtml(name) + '</div></div>');
+    }
+    allPolygons.push({ layer: layer, name: name });
+  });
+
+  setIdentifiedParcelBoundaryAction(null);
+  refreshPolyChecklist();
+  updateStats();
+  updateTractInfo();
+  updateEmptyHint();
+  saveSession();
+  toast(polygonLayers.length === 1 ? 'Parcel added as boundary' : ('Parcel added as ' + polygonLayers.length + ' boundaries'));
+}
+
 function formatCloudSyncError(action, error) {
   const msg = String((error && error.message) || error || '').trim();
   if (/already exists under this account|open the correct cruise from My Cloud Cruises|already exists on this device/i.test(msg)) {
@@ -7941,6 +8026,7 @@ window.addEventListener('load', function() {
   function closeParcelsPanel() {
     document.getElementById('parcel-panel').classList.remove('open');
     if (parcelHighlight) { map.removeLayer(parcelHighlight); parcelHighlight = null; }
+    setIdentifiedParcelBoundaryAction(null);
   }
 
   window.hideParcelInfoPanelForDrawing = function() {
@@ -7957,6 +8043,7 @@ window.addEventListener('load', function() {
     var body  = document.getElementById('parcel-panel-body');
     panel.classList.add('open');
     body.innerHTML = '<span class="parcel-loading">Identifyingâ€¦</span>';
+    setIdentifiedParcelBoundaryAction(null);
     if (parcelHighlight) { map.removeLayer(parcelHighlight); parcelHighlight = null; }
 
     ncParcels.identify()
@@ -7968,10 +8055,12 @@ window.addEventListener('load', function() {
       .run(function(err, result) {
         if (err || !result || !result.features || result.features.length === 0) {
           body.innerHTML = '<span class="parcel-loading">No parcel found here.</span>';
+          setIdentifiedParcelBoundaryAction(null);
           return;
         }
-        var props = result.features[0].properties;
-        var geom  = result.features[0].geometry;
+        var feature = result.features[0];
+        var props = feature.properties;
+        var geom  = feature.geometry;
         if (geom) {
           parcelHighlight = L.geoJSON({ type: 'Feature', geometry: geom }, {
             style: { color: '#f39c12', weight: 2.5, fillOpacity: 0.12, fillColor: '#f39c12' }
@@ -7989,6 +8078,7 @@ window.addEventListener('load', function() {
           html += '<div class="parcel-row"><span class="parcel-label">' + label + '</span><span class="parcel-value">' + val + '</span></div>';
         }
         body.innerHTML = html || '<span class="parcel-loading">No attributes returned.</span>';
+        setIdentifiedParcelBoundaryAction(geom ? feature : null);
       });
   });
 });
@@ -13557,6 +13647,9 @@ buildThemeSwatches();
     <button class="parcel-panel-close" id="parcel-panel-close">&#x2715;</button>
   </div>
   <div id="parcel-panel-body"><span class="parcel-loading">Click a parcel to identify...</span></div>
+  <div class="parcel-panel-actions" id="parcel-panel-actions">
+    <button class="btn btn-primary" id="parcel-add-boundary-btn" type="button" onclick="addIdentifiedParcelAsBoundary()" disabled>Add Parcel as Boundary</button>
+  </div>
 </div>
 
 </body>
