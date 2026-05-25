@@ -7943,10 +7943,14 @@ window.addEventListener('load', function() {
     if (parcelHighlight) { map.removeLayer(parcelHighlight); parcelHighlight = null; }
   }
 
+  window.hideParcelInfoPanelForDrawing = function() {
+    document.getElementById('parcel-panel').classList.remove('open');
+  };
+
   document.getElementById('parcel-panel-close').addEventListener('click', closeParcelsPanel);
 
   map.on('click', function(e) {
-    if (!parcelsOn) return;
+    if (!parcelsOn || isDrawing) return;
     if (map.getZoom() < 14) { toast('Zoom in to see parcels'); return; }
 
     var panel = document.getElementById('parcel-panel');
@@ -10333,6 +10337,10 @@ function startDrawBoundary() {
   if (!activeJobId) {
     ensureActiveJob().then(ok => { if (ok) startDrawBoundary(); });
     return;
+  }
+
+  if (typeof window.hideParcelInfoPanelForDrawing === 'function') {
+    window.hideParcelInfoPanelForDrawing();
   }
 
   // Desktop: use native Leaflet.draw polygon handler (click to place vertices)
