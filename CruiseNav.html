@@ -3384,7 +3384,7 @@
   <div class="topbar">
     <div class="app-title"><span class="app-brand">CruiseNav</span><small id="active-job-label">No Job</small></div>
     <div class="topbar-stats">
-      <div>Plots: <span class="val" id="stat-plots">0/0</span></div>
+      <div><span id="stat-primary-label">Plots</span>: <span class="val" id="stat-plots">0/0</span></div>
       <div>Acres: <span class="val" id="stat-acres">0</span></div>
       <div class="wake-indicator" id="wake-indicator"><div class="wake-dot"></div>Screen On</div>
     </div>
@@ -3520,19 +3520,19 @@
   <div class="tract-info-bar" id="tract-info-bar">
     <div class="tract-stat">
       <div class="tract-stat-val" id="info-acres">--</div>
-      <div class="tract-stat-label">Acres</div>
+      <div class="tract-stat-label" id="info-label-acres">Acres</div>
     </div>
     <div class="tract-stat">
       <div class="tract-stat-val" id="info-plots-done">0</div>
-      <div class="tract-stat-label">Done</div>
+      <div class="tract-stat-label" id="info-label-done">Done</div>
     </div>
     <div class="tract-stat">
       <div class="tract-stat-val" id="info-plots-total">0</div>
-      <div class="tract-stat-label">Total</div>
+      <div class="tract-stat-label" id="info-label-total">Total</div>
     </div>
     <div class="tract-stat">
       <div class="tract-stat-val" id="info-pct">0%</div>
-      <div class="tract-stat-label">Complete</div>
+      <div class="tract-stat-label" id="info-label-pct">Complete</div>
     </div>
   </div>
 
@@ -3548,11 +3548,11 @@
     </button>
     <button class="nav-btn" id="nav-btn-plots" onclick="openPanel('grid')">
       <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><circle cx="5" cy="5" r="1.5" fill="currentColor"/><circle cx="12" cy="5" r="1.5" fill="currentColor"/><circle cx="19" cy="5" r="1.5" fill="currentColor"/><circle cx="5" cy="12" r="1.5" fill="currentColor"/><circle cx="12" cy="12" r="1.5" fill="currentColor"/><circle cx="19" cy="12" r="1.5" fill="currentColor"/></svg>
-      Plots
+      <span id="nav-btn-plots-label">Plots</span>
     </button>
     <button class="nav-btn" id="nav-btn-list" onclick="openPanel('plotlist')">
       <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><circle cx="4" cy="6" r="1" fill="currentColor"/><circle cx="4" cy="12" r="1" fill="currentColor"/><circle cx="4" cy="18" r="1" fill="currentColor"/></svg>
-      List
+      <span id="nav-btn-list-label">List</span>
     </button>
     <button class="nav-btn" id="nav-btn-report" onclick="openPanel('report')">
       <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14,2 14,8 20,8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
@@ -3576,17 +3576,17 @@
 <div class="panel" id="panel-grid">
   <div class="panel-handle"></div>
   <div class="panel-head">
-    <div class="panel-title">Generate Cruise Plots</div>
+    <div class="panel-title" id="panel-grid-title">Generate Cruise Plots</div>
     <button class="panel-close" type="button" onclick="closePanel()" aria-label="Close panel">&#x2715;</button>
   </div>
-  <div class="field-group">
+  <div class="field-group" id="grid-target-polygons-group">
     <div class="field-label">Target Polygons</div>
     <div class="field-help" style="margin-bottom:8px">Use Delete on any boundary below to remove just that polygon from the job.</div>
     <div class="poly-checklist" id="poly-checklist">
       <div class="poly-check-empty">No polygons available. Draw a boundary or import a shapefile.</div>
     </div>
   </div>
-  <div class="field-group">
+  <div class="field-group" id="grid-spacing-group">
     <div class="field-label">Grid Spacing (chains)</div>
     <div class="field-row">
       <div class="field-group">
@@ -3599,20 +3599,20 @@
       </div>
     </div>
   </div>
-  <div class="field-group">
+  <div class="field-group" id="grid-bearing-group">
     <div class="field-label">Grid Bearing (degrees)</div>
     <input class="field-input" id="grid-bearing" type="number" value="0" min="0" max="359" step="1"/>
   </div>
-  <div class="field-group">
+  <div class="field-group" id="grid-buffer-group">
     <div class="field-label">Boundary Buffer (chains)</div>
     <input class="field-input" id="grid-buffer" type="number" value="0.25" min="0" max="10" step="0.1"/>
     <div style="font-size:0.55rem;color:var(--text-muted);margin-top:4px">Plots within this distance of a boundary edge will be excluded. 0.25 chains = 16.5 ft.</div>
   </div>
-  <button class="btn btn-primary" onclick="generatePlots()">
+  <button class="btn btn-primary" id="grid-generate-btn" onclick="generatePlots()">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><circle cx="5" cy="5" r="1.5"/><circle cx="12" cy="5" r="1.5"/><circle cx="19" cy="5" r="1.5"/><circle cx="5" cy="12" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="19" cy="12" r="1.5"/></svg>
     Generate Grid
   </button>
-  <button class="btn btn-danger" onclick="clearPlots()">Clear All Plots</button>
+  <button class="btn btn-danger" id="grid-clear-btn" onclick="clearPlots()">Clear All Plots</button>
 </div>
 
 <!-- Plot List Panel -->
@@ -3643,7 +3643,7 @@
       <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><polygon points="12,2 22,20 2,20"/></svg>
       <div class="settings-card-label">Draw Boundary</div>
     </div>
-    <div class="settings-card" onclick="closePanel(); startManualPlot()">
+    <div class="settings-card" id="settings-card-manual-plot" onclick="closePanel(); startManualPlot()">
       <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><circle cx="12" cy="10" r="3"/><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/></svg>
       <div class="settings-card-label">Place Plot</div>
     </div>
@@ -3651,9 +3651,9 @@
       <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
       <div class="settings-card-label">Edit Shapes</div>
     </div>
-    <div class="settings-card" onclick="closePanel(); openPanel('grid')">
+    <div class="settings-card" id="settings-card-grid" onclick="closePanel(); openPanel('grid')">
       <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><circle cx="5" cy="5" r="1.5" fill="currentColor"/><circle cx="12" cy="5" r="1.5" fill="currentColor"/><circle cx="5" cy="12" r="1.5" fill="currentColor"/><circle cx="12" cy="12" r="1.5" fill="currentColor"/></svg>
-      <div class="settings-card-label">Cruise Grid</div>
+      <div class="settings-card-label" id="settings-card-grid-label">Cruise Grid</div>
     </div>
     <div class="settings-card" onclick="closePanel(); openPanel('cruisesetup')">
       <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
@@ -4717,12 +4717,120 @@ function setJobCloudPlotStateVersion(job, version) {
   return normalized;
 }
 
+function createEmptyFullTally() {
+  return {
+    completed: false,
+    trees: [],
+    cruiser: ''
+  };
+}
+
+function normalizeFullTally(source) {
+  const next = createEmptyFullTally();
+  if (!source || typeof source !== 'object') return next;
+  next.trees = Array.isArray(source.trees) ? cloneJson(source.trees) : [];
+  next.cruiser = source.cruiser ? String(source.cruiser) : '';
+  next.completed = !!source.completed && next.trees.length > 0;
+  return next;
+}
+
+function getJobFullTally(job) {
+  if (!job) return createEmptyFullTally();
+  job.fullTally = normalizeFullTally(job.fullTally);
+  return job.fullTally;
+}
+
+function getActiveJobRecord() {
+  return normalizeJobCruiseSettings(allJobs.find(j => j.id === activeJobId));
+}
+
+function getActiveFullTally() {
+  const job = getActiveJobRecord();
+  return getJobFullTally(job);
+}
+
+function hasFullTallyTrees(fullTally) {
+  return !!(fullTally && Array.isArray(fullTally.trees) && fullTally.trees.length > 0);
+}
+
+function hasFullTallyData(fullTally) {
+  const normalized = normalizeFullTally(fullTally);
+  return normalized.completed || normalized.trees.length > 0 || !!normalized.cruiser;
+}
+
+function getFullTallyTreeCount(fullTally) {
+  return Array.isArray(fullTally && fullTally.trees) ? fullTally.trees.length : 0;
+}
+
+function isCruiseMethodFull(methodOrValue) {
+  if (!methodOrValue) return false;
+  const method = typeof methodOrValue === 'string'
+    ? getCruiseMethod(methodOrValue)
+    : methodOrValue;
+  return !!(method && method.kind === 'full');
+}
+
+function isActiveJobFullTally() {
+  const job = getActiveJobRecord();
+  return !!(job && isCruiseMethodFull(job.cruiseType));
+}
+
+function isJobFullTally(job) {
+  return !!(job && isCruiseMethodFull(job.cruiseType));
+}
+
+function getCurrentJobFullTallyData() {
+  return normalizeFullTally(getActiveFullTally());
+}
+
+function getCruiseTalliesForMode(plots, fullTally, cruiseConfig) {
+  if ((cruiseConfig && cruiseConfig.kind) === 'full') {
+    const stand = normalizeFullTally(fullTally);
+    if (!stand.completed || !stand.trees.length) return [];
+    return [{
+      id: 'STAND',
+      completed: true,
+      trees: cloneJson(stand.trees),
+      noTally: false,
+      cruiser: stand.cruiser || ''
+    }];
+  }
+  return Array.isArray(plots) ? plots : [];
+}
+
+function formatTreeCountLabel(count) {
+  const total = Number(count) || 0;
+  return total + ' tree' + (total === 1 ? '' : 's');
+}
+
+function getFullTallyStatusLabel(fullTally) {
+  return normalizeFullTally(fullTally).completed ? 'Complete' : 'Pending';
+}
+
+function getFullTallyPrimaryValue(fullTally) {
+  const normalized = normalizeFullTally(fullTally);
+  if (!normalized.trees.length) return getFullTallyStatusLabel(normalized);
+  return getFullTallyStatusLabel(normalized) + ' · ' + formatTreeCountLabel(normalized.trees.length);
+}
+
+function hasAnyPlotData(plots) {
+  return Array.isArray(plots) && plots.some(plot => plot && (
+    plot.id != null ||
+    Number.isFinite(Number(plot.lat)) ||
+    Number.isFinite(Number(plot.lng)) ||
+    !!plot.completed ||
+    !!plot.noTally ||
+    (Array.isArray(plot.trees) && plot.trees.length > 0)
+  ));
+}
+
 function normalizeJobCruiseSettings(job) {
   if (!job) return job;
   if (!LOG_RULES[job.logRule]) job.logRule = 'scribner';
   job.formClass = normalizeFormClass(job.formClass);
   if (!Array.isArray(job.species) || job.species.length === 0) job.species = getDefaultCruiseSpecies();
   job.deletedPlotIds = normalizeDeletedPlotIds(job.deletedPlotIds);
+  job.fullTally = normalizeFullTally(job.fullTally);
   job.cloudPlotStateVersion = getJobCloudPlotStateVersion(job);
   if (!job.cruiseType || !CRUISE_METHOD_MAP[job.cruiseType]) {
     job.cruiseType = deriveCruiseTypeFromLegacyBaf(job.baf);
@@ -4953,7 +5061,7 @@ function getJobFormClass() {
 }
 
 // Tally State
-let tallyPlotId = null;         // currently open plot ID
+let tallyTarget = { mode: 'plot', plotId: null };
 let tallyTrees = [];            // trees being edited in modal
 let tallyLastTree = null;       // last added tree for repeat
 let tallySelProduct = 'sawtimber';
@@ -5187,8 +5295,12 @@ function updateLDFromInput() {
 }
 
 function getTallyCruiseContext() {
+  const plot = tallyTarget.mode === 'plot' && tallyTarget.plotId != null
+    ? findPlotById(tallyTarget.plotId)
+    : null;
   return {
-    plot: tallyPlotId == null ? null : findPlotById(tallyPlotId),
+    mode: tallyTarget.mode === 'stand' ? 'stand' : 'plot',
+    plot: plot,
     cruiseConfig: getJobCruiseConfig(),
     totalAcres: getActiveJobTotalAcres()
   };
@@ -5325,6 +5437,18 @@ function getInlineIdArg(id) {
   return JSON.stringify(String(id)).replace(/"/g, '&quot;');
 }
 
+function refreshTallyActionButtons() {
+  const saveBtn = document.getElementById('tally-save-btn');
+  const saveNavBtn = document.getElementById('tally-save-nav-btn');
+  const noTallyBtn = document.getElementById('tally-no-tally-btn');
+  const clearBtn = document.getElementById('tally-clear-btn');
+  const standMode = tallyTarget.mode === 'stand';
+  if (saveBtn) saveBtn.textContent = standMode ? 'Save Stand Tally' : 'Save & Close Plot';
+  if (saveNavBtn) saveNavBtn.style.display = standMode ? 'none' : '';
+  if (noTallyBtn) noTallyBtn.style.display = standMode ? 'none' : '';
+  if (clearBtn) clearBtn.textContent = standMode ? 'Clear Stand Trees' : 'Clear All Trees';
+}
+
 function openTallyModal(plotOrId) {
   const plot = (plotOrId && typeof plotOrId === 'object') ? plotOrId : findPlotById(plotOrId);
   if (!plot) {
@@ -5332,10 +5456,12 @@ function openTallyModal(plotOrId) {
     return;
   }
   applyTallyDisplayPreset();
-  tallyPlotId = plot.id;
+  tallyTarget = { mode: 'plot', plotId: plot.id };
   const trees = plot.trees || [];
-  tallyTrees = JSON.parse(JSON.stringify(trees));
+  tallyTrees = cloneJson(trees || []);
+  tallyLastTree = tallyTrees.length ? { ...tallyTrees[tallyTrees.length - 1] } : null;
   document.getElementById('tally-title').textContent = 'Plot ' + plot.id;
+  refreshTallyActionButtons();
 
   const config = getJobCruiseConfig();
   const speciesOptions = (config.species && config.species.length ? config.species : getDefaultCruiseSpecies())
@@ -5364,9 +5490,50 @@ function openTallyModal(plotOrId) {
   document.getElementById('tally-overlay').classList.add('open');
 }
 
+function openStandTallyModal() {
+  const job = getActiveJobRecord();
+  if (!job) {
+    toast('Create a job first');
+    return;
+  }
+  applyTallyDisplayPreset();
+  tallyTarget = { mode: 'stand', plotId: null };
+  const fullTally = getJobFullTally(job);
+  tallyTrees = cloneJson(fullTally.trees || []);
+  tallyLastTree = tallyTrees.length ? { ...tallyTrees[tallyTrees.length - 1] } : null;
+  document.getElementById('tally-title').textContent = job.name + ' Stand Tally';
+  refreshTallyActionButtons();
+
+  const config = getJobCruiseConfig();
+  const speciesOptions = (config.species && config.species.length ? config.species : getDefaultCruiseSpecies())
+    .map(getNormalizedSpeciesOption)
+    .filter(item => item && item.code);
+
+  tallySelProduct = 'sawtimber';
+  tallySelDBH = 14;
+  tallySelLogs = 2;
+  tallySelHeight = 50;
+  tallySelSpecies = (speciesOptions[0] && speciesOptions[0].code) || 'LP';
+  setTallyLDExpanded(false);
+  document.getElementById('tally-btn-saw').className = 'product-btn sel-saw';
+  document.getElementById('tally-btn-pulp').className = 'product-btn';
+  document.getElementById('tally-logs-section').style.display = 'block';
+  document.getElementById('tally-height-section').style.display = 'none';
+
+  tallyBuildSpecies();
+  tallyBuildDBH();
+  tallyBuildLogs();
+  updateTallyMethodUI(null, config, getActiveJobTotalAcres());
+  tallyRenderTable();
+  tallyUpdateStats();
+
+  map.closePopup();
+  document.getElementById('tally-overlay').classList.add('open');
+}
+
 function closeTallyModal() {
   document.getElementById('tally-overlay').classList.remove('open');
-  tallyPlotId = null;
+  tallyTarget = { mode: 'plot', plotId: null };
 }
 
 function tallyPickProduct(p) {
@@ -5579,10 +5746,36 @@ function tallyUpdateStats() {
 }
 
 function tallySavePlot() {
-  if (tallyPlotId == null) return;
-  const plot = findPlotById(tallyPlotId);
+  if (tallyTarget.mode === 'stand') {
+    const job = getActiveJobRecord();
+    if (!job) return;
+    job.fullTally = {
+      completed: tallyTrees.length > 0,
+      trees: cloneJson(tallyTrees),
+      cruiser: (job.fullTally && job.fullTally.cruiser) || ''
+    };
+    job.updatedAt = Date.now();
+    updateStats();
+    refreshPlotList();
+    recordSyncEvent('plot-saved-local', {
+      reason: 'stand-tally-save',
+      plotId: 'STAND',
+      treeCount: tallyTrees.length,
+      completedCount: getCompletedPlotIdsForSync().length,
+      plotIds: getCompletedPlotIdsForSync()
+    });
+    checkSyncNeeded('stand-tally-save');
+    saveSession({ skipCloudSync: true });
+    scheduleCloudSync('stand-tally-save', { delayMs: 200, force: true });
+    closeTallyModal();
+    toast('Stand tally saved: ' + tallyTrees.length + ' tree' + (tallyTrees.length === 1 ? '' : 's'));
+    vibrate([50, 30, 50]);
+    return;
+  }
+  if (tallyTarget.plotId == null) return;
+  const plot = findPlotById(tallyTarget.plotId);
   if (!plot) return;
-  plot.trees = JSON.parse(JSON.stringify(tallyTrees));
+  plot.trees = cloneJson(tallyTrees);
   plot.completed = true;
   plot.noTally = false;
   updatePlotMarkerStyle(plot);
@@ -5603,6 +5796,10 @@ function tallySavePlot() {
 }
 
 function tallySaveAndNav() {
+  if (tallyTarget.mode === 'stand') {
+    tallySavePlot();
+    return;
+  }
   tallySavePlot();
   // Navigate to next pending
   setTimeout(() => {
@@ -5616,8 +5813,9 @@ function tallySaveAndNav() {
 }
 
 function tallyNoTally() {
-  if (tallyPlotId == null) return;
-  const plot = findPlotById(tallyPlotId);
+  if (tallyTarget.mode === 'stand') return;
+  if (tallyTarget.plotId == null) return;
+  const plot = findPlotById(tallyTarget.plotId);
   if (!plot) return;
   plot.trees = [];
   plot.completed = true;
@@ -5641,6 +5839,7 @@ function tallyNoTally() {
 
 function tallyClearTrees() {
   tallyTrees = [];
+  tallyLastTree = null;
   tallyRenderTable();
   tallyUpdateStats();
 }
@@ -6507,6 +6706,7 @@ async function saveCruiseToCloud() {
 
 // â”€â”€ Save this user's plot data to sub-collection â”€â”€
 function getCompletedPlotsForSync() {
+  if (isActiveJobFullTally()) return [];
   return plotMarkers
     .filter(p => p.completed)
     .map(p => ({
@@ -6518,6 +6718,17 @@ function getCompletedPlotsForSync() {
       noTally: p.noTally || false
     }))
     .sort((a, b) => String(a.id).localeCompare(String(b.id)));
+}
+
+function getCompletedFullTallyForSync() {
+  if (!isActiveJobFullTally()) return createEmptyFullTally();
+  const stand = normalizeFullTally(getActiveFullTally());
+  if (!stand.completed || !stand.trees.length) return createEmptyFullTally();
+  return {
+    completed: true,
+    trees: cloneJson(stand.trees || []),
+    cruiser: stand.cruiser || ''
+  };
 }
 
 function getActiveCloudLinkedJob() {
@@ -6549,7 +6760,14 @@ async function reconcileCloudPlotStateVersion(cruiseId, cruiseData, options = {}
     return { remoteVersion, resetApplied: false };
   }
 
-  clearAllPlotCompletionData();
+  if (isJobFullTally(activeJob)) {
+    activeJob.fullTally = createEmptyFullTally();
+    updateStats();
+    updateTractInfo();
+    refreshPlotList();
+  } else {
+    clearAllPlotCompletionData();
+  }
   activeJob.cloudPlotStateVersion = remoteVersion;
   activeJob.updatedAt = Date.now();
   await saveSession({ skipCloudSync: true });
@@ -6576,6 +6794,7 @@ async function saveUserPlotData(cruiseId, options = {}) {
         userName: fb_user.displayName || fb_user.email,
         userEmail: getCurrentUserEmail(),
         plots: JSON.stringify(myPlots),
+        fullTallyJson: JSON.stringify(getCompletedFullTallyForSync()),
         plotStateVersion: plotStateVersion,
         updatedAt: firebase.firestore.FieldValue.serverTimestamp()
       });
@@ -6619,16 +6838,29 @@ let _lastSyncWarningAt = 0;
 const MAX_SYNC_EVENT_LOG = 80;
 
 function getCompletedPlotIdsForSync() {
+  if (isActiveJobFullTally()) {
+    const stand = getCompletedFullTallyForSync();
+    return stand.completed ? ['STAND'] : [];
+  }
   return getCompletedPlotsForSync().map(plot => String(plot.id));
 }
 
 function getPlotHash() {
   // Hash the full completed-plot payload so tree edits are detected
   // even when the tree count stays the same.
+  if (isActiveJobFullTally()) {
+    return JSON.stringify({
+      mode: 'stand',
+      fullTally: getCompletedFullTallyForSync()
+    });
+  }
   return JSON.stringify(getCompletedPlotsForSync());
 }
 
 function getPlotLocationHash() {
+  if (isActiveJobFullTally()) {
+    return JSON.stringify({ mode: 'stand', plots: [] });
+  }
   return JSON.stringify(
     plotMarkers
       .map(p => ({
@@ -6773,6 +7005,9 @@ function refreshSyncStatusUI() {
   const cardEvents = document.getElementById('cloud-sync-events');
   const completedPlotIds = getCompletedPlotIdsForSync();
   const effectivePending = getEffectiveSyncPending();
+  const fullMode = isActiveJobFullTally();
+  const tallyLabel = fullMode ? 'stand tally' : 'completed plot';
+  const tallyLabelPlural = tallyLabel + (completedPlotIds.length === 1 ? '' : 's');
 
   let titleText = 'Cloud sync inactive';
   let metaText = 'Tap to open Cloud Sync.';
@@ -6780,22 +7015,22 @@ function refreshSyncStatusUI() {
   if (_syncInFlight) {
     titleText = 'Syncing to cloud';
     metaText = (completedPlotIds.length || plotMarkers.length)
-      ? (completedPlotIds.length + ' completed plot' + (completedPlotIds.length === 1 ? '' : 's') + ' in flight.')
+      ? (completedPlotIds.length + ' ' + tallyLabelPlural + ' in flight.')
       : 'Sync is running in the background.';
   } else if (effectivePending) {
     if (!fb_user) {
       titleText = 'Saved locally only';
-      metaText = 'Sign in on this device to push ' + completedPlotIds.length + ' completed plot' + (completedPlotIds.length === 1 ? '' : 's') + ' to cloud.';
+      metaText = 'Sign in on this device to push ' + completedPlotIds.length + ' ' + tallyLabelPlural + ' to cloud.';
     } else if (!navigator.onLine) {
       titleText = 'Saved locally • Offline';
       metaText = 'Waiting to retry cloud sync when the connection returns.';
     } else {
       titleText = 'Saved locally';
-      metaText = 'Cloud sync pending for ' + completedPlotIds.length + ' completed plot' + (completedPlotIds.length === 1 ? '' : 's') + '.';
+      metaText = 'Cloud sync pending for ' + completedPlotIds.length + ' ' + tallyLabelPlural + '.';
     }
   } else if (window._activeCloudCruiseId) {
     titleText = 'Synced to cloud';
-    metaText = 'Last sync ' + formatSyncTimestamp(_lastSuccessfulCloudSyncAt) + ' • ' + completedPlotIds.length + ' completed plot' + (completedPlotIds.length === 1 ? '' : 's') + '.';
+    metaText = 'Last sync ' + formatSyncTimestamp(_lastSuccessfulCloudSyncAt) + ' • ' + completedPlotIds.length + ' ' + tallyLabelPlural + '.';
   }
 
   if (btn) {
@@ -6818,8 +7053,8 @@ function refreshSyncStatusUI() {
       ['Pending', effectivePending ? 'Yes' : 'No'],
       ['Pending Reason', _lastSyncPendingReason || '--'],
       ['Last Success', formatSyncTimestamp(_lastSuccessfulCloudSyncAt)],
-      ['Local Completed Plots', completedPlotIds.length ? completedPlotIds.join(', ') : '--'],
-      ['Last Synced Plots', _lastSuccessfulCloudSyncPlotIds.length ? _lastSuccessfulCloudSyncPlotIds.join(', ') : '--']
+      [fullMode ? 'Local Stand Tally' : 'Local Completed Plots', completedPlotIds.length ? completedPlotIds.join(', ') : '--'],
+      [fullMode ? 'Last Synced Tallies' : 'Last Synced Plots', _lastSuccessfulCloudSyncPlotIds.length ? _lastSuccessfulCloudSyncPlotIds.join(', ') : '--']
     ];
     cardGrid.innerHTML = rows.map(row => (
       '<div class="cloud-sync-grid-label">' + escapeHtml(row[0]) + '</div>' +
@@ -6894,7 +7129,7 @@ function checkSyncNeeded(reason) {
 function updateSyncButton() {
   const btn = document.getElementById('btn-sync');
   if (!btn) return;
-  const hasData = allPolygons.length > 0 || plotMarkers.length > 0;
+  const hasData = allPolygons.length > 0 || plotMarkers.length > 0 || hasFullTallyData(getActiveFullTally());
   const showForLinkedCruise = !!window._activeCloudCruiseId && hasData;
   if ((fb_user && hasData) || showForLinkedCruise) {
     btn.style.display = 'flex';
@@ -6951,7 +7186,7 @@ async function syncExistingCruiseState(cruiseId, options = {}) {
 
 async function manualCloudSync() {
   if (!fb_user) { toast('Sign in first'); return; }
-  if (allPolygons.length === 0 && plotMarkers.length === 0) { toast('Nothing to sync'); return; }
+  if (allPolygons.length === 0 && plotMarkers.length === 0 && !hasFullTallyData(getActiveFullTally())) { toast('Nothing to sync'); return; }
   if (_syncInFlight) { toast('Sync already in progress'); return; }
 
   const btn = document.getElementById('btn-sync');
@@ -7025,6 +7260,8 @@ async function manualCloudSync() {
       } else {
         // No existing cruise found, create a new one
         toast('Saving to cloud...');
+        const fullMode = !!(activeJob && isCruiseMethodFull(activeJob.cruiseType));
+        const standSync = fullMode ? getCompletedFullTallyForSync() : createEmptyFullTally();
         const cruiseData = {
           name: name,
           ownerId: fb_user.uid,
@@ -7042,10 +7279,12 @@ async function manualCloudSync() {
           updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
           plotStateVersion: DEFAULT_PLOT_STATE_VERSION,
           polygonsJson: JSON.stringify(allPolygons.map(getPolygonSerializableData)),
-          plotsJson: JSON.stringify(plotMarkers.map(p => ({ id: p.id, lat: p.lat, lng: p.lng }))),
-          plotCount: plotMarkers.length,
+          plotsJson: JSON.stringify(fullMode ? [] : plotMarkers.map(p => ({ id: p.id, lat: p.lat, lng: p.lng }))),
+          plotCount: fullMode ? 0 : plotMarkers.length,
           polyCount: allPolygons.length,
-          completedCount: plotMarkers.filter(p => p.completed).length,
+          completedCount: fullMode ? 0 : plotMarkers.filter(p => p.completed).length,
+          fullTallyCompleted: !!standSync.completed,
+          fullTallyTreeCount: getFullTallyTreeCount(standSync),
           distUnit: distUnit,
           basemap: currentBasemap
         };
@@ -7137,6 +7376,7 @@ async function pullOtherUsersPlotData(cruiseId, options = {}) {
 
     if (!cruiseDoc.exists) { console.log('[PULL] Cruise doc not found!'); return { newPlotsCount: 0, newBoundariesCount: 0, updatedPlotsCount: 0 }; }
     const d = cruiseDoc.data();
+    const remoteFullMode = isCruiseMethodFull(d.cruiseType);
     if (d.ownerId) window._activeCloudCruiseOwner = d.ownerId;
     const remotePlotStateVersion = getCruisePlotStateVersion(d);
     await reconcileCloudPlotStateVersion(cruiseId, d, {
@@ -7204,6 +7444,73 @@ async function pullOtherUsersPlotData(cruiseId, options = {}) {
     const activeJob = normalizeJobCruiseSettings(allJobs.find(j => j.id === activeJobId));
     if (activeJob) {
       activeJob.deletedPlotIds = normalizeDeletedPlotIds(Array.from(deletedPlotIdSet));
+    }
+
+    if (remoteFullMode) {
+      const contributors = [];
+      let newestStand = {
+        fullTally: createEmptyFullTally(),
+        updatedAt: 0,
+        fromSelf: false
+      };
+
+      if (userSnap) {
+        userSnap.forEach(udoc => {
+          const ud = udoc.data() || {};
+          const cruiserName = ud.userName || ud.userEmail || udoc.id;
+          contributors.push(cruiserName);
+          const userPlotStateVersion = getCruisePlotStateVersion(ud);
+          if (userPlotStateVersion !== remotePlotStateVersion) return;
+          const stand = normalizeFullTally(parseJsonObject(ud.fullTallyJson));
+          const docTime = ud.updatedAt ? ud.updatedAt.toMillis() : 0;
+          if (!stand.completed || !stand.trees.length) return;
+          if (docTime >= newestStand.updatedAt) {
+            newestStand = {
+              fullTally: {
+                completed: true,
+                trees: cloneJson(stand.trees || []),
+                cruiser: stand.cruiser || cruiserName
+              },
+              updatedAt: docTime,
+              fromSelf: udoc.id === fb_user.uid
+            };
+          }
+        });
+      } else if (d.ownerName) {
+        contributors.push(d.ownerName);
+      }
+
+      if (activeJob) {
+        activeJob.deletedPlotIds = [];
+        const localHasUnsyncedEdits = _syncPending || (getPlotHash() !== _lastSyncedPlotHash);
+        const shouldApplyCloudStand = newestStand.fullTally.completed && (!newestStand.fromSelf || !localHasUnsyncedEdits);
+        if (shouldApplyCloudStand) {
+          activeJob.fullTally = normalizeFullTally(newestStand.fullTally);
+          updatedPlotsCount++;
+        } else if (!hasFullTallyData(activeJob.fullTally) && newestStand.fullTally.completed) {
+          activeJob.fullTally = normalizeFullTally(newestStand.fullTally);
+          updatedPlotsCount++;
+        } else {
+          activeJob.fullTally = normalizeFullTally(activeJob.fullTally);
+        }
+      }
+
+      window._cloudContributors = Array.from(new Set(contributors));
+
+      if (newBoundariesCount > 0 || updatedPlotsCount > 0 || removedPlotsCount > 0) {
+        updateStats();
+        updateTractInfo();
+        updateEmptyHint();
+        refreshPolyChecklist();
+        const parts = [];
+        if (newBoundariesCount > 0) parts.push(newBoundariesCount + ' new boundar' + (newBoundariesCount > 1 ? 'ies' : 'y'));
+        if (updatedPlotsCount > 0) parts.push('stand tally updated');
+        if (!silent) toast(parts.join(', ') + ' from cloud');
+      }
+      if (userDataUnavailable && !silent) {
+        toast('Shared tally details are unavailable with current Firestore rules.');
+      }
+      return { newPlotsCount, newBoundariesCount, updatedPlotsCount, removedPlotsCount, userDataUnavailable };
     }
 
     // Build a map of all completed plots from all users in the cloud
@@ -7372,6 +7679,8 @@ async function updateCruiseInCloud(cruiseId) {
     getJobCloudPlotStateVersion(activeJob),
     DEFAULT_PLOT_STATE_VERSION
   );
+  const fullMode = !!(activeJob && isCruiseMethodFull(activeJob.cruiseType));
+  const standSync = fullMode ? getCompletedFullTallyForSync() : createEmptyFullTally();
   try {
     if (!window._activeCloudCruiseOwner || window._activeCloudCruiseOwner === fb_user.uid) {
       const conflicts = await findOwnerCruiseNameConflicts(cruiseName, cruiseId);
@@ -7391,10 +7700,12 @@ async function updateCruiseInCloud(cruiseId) {
       updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
       plotStateVersion: plotStateVersion,
       polygonsJson: JSON.stringify(allPolygons.map(getPolygonSerializableData)),
-      plotsJson: JSON.stringify(plotMarkers.map(p => ({ id: p.id, lat: p.lat, lng: p.lng }))),
-      plotCount: plotMarkers.length,
+      plotsJson: JSON.stringify(fullMode ? [] : plotMarkers.map(p => ({ id: p.id, lat: p.lat, lng: p.lng }))),
+      plotCount: fullMode ? 0 : plotMarkers.length,
       polyCount: allPolygons.length,
-      completedCount: plotMarkers.filter(p => p.completed).length,
+      completedCount: fullMode ? 0 : plotMarkers.filter(p => p.completed).length,
+      fullTallyCompleted: !!standSync.completed,
+      fullTallyTreeCount: getFullTallyTreeCount(standSync),
       cruiseType: (activeJob && activeJob.cruiseType) || 'baf_20',
       baf: (activeJob && activeJob.baf) || 20,
       logRule: (activeJob && activeJob.logRule) || 'scribner',
@@ -7510,11 +7821,17 @@ function renderCruiseList(snap, container, isOwner) {
   docs.forEach(doc => {
     try {
       const d = doc && doc.data ? (doc.data() || {}) : {};
+      const fullMode = isCruiseMethodFull(d.cruiseType);
       let plotCount = 0, polyCount = 0, done = 0;
+      let metaPrimary = '';
       if (d.plotCount != null || d.plotsJson || d.polygonsJson) {
         plotCount = d.plotCount != null ? d.plotCount : parseJsonArray(d.plotsJson).length;
         polyCount = d.polyCount != null ? d.polyCount : parseJsonArray(d.polygonsJson).length;
         done = d.completedCount || 0;
+        if (fullMode) {
+          const treeCount = Number(d.fullTallyTreeCount) || 0;
+          metaPrimary = (d.fullTallyCompleted ? 'Complete' : 'Pending') + ' stand tally &middot; ' + formatTreeCountLabel(treeCount);
+        }
       } else {
         const data = d.dataJson ? parseJsonObject(d.dataJson) : ((d.data && typeof d.data === 'object') ? d.data : {});
         const plots = Array.isArray(data.plots) ? data.plots : [];
@@ -7523,6 +7840,7 @@ function renderCruiseList(snap, container, isOwner) {
         polyCount = polygons.length;
         done = plots.filter(p => p && p.completed).length;
       }
+      if (!metaPrimary) metaPrimary = done + '/' + plotCount + ' plots';
       const date = d.updatedAt && d.updatedAt.toDate ? d.updatedAt.toDate().toLocaleDateString() : 'Unknown';
       const ownerName = escapeHtml(d.ownerName || 'Unknown');
       const ownerLabel = isOwner ? '' : ' &middot; by ' + ownerName;
@@ -7533,7 +7851,7 @@ function renderCruiseList(snap, container, isOwner) {
         '<div class="cloud-cruise-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg></div>' +
         '<div class="cloud-cruise-info">' +
           '<div class="cloud-cruise-name">' + cruiseName + '</div>' +
-          '<div class="cloud-cruise-meta">' + done + '/' + plotCount + ' plots &middot; ' + polyCount + ' boundaries &middot; ' + date + ownerLabel + '</div>' +
+          '<div class="cloud-cruise-meta">' + metaPrimary + ' &middot; ' + polyCount + ' boundaries &middot; ' + date + ownerLabel + '</div>' +
         '</div>' +
         '<div class="cloud-cruise-actions">' +
           (isOwner ? '<button class="icon-btn" onclick="event.stopPropagation(); openSharePanel(\'' + doc.id + '\')" title="Share"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg></button>' : '') +
@@ -7581,7 +7899,9 @@ async function loadCruiseFromCloud(cruiseId, options = {}) {
 
     // Detect new multi-user format vs legacy
     const hasNewFormat = d.polygonsJson || d.plotsJson;
+    const remoteFullMode = isCruiseMethodFull(d.cruiseType);
     const remotePlotStateVersion = hasNewFormat ? getCruisePlotStateVersion(d) : DEFAULT_PLOT_STATE_VERSION;
+    let loadedFullTally = createEmptyFullTally();
 
     // Pre-fetch userData sub-collection BEFORE clearing anything
     let userSnap = null;
@@ -7624,55 +7944,81 @@ async function loadCruiseFromCloud(cruiseId, options = {}) {
       }
 
       // Restore all plot locations from main doc
-      if (d.plotsJson) {
+      if (d.plotsJson && !remoteFullMode) {
         parseJsonArray(d.plotsJson).forEach(pd => {
           if (deletedPlotIdSet.has(String(pd.id))) return;
           addPlot(pd.id, pd.lat, pd.lng);
         });
       }
 
-      // Merge pre-fetched user tree data from sub-collection, preferring the newest edit per plot.
-      const mergedPlots = {}; // plotId -> { trees, cruiser, updatedAt }
       const contributors = [];
-
-      if (userSnap) {
-        userSnap.forEach(udoc => {
-          const ud = udoc.data();
-          contributors.push(ud.userName || ud.userEmail || udoc.id);
-          const userPlotStateVersion = getCruisePlotStateVersion(ud);
-          if (userPlotStateVersion !== remotePlotStateVersion) return;
-          const userPlots = parseJsonArray(ud.plots);
-          const docTime = ud.updatedAt ? ud.updatedAt.toMillis() : 0;
-          userPlots.forEach(up => {
-            if (up.completed) {
-              const plotKey = String(up.id);
-              const existing = mergedPlots[plotKey];
-              if (!existing || docTime > (existing.updatedAt || 0)) {
-                mergedPlots[plotKey] = {
-                  trees: up.trees || [],
-                  noTally: up.noTally || false,
-                  cruiser: ud.userName || ud.userEmail || udoc.id,
-                  updatedAt: docTime
-                };
-              }
+      if (remoteFullMode) {
+        let newestStandTime = 0;
+        if (userSnap) {
+          userSnap.forEach(udoc => {
+            const ud = udoc.data() || {};
+            const cruiserName = ud.userName || ud.userEmail || udoc.id;
+            contributors.push(cruiserName);
+            const userPlotStateVersion = getCruisePlotStateVersion(ud);
+            if (userPlotStateVersion !== remotePlotStateVersion) return;
+            const stand = normalizeFullTally(parseJsonObject(ud.fullTallyJson));
+            const docTime = ud.updatedAt ? ud.updatedAt.toMillis() : 0;
+            if (!stand.completed || !stand.trees.length) return;
+            if (docTime >= newestStandTime) {
+              newestStandTime = docTime;
+              loadedFullTally = {
+                completed: true,
+                trees: cloneJson(stand.trees || []),
+                cruiser: stand.cruiser || cruiserName
+              };
             }
           });
-        });
-      } else if (d.ownerName) {
-        contributors.push(d.ownerName);
-      }
-
-      // Apply merged tree data to plot markers
-      Object.entries(mergedPlots).forEach(([plotId, data]) => {
-        const plot = plotMarkers.find(p => p.id === parseInt(plotId));
-        if (plot) {
-          plot.trees = cloneJson(data.trees || []);
-          plot.completed = true;
-          plot.noTally = data.noTally || false;
-          plot.cruiser = data.cruiser;
-          updatePlotMarkerStyle(plot);
+        } else if (d.ownerName) {
+          contributors.push(d.ownerName);
         }
-      });
+      } else {
+        // Merge pre-fetched user tree data from sub-collection, preferring the newest edit per plot.
+        const mergedPlots = {}; // plotId -> { trees, cruiser, updatedAt }
+
+        if (userSnap) {
+          userSnap.forEach(udoc => {
+            const ud = udoc.data();
+            contributors.push(ud.userName || ud.userEmail || udoc.id);
+            const userPlotStateVersion = getCruisePlotStateVersion(ud);
+            if (userPlotStateVersion !== remotePlotStateVersion) return;
+            const userPlots = parseJsonArray(ud.plots);
+            const docTime = ud.updatedAt ? ud.updatedAt.toMillis() : 0;
+            userPlots.forEach(up => {
+              if (up.completed) {
+                const plotKey = String(up.id);
+                const existing = mergedPlots[plotKey];
+                if (!existing || docTime > (existing.updatedAt || 0)) {
+                  mergedPlots[plotKey] = {
+                    trees: up.trees || [],
+                    noTally: up.noTally || false,
+                    cruiser: ud.userName || ud.userEmail || udoc.id,
+                    updatedAt: docTime
+                  };
+                }
+              }
+            });
+          });
+        } else if (d.ownerName) {
+          contributors.push(d.ownerName);
+        }
+
+        // Apply merged tree data to plot markers
+        Object.entries(mergedPlots).forEach(([plotId, data]) => {
+          const plot = plotMarkers.find(p => p.id === parseInt(plotId));
+          if (plot) {
+            plot.trees = cloneJson(data.trees || []);
+            plot.completed = true;
+            plot.noTally = data.noTally || false;
+            plot.cruiser = data.cruiser;
+            updatePlotMarkerStyle(plot);
+          }
+        });
+      }
 
       window._cloudContributors = contributors;
 
@@ -7711,6 +8057,7 @@ async function loadCruiseFromCloud(cruiseId, options = {}) {
         name: cloudCruiseName,
         plots: [],
         polygons: [],
+        fullTally: createEmptyFullTally(),
         deletedPlotIds: [],
         cloudCruiseOwner: d.ownerId || null,
         cruiseType: d.cruiseType || deriveCruiseTypeFromLegacyBaf(d.baf),
@@ -7735,11 +8082,12 @@ async function loadCruiseFromCloud(cruiseId, options = {}) {
     localJob.formClass = normalizeFormClass(d.formClass || localJob.formClass);
     localJob.species = (d.species && d.species.length) ? d.species : localJob.species;
     localJob.cloudPlotStateVersion = remotePlotStateVersion;
-    localJob.deletedPlotIds = normalizeDeletedPlotIds(parseJsonArray(d.deletedPlotIdsJson));
-    localJob.plots = plotMarkers.map(p => ({
+    localJob.deletedPlotIds = remoteFullMode ? [] : normalizeDeletedPlotIds(parseJsonArray(d.deletedPlotIdsJson));
+    localJob.plots = remoteFullMode ? [] : plotMarkers.map(p => ({
       id: p.id, lat: p.lat, lng: p.lng, completed: p.completed,
       trees: p.trees || [], noTally: p.noTally || false, cruiser: p.cruiser || ''
     }));
+    localJob.fullTally = normalizeFullTally(remoteFullMode ? loadedFullTally : localJob.fullTally);
     localJob.polygons = allPolygons.map(p => {
       return getPolygonSerializableData(p);
     });
@@ -8949,15 +9297,66 @@ function updateJobSpecies() {
   saveSession();
 }
 
-function updateJobCruiseType(val) {
-  const job = allJobs.find(j => j.id === activeJobId);
+async function updateJobCruiseType(val) {
+  const job = normalizeJobCruiseSettings(allJobs.find(j => j.id === activeJobId));
   if (!job) return;
-  job.cruiseType = getCruiseMethod(val).value;
-  const method = getCruiseMethod(job.cruiseType);
-  if (method.kind === 'baf') job.baf = method.baf;
+  const nextMethod = getCruiseMethod(val);
+  const currentMethod = getCruiseMethod(job.cruiseType);
+  if (nextMethod.value === currentMethod.value) {
+    const cruiseNote = document.getElementById('setup-cruise-note');
+    if (cruiseNote) cruiseNote.textContent = getCruiseMethodHelpText(nextMethod);
+    refreshCruiseModeUI();
+    return;
+  }
+
+  if (nextMethod.kind === 'full') {
+    const hasIncompatiblePlotData = plotMarkers.length > 0 || hasAnyPlotData(job.plots) || getJobDeletedPlotIds(job).length > 0;
+    if (hasIncompatiblePlotData) {
+      const ok = await showDangerConfirm({
+        title: 'Switch to 100% Tally?',
+        message: '100% tally uses one stand-level tally and does not keep plots. Switching now will remove the current plot grid, plot tallies, and plot navigation data for this job.',
+        confirmLabel: 'Switch to 100% Tally',
+        finalMessage: 'Clear this job\'s plot data and switch to 100% tally now?'
+      });
+      if (!ok) {
+        const select = document.getElementById('setup-cruise-type');
+        if (select) select.value = currentMethod.value;
+        return;
+      }
+      plotMarkers.forEach(p => plotLayer.removeLayer(p.marker));
+      plotMarkers = [];
+      stopNavigation();
+      job.plots = [];
+      job.deletedPlotIds = [];
+      job.updatedAt = Date.now();
+    }
+  } else if (currentMethod.kind === 'full' && hasFullTallyData(job.fullTally)) {
+    const ok = await showDangerConfirm({
+      title: 'Switch from 100% Tally?',
+      message: 'This job already has a stand-level tally saved. Switching to a plot-based cruise will clear that stand tally so the job can use plots again.',
+      confirmLabel: 'Switch Cruise Method',
+      finalMessage: 'Clear the stand tally and switch cruise methods now?'
+    });
+    if (!ok) {
+      const select = document.getElementById('setup-cruise-type');
+      if (select) select.value = currentMethod.value;
+      return;
+    }
+    job.fullTally = createEmptyFullTally();
+    job.updatedAt = Date.now();
+  }
+
+  job.cruiseType = nextMethod.value;
+  if (nextMethod.kind === 'baf') job.baf = nextMethod.baf;
   job.updatedAt = Date.now();
   const cruiseNote = document.getElementById('setup-cruise-note');
-  if (cruiseNote) cruiseNote.textContent = getCruiseMethodHelpText(method);
+  if (cruiseNote) cruiseNote.textContent = getCruiseMethodHelpText(nextMethod);
+  refreshCruiseModeUI();
+  updateStats();
+  updateTractInfo();
+  updateEmptyHint();
+  refreshPlotList();
+  checkSyncNeeded('cruise-type-change');
   saveSession();
 }
 
@@ -9559,7 +9958,9 @@ function renderNoticeFrontSummary(context) {
       <div class="notice-stat-box">
         <table>
           <tr><td>Number of Stands</td><td>${Math.max(context.boundaryCount || 0, 1)}</td></tr>
-          <tr><td># Plots / Points</td><td>${context.completedPlots}</td></tr>
+          ${context.isFullTally
+            ? `<tr><td>Tally Scope</td><td>Whole Tract (100% Tally)</td></tr>`
+            : `<tr><td># Plots / Points</td><td>${context.completedPlots}</td></tr>`}
           <tr><td>Total Acres</td><td>${context.totalAcres > 0 ? formatNoticeFixed(context.totalAcres, 1, false) : '--'}</td></tr>
           <tr><td>Sawlog Vol Units</td><td>${escapeHtml(context.ruleShort)}</td></tr>
         </table>
@@ -9785,6 +10186,23 @@ function getNoticeReportCssText() {
     .notice-log-stat-label{font-size:8px;font-weight:700;text-transform:uppercase;letter-spacing:0.4px;color:#333;}
     .notice-log-stat-value{display:block;margin-top:2px;font-size:10px;font-weight:700;color:#111;}
     .notice-log-table{font-size:8px;}
+    .notice-map-page{break-before:page;page-break-before:always;}
+    .notice-map-figure{display:flex;flex-direction:column;gap:10px;}
+    .notice-map-image-wrap{position:relative;border:1px solid #222;padding:8px;background:#f5f3ec;}
+    .notice-map-image{display:block;width:100%;height:auto;border:1px solid #222;background:#dfe6dc;}
+    .notice-map-north{position:absolute;top:18px;right:18px;display:flex;flex-direction:column;align-items:center;gap:4px;padding:6px 8px;border:1px solid #222;background:rgba(255,255,255,0.92);}
+    .notice-map-north-icon{width:0;height:0;border-left:8px solid transparent;border-right:8px solid transparent;border-bottom:24px solid #111;}
+    .notice-map-north-label{font-size:13px;font-weight:700;line-height:1;}
+    .notice-map-scale{position:absolute;left:18px;bottom:18px;padding:6px 8px;border:1px solid #222;background:rgba(255,255,255,0.92);}
+    .notice-map-scale-bar{display:grid;grid-template-columns:1fr 1fr;height:10px;border:1px solid #222;}
+    .notice-map-scale-bar span:first-child{background:#111;border-right:1px solid #222;}
+    .notice-map-scale-bar span:last-child{background:#fff;}
+    .notice-map-scale-label{margin-top:4px;text-align:center;font-size:10px;font-weight:700;line-height:1.2;}
+    .notice-map-meta-grid{display:grid;grid-template-columns:2fr 1fr 1fr;gap:10px;}
+    .notice-map-meta-card{border:1px solid #222;padding:8px 10px;min-height:54px;background:#fff;}
+    .notice-map-meta-label{display:block;font-size:8px;font-weight:700;text-transform:uppercase;letter-spacing:0.4px;color:#333;}
+    .notice-map-meta-value{display:block;margin-top:4px;font-size:12px;font-weight:700;line-height:1.25;color:#111;}
+    .notice-map-meta-card-wide .notice-map-meta-value{font-size:13px;}
     @media print{body{margin:0.35in;}}
   `;
 }
@@ -9920,13 +10338,18 @@ function generateCruiseReport() {
   const rData = getReportJobData();
   const rPlots = rData.plots;
   const rPolygons = rData.polygons;
+  const rFullTally = rData.fullTally;
 
   const cruiseConfig = getReportCruiseConfig(job);
-  const allDonePlots = rPlots.filter(p => p.completed);
+  const allDonePlots = getCruiseTalliesForMode(rPlots, rFullTally, cruiseConfig).filter(p => p.completed);
   const n = allDonePlots.length;
 
   if (!n) {
-    el.innerHTML = '<div class="report-empty"><div class="report-empty-icon">📊</div>Complete some plots to generate a report.</div>';
+    el.innerHTML = '<div class="report-empty"><div class="report-empty-icon">📊</div>' +
+      (cruiseConfig.kind === 'full'
+        ? 'Save the stand tally to generate a report.'
+        : 'Complete some plots to generate a report.') +
+      '</div>';
     return;
   }
 
@@ -9973,6 +10396,7 @@ function generateCruiseReport() {
       cruiseConfig: cruiseConfig,
       boundaryCount: rPolygons.length,
       completedPlots: n,
+      isFullTally: cruiseConfig.kind === 'full',
       totalAcres: totalAcres,
       ruleName: ruleName,
       ruleShort: ruleShort,
@@ -9989,10 +10413,386 @@ function generateCruiseReport() {
   el.innerHTML = html;
 }
 
-function printVolumeReport() {
+function getSelectedReportTotalAcres(polygons) {
+  const manualAcres = parseFloat(document.getElementById('report-acres').value);
+  if (manualAcres > 0) return manualAcres;
+  return getTotalAcresFromPolygonItems(polygons);
+}
+
+function buildReportMapBounds(polygons, plots) {
+  const bounds = L.latLngBounds([]);
+
+  (polygons || []).forEach(item => {
+    if (!item || !item.layer) return;
+    getLayerOuterRings(item.layer).forEach(ring => {
+      (ring || []).forEach(ll => {
+        if (ll && Number.isFinite(ll.lat) && Number.isFinite(ll.lng)) bounds.extend(ll);
+      });
+    });
+  });
+
+  (plots || []).forEach(plot => {
+    const lat = Number(plot && plot.lat);
+    const lng = Number(plot && plot.lng);
+    if (Number.isFinite(lat) && Number.isFinite(lng)) bounds.extend([lat, lng]);
+  });
+
+  if (!bounds.isValid()) return null;
+
+  const sw = bounds.getSouthWest();
+  const ne = bounds.getNorthEast();
+  const latPad = Math.max((ne.lat - sw.lat) * 0.08, 0.0012);
+  const lngPad = Math.max((ne.lng - sw.lng) * 0.08, 0.0012);
+
+  return L.latLngBounds(
+    [sw.lat - latPad, sw.lng - lngPad],
+    [ne.lat + latPad, ne.lng + lngPad]
+  );
+}
+
+function createReportMapBasemapLayer(basemapKey) {
+  const key = basemapOrder.includes(basemapKey) ? basemapKey : (basemapOrder[currentBasemap] || 'hybrid');
+  if (key === 'hybrid') {
+    return L.layerGroup([
+      L.tileLayer(imageryTileUrl, { maxZoom: 20, crossOrigin: 'anonymous' }),
+      L.tileLayer(imageryLabelsUrl, { maxZoom: 20, crossOrigin: 'anonymous', opacity: 0.9 })
+    ]);
+  }
+  if (key === 'satellite') {
+    return L.tileLayer(imageryTileUrl, { maxZoom: 20, crossOrigin: 'anonymous' });
+  }
+  if (key === 'topo') {
+    return L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', { maxZoom: 17, crossOrigin: 'anonymous' });
+  }
+  return L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19, crossOrigin: 'anonymous' });
+}
+
+function waitForReportMapFrame() {
+  return new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+}
+
+async function waitForReportMapTiles(mapEl, timeoutMs) {
+  const startedAt = Date.now();
+  while (Date.now() - startedAt < timeoutMs) {
+    const tiles = Array.from(mapEl.querySelectorAll('img.leaflet-tile'));
+    if (tiles.length && tiles.every(tile => tile.complete && tile.naturalWidth > 0)) break;
+    await new Promise(resolve => setTimeout(resolve, 120));
+  }
+  await new Promise(resolve => setTimeout(resolve, 160));
+}
+
+function getReportMapPlotStyle(plot) {
+  if (plot && plot.noTally) return { fill: '#547899', stroke: '#ffffff' };
+  if (plot && plot.completed) return { fill: '#5d9e49', stroke: '#ffffff' };
+  return { fill: '#d28b1f', stroke: '#ffffff' };
+}
+
+function drawReportMapVectors(ctx, renderMap, polygons, plots) {
+  function llToPx(lat, lng) {
+    const pt = renderMap.latLngToContainerPoint(L.latLng(lat, lng));
+    return [pt.x, pt.y];
+  }
+
+  function drawPolygonRing(ring) {
+    if (!Array.isArray(ring) || ring.length < 3) return;
+    ctx.beginPath();
+    const first = ring[0];
+    const [x0, y0] = llToPx(first.lat, first.lng);
+    ctx.moveTo(x0, y0);
+    for (let i = 1; i < ring.length; i++) {
+      const [x, y] = llToPx(ring[i].lat, ring[i].lng);
+      ctx.lineTo(x, y);
+    }
+    ctx.closePath();
+    ctx.fillStyle = 'rgba(198, 40, 40, 0.08)';
+    ctx.fill();
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.95)';
+    ctx.lineWidth = 4.8;
+    ctx.lineJoin = 'round';
+    ctx.lineCap = 'round';
+    ctx.stroke();
+    ctx.strokeStyle = '#c62828';
+    ctx.lineWidth = 2.4;
+    ctx.stroke();
+  }
+
+  (polygons || []).forEach(item => {
+    if (!item || !item.layer) return;
+    getLayerOuterRings(item.layer).forEach(drawPolygonRing);
+  });
+
+  (plots || []).forEach(plot => {
+    const lat = Number(plot && plot.lat);
+    const lng = Number(plot && plot.lng);
+    if (!Number.isFinite(lat) || !Number.isFinite(lng)) return;
+
+    const [x, y] = llToPx(lat, lng);
+    const label = String(plot.id ?? '');
+    const radius = label.length >= 3 ? 10 : 8.5;
+    const style = getReportMapPlotStyle(plot);
+
+    ctx.beginPath();
+    ctx.arc(x, y, radius + 1.5, 0, Math.PI * 2);
+    ctx.fillStyle = 'rgba(17, 17, 17, 0.25)';
+    ctx.fill();
+
+    ctx.beginPath();
+    ctx.arc(x, y, radius, 0, Math.PI * 2);
+    ctx.fillStyle = style.fill;
+    ctx.fill();
+    ctx.strokeStyle = style.stroke;
+    ctx.lineWidth = 2.4;
+    ctx.stroke();
+
+    ctx.font = '700 ' + (label.length >= 3 ? 8 : 9) + 'px Arial, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.lineWidth = 2.5;
+    ctx.strokeStyle = 'rgba(0, 0, 0, 0.35)';
+    ctx.strokeText(label, x, y + 0.3);
+    ctx.fillStyle = '#ffffff';
+    ctx.fillText(label, x, y + 0.3);
+  });
+}
+
+function getRoundedScaleValue(maxValue) {
+  if (!(maxValue > 0)) return 0;
+  const power = Math.pow(10, Math.floor(Math.log10(maxValue)));
+  const normalized = maxValue / power;
+  let rounded = 1;
+  if (normalized >= 10) rounded = 10;
+  else if (normalized >= 5) rounded = 5;
+  else if (normalized >= 3) rounded = 3;
+  else if (normalized >= 2) rounded = 2;
+  return rounded * power;
+}
+
+function buildReportMapScaleInfo(renderMap, width, height) {
+  const maxBarPx = Math.min(220, Math.max(140, Math.round(width * 0.26)));
+  const sampleY = Math.max(20, height - 30);
+  const start = renderMap.containerPointToLatLng([20, sampleY]);
+  const end = renderMap.containerPointToLatLng([20 + maxBarPx, sampleY]);
+  const feetPerPx = renderMap.distance(start, end) * 3.28084 / maxBarPx;
+
+  if (!(feetPerPx > 0)) {
+    return { label: '--', widthPercent: 18 };
+  }
+
+  const maxFeet = feetPerPx * maxBarPx;
+  let label = '--';
+  let lengthFeet = 0;
+
+  if (maxFeet >= 5280) {
+    const niceMiles = getRoundedScaleValue(maxFeet / 5280);
+    lengthFeet = niceMiles * 5280;
+    label = (niceMiles % 1 === 0 ? String(Math.round(niceMiles)) : niceMiles.toFixed(1).replace(/\.0$/, '')) + ' mi';
+  } else {
+    const niceFeet = getRoundedScaleValue(maxFeet);
+    lengthFeet = niceFeet;
+    label = Math.round(niceFeet) + ' ft';
+  }
+
+  const widthPx = lengthFeet / feetPerPx;
+  return {
+    label: label,
+    widthPercent: Math.max(0, Math.min(100, (widthPx / width) * 100))
+  };
+}
+
+async function renderReportMapImage(options) {
+  const polygons = options && Array.isArray(options.polygons) ? options.polygons : [];
+  const plots = options && Array.isArray(options.plots) ? options.plots : [];
+  const width = Number(options && options.width) || 980;
+  const height = Number(options && options.height) || 760;
+  const basemapKey = options && options.basemapKey ? options.basemapKey : (basemapOrder[currentBasemap] || 'hybrid');
+  const bounds = buildReportMapBounds(polygons, plots);
+  if (!bounds) return null;
+
+  const host = document.createElement('div');
+  host.style.cssText = [
+    'position:fixed',
+    'left:-10000px',
+    'top:0',
+    'width:' + width + 'px',
+    'height:' + height + 'px',
+    'overflow:hidden',
+    'pointer-events:none',
+    'opacity:0.01',
+    'background:#dfe6dc',
+    'z-index:-1'
+  ].join(';');
+
+  document.body.appendChild(host);
+
+  let renderMap = null;
+  try {
+    renderMap = L.map(host, {
+      zoomControl: false,
+      attributionControl: false,
+      zoomAnimation: false,
+      fadeAnimation: false,
+      markerZoomAnimation: false,
+      inertia: false,
+      preferCanvas: true
+    }).setView([35.5, -79.5], 7);
+
+    const basemapLayer = createReportMapBasemapLayer(basemapKey);
+    basemapLayer.addTo(renderMap);
+    renderMap.fitBounds(bounds, { padding: [36, 36], animate: false, maxZoom: 18 });
+    renderMap.invalidateSize(false);
+    await waitForReportMapFrame();
+    await waitForReportMapTiles(host, 4200);
+
+    const scaleInfo = buildReportMapScaleInfo(renderMap, width, height);
+    const scale = 2;
+    const canvas = document.createElement('canvas');
+    canvas.width = Math.round(width * scale);
+    canvas.height = Math.round(height * scale);
+    const ctx = canvas.getContext('2d');
+    ctx.fillStyle = '#dfe6dc';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.scale(scale, scale);
+
+    const tilePane = host.querySelector('.leaflet-tile-pane');
+    const tileImgs = tilePane ? Array.from(tilePane.querySelectorAll('img.leaflet-tile')) : [];
+    const tileEntries = (await Promise.all(tileImgs.map(tile => {
+      return new Promise(resolve => {
+        if (!tile.src || !tile.complete || tile.naturalWidth === 0) {
+          resolve(null);
+          return;
+        }
+        let tileX = 0;
+        let tileY = 0;
+        const tileW = tile.offsetWidth || 256;
+        const tileH = tile.offsetHeight || 256;
+        let el = tile;
+        while (el && el !== host) {
+          const style = window.getComputedStyle(el);
+          const transform = style.transform;
+          if (transform && transform !== 'none') {
+            const match = transform.match(/matrix\(([^)]+)\)/);
+            if (match) {
+              const values = match[1].split(',').map(v => parseFloat(v.trim()));
+              tileX += values[4] || 0;
+              tileY += values[5] || 0;
+            }
+          }
+          if (el.style.left) tileX += parseInt(el.style.left, 10) || 0;
+          if (el.style.top) tileY += parseInt(el.style.top, 10) || 0;
+          el = el.parentElement;
+        }
+        const img = new Image();
+        img.crossOrigin = 'anonymous';
+        img.onload = () => resolve({ img: img, x: tileX, y: tileY, w: tileW, h: tileH });
+        img.onerror = () => resolve({ img: tile, x: tileX, y: tileY, w: tileW, h: tileH, fallback: true });
+        img.src = tile.src;
+      });
+    }))).filter(Boolean);
+
+    tileEntries.forEach(entry => {
+      try {
+        ctx.drawImage(entry.img, entry.x, entry.y, entry.w, entry.h);
+      } catch (e) {
+        if (!entry.fallback) throw e;
+      }
+    });
+
+    drawReportMapVectors(ctx, renderMap, polygons, plots);
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+
+    let imageDataUrl = '';
+    try {
+      imageDataUrl = canvas.toDataURL('image/png');
+    } catch (e) {
+      const fallbackCanvas = await html2canvas(host, { useCORS: true, allowTaint: true, scale: scale, logging: false, backgroundColor: '#dfe6dc' });
+      const fc = document.createElement('canvas');
+      fc.width = canvas.width;
+      fc.height = canvas.height;
+      const fctx = fc.getContext('2d');
+      fctx.drawImage(fallbackCanvas, 0, 0, fc.width, fc.height);
+      fctx.scale(scale, scale);
+      drawReportMapVectors(fctx, renderMap, polygons, plots);
+      imageDataUrl = fc.toDataURL('image/png');
+    }
+
+    return {
+      imageDataUrl: imageDataUrl,
+      scaleInfo: scaleInfo
+    };
+  } finally {
+    if (renderMap) renderMap.remove();
+    if (host.parentNode) host.parentNode.removeChild(host);
+  }
+}
+
+async function buildPrintableCruiseMapPage(context) {
+  const polygons = Array.isArray(context && context.polygons) ? context.polygons : [];
+  const plots = Array.isArray(context && context.plots) ? context.plots : [];
+  if (!polygons.length && !plots.length) return '';
+
+  const renderablePlots = plots.filter(plot => Number.isFinite(Number(plot && plot.lat)) && Number.isFinite(Number(plot && plot.lng)));
+  if (!polygons.length && !renderablePlots.length) return '';
+
+  const render = await renderReportMapImage({
+    polygons: polygons,
+    plots: renderablePlots,
+    basemapKey: context && context.basemapKey,
+    width: 980,
+    height: 760
+  });
+
+  if (!render || !render.imageDataUrl) return '';
+
+  const tractName = (context && context.jobName) ? context.jobName : 'Cruise Report';
+  const totalAcres = Number(context && context.totalAcres);
+  const acresLabel = totalAcres > 0 ? formatNoticeFixed(totalAcres, 1, false) + ' ac' : '--';
+  const totalPlots = Number(context && context.totalPlots);
+  const plotLabel = Number.isFinite(totalPlots) ? String(totalPlots) : String(plots.length || 0);
+  const fullMode = !!(context && context.isFullTally);
+  const metaLabel = fullMode ? 'Trees Tallied' : 'Total Plots';
+  const metaValue = fullMode
+    ? String(Number(context && context.treesTallied) || 0)
+    : plotLabel;
+  const scaleInfo = render.scaleInfo || { label: '--', widthPercent: 18 };
+
+  return `<div class="notice-sheet notice-map-page">
+    <div class="notice-sheet-title">Cruise Map</div>
+    <div class="notice-map-figure">
+      <div class="notice-map-image-wrap">
+        <img class="notice-map-image" src="${render.imageDataUrl}" alt="${escapeHtml(tractName)} cruise map">
+        <div class="notice-map-north">
+          <div class="notice-map-north-icon"></div>
+          <div class="notice-map-north-label">N</div>
+        </div>
+        <div class="notice-map-scale" style="width:${Number(scaleInfo.widthPercent || 18).toFixed(3)}%;">
+          <div class="notice-map-scale-bar">
+            <span></span><span></span>
+          </div>
+          <div class="notice-map-scale-label">${escapeHtml(scaleInfo.label || '--')}</div>
+        </div>
+      </div>
+      <div class="notice-map-meta-grid">
+        <div class="notice-map-meta-card notice-map-meta-card-wide">
+          <span class="notice-map-meta-label">Tract Name</span>
+          <span class="notice-map-meta-value">${escapeHtml(tractName)}</span>
+        </div>
+        <div class="notice-map-meta-card">
+          <span class="notice-map-meta-label">Acres</span>
+          <span class="notice-map-meta-value">${escapeHtml(acresLabel)}</span>
+        </div>
+        <div class="notice-map-meta-card">
+          <span class="notice-map-meta-label">${escapeHtml(metaLabel)}</span>
+          <span class="notice-map-meta-value">${escapeHtml(metaValue)}</span>
+        </div>
+      </div>
+    </div>
+  </div>`;
+}
+
+async function printVolumeReport() {
   generateCruiseReport();
   const rJobId = _reportJobId || activeJobId;
-  const job = allJobs.find(j => j.id === rJobId);
+  const job = normalizeJobCruiseSettings(allJobs.find(j => j.id === rJobId));
   if (!job) { toast('No job selected'); return; }
 
   const content = document.getElementById('report-content').innerHTML;
@@ -10009,7 +10809,43 @@ function printVolumeReport() {
     '<style>' + getNoticeReportCssText() + '</style></head><body>' +
     '<h1>' + title + '</h1>' +
     '<div class="sub">Generated ' + escapeHtml(today) + '</div>' +
-    content +
+    '<div class="notice-sheet"><div class="notice-sheet-title">Preparing Report</div><div class="notice-report-note">Building the printable cruise map page...</div></div>' +
+    '</body></html>'
+  );
+  win.document.close();
+
+  const rData = getReportJobData();
+  const fullMode = isCruiseMethodFull(job.cruiseType);
+  const totalAcres = getSelectedReportTotalAcres(rData.polygons || []);
+  let mapPageHtml = '';
+  const reportMapPlots = fullMode ? [] : (rData.plots || []);
+
+  if ((rData.polygons && rData.polygons.length) || reportMapPlots.length) {
+    try {
+      mapPageHtml = await buildPrintableCruiseMapPage({
+        polygons: rData.polygons || [],
+        plots: reportMapPlots,
+        jobName: job.name || 'Cruise Report',
+        totalAcres: totalAcres,
+        totalPlots: reportMapPlots.length,
+        isFullTally: fullMode,
+        treesTallied: getFullTallyTreeCount(rData.fullTally),
+        basemapKey: basemapOrder[currentBasemap] || 'hybrid'
+      });
+    } catch (e) {
+      console.error('Report map generation failed:', e);
+      toast('Cruise map page could not be generated. Printing report only.');
+    }
+  }
+
+  if (win.closed) return;
+  win.document.open();
+  win.document.write(
+    '<!doctype html><html><head><meta charset="utf-8"><title>' + title + '</title>' +
+    '<style>' + getNoticeReportCssText() + '</style></head><body>' +
+    '<h1>' + title + '</h1>' +
+    '<div class="sub">Generated ' + escapeHtml(today) + '</div>' +
+    content + mapPageHtml +
     '</body></html>'
   );
   win.document.close();
@@ -10111,14 +10947,16 @@ function exportCruiseCSV() {
   const rData = getReportJobData();
   const rPlots = rData.plots || [];
   const rPolygons = rData.polygons || [];
-  if (!rPlots.length && !rPolygons.length) { toast('No cruise data to export'); return; }
+  const rFullTally = rData.fullTally || createEmptyFullTally();
+  if (!rPlots.length && !rPolygons.length && !hasFullTallyData(rFullTally)) { toast('No cruise data to export'); return; }
 
   const cruiseConfig = getReportCruiseConfig(job);
   const rule = document.getElementById('report-logrule').value || 'scribner';
   const ruleName = (LOG_RULES[rule] || LOG_RULES.scribner).name;
   const formClass = normalizeFormClass(document.getElementById('report-formclass').value || 78);
   const sawtimberLabel = ruleName + ' FC ' + formClass;
-  const allDonePlots = rPlots.filter(p => p.completed);
+  const allDonePlots = getCruiseTalliesForMode(rPlots, rFullTally, cruiseConfig).filter(p => p.completed);
+  const fullMode = cruiseConfig.kind === 'full';
   const noTallyCount = allDonePlots.filter(p => p.noTally || !p.trees || p.trees.length === 0).length;
   const totalTreeCount = allDonePlots.reduce((sum, plot) => sum + ((plot.trees || []).length), 0);
   const gridSettings = getJobGridSettings(job);
@@ -10140,7 +10978,7 @@ function exportCruiseCSV() {
   }
 
   const cruiserNames = new Set();
-  rPlots.forEach(plot => { if (plot && plot.cruiser) cruiserNames.add(plot.cruiser); });
+  allDonePlots.forEach(plot => { if (plot && plot.cruiser) cruiserNames.add(plot.cruiser); });
   if (cruiserNames.size === 0 && Array.isArray(window._cloudContributors)) {
     window._cloudContributors.forEach(name => { if (name) cruiserNames.add(name); });
   }
@@ -10180,10 +11018,15 @@ function exportCruiseCSV() {
   rows.push(['Grid Spacing Y (chains)', spY]);
   rows.push(['Grid Bearing (degrees)', gridBearing]);
   rows.push(['Boundary Count', rPolygons.length]);
-  rows.push(['Total Plots', rPlots.length]);
-  rows.push(['Completed Plots', allDonePlots.length]);
-  rows.push(['Pending Plots', rPlots.filter(plot => !plot.completed).length]);
-  rows.push(['No Tally Plots', noTallyCount]);
+  if (fullMode) {
+    rows.push(['Tally Scope', 'Whole Tract (100% Tally)']);
+    rows.push(['Stand Tally Status', getFullTallyStatusLabel(rFullTally)]);
+  } else {
+    rows.push(['Total Plots', rPlots.length]);
+    rows.push(['Completed Plots', allDonePlots.length]);
+    rows.push(['Pending Plots', rPlots.filter(plot => !plot.completed).length]);
+    rows.push(['No Tally Plots', noTallyCount]);
+  }
   rows.push(['Trees Tallied', totalTreeCount]);
   rows.push(['Acres', totalAcres > 0 ? totalAcres.toFixed(1) : '']);
   rows.push(['Cruisers', cruiserList.join('; ')]);
@@ -10284,19 +11127,18 @@ function exportCruiseCSV() {
   }
   rows.push([]);
 
-  rows.push(['PLOTS']);
-  rows.push(['Plot_ID', 'Status', 'No_Tally', 'Cruiser', 'Tree_Count', 'Saw_Tree_Count', 'CNS_Tree_Count', 'Pulp_Tree_Count', 'Total_TPA', 'Saw_BF_per_Acre', 'CNS_BF_per_Acre', 'Pulp_Tons_per_Acre', 'Lat', 'Lng']);
-  if (!rPlots.length) {
-    rows.push(['', '', '', '', '', '', '', '', '', '', '', '', '', '']);
-  } else {
-    rPlots.forEach(plot => {
-      const summary = getPlotExportSummary(plot, cruiseConfig, rule, formClass, totalAcres);
-      const status = plot.noTally ? 'No Tally' : (plot.completed ? 'Completed' : 'Pending');
+  if (fullMode) {
+    rows.push(['STAND TALLY']);
+    rows.push(['Tally_Context', 'Status', 'Cruiser', 'Tree_Count', 'Saw_Tree_Count', 'CNS_Tree_Count', 'Pulp_Tree_Count', 'Total_TPA', 'Saw_BF_per_Acre', 'CNS_BF_per_Acre', 'Pulp_Tons_per_Acre']);
+    if (!allDonePlots.length) {
+      rows.push(['STAND', 'Pending', '', '', '', '', '', '', '', '', '']);
+    } else {
+      const stand = allDonePlots[0];
+      const summary = getPlotExportSummary(stand, cruiseConfig, rule, formClass, totalAcres);
       rows.push([
-        plot.id,
-        status,
-        plot.noTally ? 'Yes' : 'No',
-        plot.cruiser || '',
+        'STAND',
+        stand.noTally ? 'No Tally' : 'Completed',
+        stand.cruiser || '',
         summary.treeCount,
         summary.sawCount,
         summary.cnsCount,
@@ -10304,24 +11146,53 @@ function exportCruiseCSV() {
         summary.totalTPA ? summary.totalTPA.toFixed(2) : '',
         summary.sawBF ? summary.sawBF.toFixed(1) : '',
         summary.cnsBF ? summary.cnsBF.toFixed(1) : '',
-        summary.pulpTons ? summary.pulpTons.toFixed(2) : '',
-        Number.isFinite(plot.lat) ? Number(plot.lat).toFixed(6) : '',
-        Number.isFinite(plot.lng) ? Number(plot.lng).toFixed(6) : ''
+        summary.pulpTons ? summary.pulpTons.toFixed(2) : ''
       ]);
-    });
+    }
+  } else {
+    rows.push(['PLOTS']);
+    rows.push(['Plot_ID', 'Status', 'No_Tally', 'Cruiser', 'Tree_Count', 'Saw_Tree_Count', 'CNS_Tree_Count', 'Pulp_Tree_Count', 'Total_TPA', 'Saw_BF_per_Acre', 'CNS_BF_per_Acre', 'Pulp_Tons_per_Acre', 'Lat', 'Lng']);
+    if (!rPlots.length) {
+      rows.push(['', '', '', '', '', '', '', '', '', '', '', '', '', '']);
+    } else {
+      rPlots.forEach(plot => {
+        const summary = getPlotExportSummary(plot, cruiseConfig, rule, formClass, totalAcres);
+        const status = plot.noTally ? 'No Tally' : (plot.completed ? 'Completed' : 'Pending');
+        rows.push([
+          plot.id,
+          status,
+          plot.noTally ? 'Yes' : 'No',
+          plot.cruiser || '',
+          summary.treeCount,
+          summary.sawCount,
+          summary.cnsCount,
+          summary.pulpCount,
+          summary.totalTPA ? summary.totalTPA.toFixed(2) : '',
+          summary.sawBF ? summary.sawBF.toFixed(1) : '',
+          summary.cnsBF ? summary.cnsBF.toFixed(1) : '',
+          summary.pulpTons ? summary.pulpTons.toFixed(2) : '',
+          Number.isFinite(plot.lat) ? Number(plot.lat).toFixed(6) : '',
+          Number.isFinite(plot.lng) ? Number(plot.lng).toFixed(6) : ''
+        ]);
+      });
+    }
   }
   rows.push([]);
 
   rows.push(['TREES']);
-  rows.push(['Plot_ID', 'Plot_Status', 'Tree_Index', 'Cruiser', 'Species_Code', 'Species_Name', 'Product', 'DBH_in', 'Logs', 'Cruise_Method', 'Factor', 'Form_Class', 'TPA', 'BF_per_Acre', 'Tons_per_Acre', 'Volume_Unit', 'Lat', 'Lng']);
+  if (fullMode) {
+    rows.push(['Tally_Context', 'Tally_Status', 'Tree_Index', 'Cruiser', 'Species_Code', 'Species_Name', 'Product', 'DBH_in', 'Logs', 'Cruise_Method', 'Factor', 'Form_Class', 'TPA', 'BF_per_Acre', 'Tons_per_Acre', 'Volume_Unit', 'Lat', 'Lng']);
+  } else {
+    rows.push(['Plot_ID', 'Plot_Status', 'Tree_Index', 'Cruiser', 'Species_Code', 'Species_Name', 'Product', 'DBH_in', 'Logs', 'Cruise_Method', 'Factor', 'Form_Class', 'TPA', 'BF_per_Acre', 'Tons_per_Acre', 'Volume_Unit', 'Lat', 'Lng']);
+  }
   if (!allDonePlots.length) {
-    rows.push(['', 'No completed plots', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '']);
+    rows.push([fullMode ? 'STAND' : '', fullMode ? 'No completed tally' : 'No completed plots', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '']);
   } else {
     allDonePlots.forEach(plot => {
       const status = plot.noTally ? 'No Tally' : 'Completed';
       if (plot.noTally || !plot.trees || plot.trees.length === 0) {
         rows.push([
-          plot.id,
+          fullMode ? 'STAND' : plot.id,
           status,
           '',
           plot.cruiser || '',
@@ -10337,8 +11208,8 @@ function exportCruiseCSV() {
           '',
           '',
           '',
-          Number.isFinite(plot.lat) ? Number(plot.lat).toFixed(6) : '',
-          Number.isFinite(plot.lng) ? Number(plot.lng).toFixed(6) : ''
+          fullMode ? '' : (Number.isFinite(plot.lat) ? Number(plot.lat).toFixed(6) : ''),
+          fullMode ? '' : (Number.isFinite(plot.lng) ? Number(plot.lng).toFixed(6) : '')
         ]);
         return;
       }
@@ -10350,7 +11221,7 @@ function exportCruiseCSV() {
         const tons = isPulp ? metrics.volume : 0;
         const bf = isPulp ? 0 : metrics.volume;
         rows.push([
-          plot.id,
+          fullMode ? 'STAND' : plot.id,
           status,
           index + 1,
           plot.cruiser || '',
@@ -10366,8 +11237,8 @@ function exportCruiseCSV() {
           bf ? bf.toFixed(1) : '',
           tons ? tons.toFixed(2) : '',
           isPulp ? 'GT' : 'BF',
-          Number.isFinite(plot.lat) ? Number(plot.lat).toFixed(6) : '',
-          Number.isFinite(plot.lng) ? Number(plot.lng).toFixed(6) : ''
+          fullMode ? '' : (Number.isFinite(plot.lat) ? Number(plot.lat).toFixed(6) : ''),
+          fullMode ? '' : (Number.isFinite(plot.lng) ? Number(plot.lng).toFixed(6) : '')
         ]);
       });
     });
@@ -10457,10 +11328,10 @@ function switchReportJob(jobId) {
 // Helper: get plot/polygon data for the report's selected job
 function getReportJobData() {
   if (_reportJobId === activeJobId || !_reportJobId) {
-    return { plots: plotMarkers, polygons: allPolygons, isLive: true };
+    return { plots: plotMarkers, polygons: allPolygons, fullTally: getCurrentJobFullTallyData(), isLive: true };
   }
   const job = normalizeJobCruiseSettings(allJobs.find(j => j.id === _reportJobId));
-  if (!job) return { plots: [], polygons: [], isLive: false };
+  if (!job) return { plots: [], polygons: [], fullTally: createEmptyFullTally(), isLive: false };
   const deletedPlotIdSet = new Set(getJobDeletedPlotIds(job));
 
   const plots = (job.plots || []).filter(pd => !deletedPlotIdSet.has(String(pd.id))).map(pd => ({
@@ -10477,19 +11348,12 @@ function getReportJobData() {
     return { layer: layer, name: pd.name };
   });
 
-  return { plots, polygons, isLive: false };
+  return { plots, polygons, fullTally: getJobFullTally(job), isLive: false };
 }
 
-function updateReportCruiseType(val) {
+async function updateReportCruiseType(val) {
   if (_reportJobId === activeJobId) {
-    const job = allJobs.find(j => j.id === activeJobId);
-    if (job) {
-      job.cruiseType = getCruiseMethod(val).value;
-      const method = getCruiseMethod(job.cruiseType);
-      if (method.kind === 'baf') job.baf = method.baf;
-      job.updatedAt = Date.now();
-      saveSession();
-    }
+    await updateJobCruiseType(val);
   }
 }
 
@@ -10516,6 +11380,14 @@ function updateReportFormClass(val) {
 }
 
 function openPanel(name) {
+  if (name === 'grid' && isActiveJobFullTally()) {
+    openStandTallyModal();
+    return;
+  }
+  if (name === 'plotlist' && isActiveJobFullTally()) {
+    toast('100% tally uses one stand tally instead of a plot list');
+    return;
+  }
   closePanel();
   if (name === 'plotlist') refreshPlotList();
   if (name === 'grid') refreshPolyChecklist();
@@ -10767,6 +11639,10 @@ map.on('draw:drawstop', cancelDraw);
 let placingPlot = false;
 
 function startManualPlot() {
+  if (isActiveJobFullTally()) {
+    toast('100% tally does not use plot locations');
+    return;
+  }
   if (!activeJobId) {
     ensureActiveJob().then(ok => { if (ok) startManualPlot(); });
     return;
@@ -11349,6 +12225,10 @@ async function deletePlot(id) {
 }
 
 async function clearPlots() {
+  if (isActiveJobFullTally()) {
+    toast('100% tally does not use plots');
+    return;
+  }
   if (guardFieldLock()) return;
   if (plotMarkers.length === 0) { toast('No plots to clear'); return; }
   const summary = getPlotSetSummary(plotMarkers);
@@ -11437,6 +12317,10 @@ async function deletePolygonAt(index) {
 
 // â”€â”€ Generate cruise grid â”€â”€
 async function generatePlots() {
+  if (isActiveJobFullTally()) {
+    toast('100% tally uses a stand tally instead of grid plots');
+    return;
+  }
   if (guardFieldLock()) return;
   if (!activeJobId) {
     toast('Create a job first');
@@ -11666,6 +12550,11 @@ function navigateToPlot(id) {
 }
 
 function navigateToNext() {
+  if (isActiveJobFullTally()) {
+    toast('100% tally does not use next-plot navigation');
+    closePanel();
+    return;
+  }
   const next = plotMarkers.find(p => !p.completed);
   if (next) {
     navigateToPlot(next.id);
@@ -11770,6 +12659,13 @@ function updatePlotDistances() {
 // â”€â”€ Plot list â”€â”€
 function refreshPlotList() {
   const container = document.getElementById('plot-list-container');
+  if (isActiveJobFullTally()) {
+    const fullTally = getActiveFullTally();
+    container.innerHTML = '<div style="text-align:center;padding:20px;color:var(--text-secondary);font-size:0.75rem;">100% tally uses one stand-level tally for the whole tract.<br><br>Status: <strong>' +
+      escapeHtml(getFullTallyStatusLabel(fullTally)) + '</strong><br>Trees: <strong>' + getFullTallyTreeCount(fullTally) +
+      '</strong><br><br><button class="btn btn-primary" style="margin-top:8px" onclick="closePanel(); openStandTallyModal()">Open Stand Tally</button></div>';
+    return;
+  }
   if (plotMarkers.length === 0) {
     container.innerHTML = '<div style="text-align:center;padding:20px;color:var(--text-muted);font-size:0.75rem;">No plots yet. Generate a grid or place plots manually.</div>';
     return;
@@ -11804,6 +12700,10 @@ function flyToPlot(id) {
 }
 
 async function markAllComplete() {
+  if (isActiveJobFullTally()) {
+    toast('100% tally does not use plot completion');
+    return;
+  }
   if (guardFieldLock()) return;
   if (plotMarkers.length === 0) { toast('No plots to update'); return; }
   const summary = getPlotSetSummary(plotMarkers);
@@ -11825,6 +12725,10 @@ async function markAllComplete() {
 }
 
 async function resetAllPlots() {
+  if (isActiveJobFullTally()) {
+    toast('100% tally does not use plot reset');
+    return;
+  }
   if (guardFieldLock()) return;
   if (plotMarkers.length === 0) { toast('No plots to update'); return; }
   const summary = getPlotSetSummary(plotMarkers);
@@ -13135,6 +14039,7 @@ async function saveSession(opts) {
       if (job) {
         job.plots = jobData.plots;
         job.polygons = jobData.polygons;
+        job.fullTally = normalizeFullTally(jobData.fullTally);
         job.updatedAt = Date.now();
         store.put(job);
       }
@@ -13167,7 +14072,8 @@ function getCurrentJobData() {
       noTally: p.noTally || false,
       cruiser: p.cruiser || ''
     })),
-    polygons: allPolygons.map(getPolygonSerializableData)
+    polygons: allPolygons.map(getPolygonSerializableData),
+    fullTally: getCurrentJobFullTallyData()
   };
 }
 
@@ -13217,6 +14123,7 @@ async function restoreSession() {
           name: 'Migrated Session',
           plots: oldData.plots || [],
           polygons: oldData.polygons || [],
+          fullTally: createEmptyFullTally(),
           cruiseType: 'baf_20',
           baf: 20,
           gridSpacingX: 5,
@@ -13254,6 +14161,7 @@ function loadJob(jobId, skipSave) {
       const data = getCurrentJobData();
       currentJob.plots = data.plots;
       currentJob.polygons = data.polygons;
+      currentJob.fullTally = normalizeFullTally(data.fullTally);
       currentJob.updatedAt = Date.now();
     }
   }
@@ -13306,6 +14214,7 @@ function loadJob(jobId, skipSave) {
 
   queueMapRefresh({ fitBounds: allPolygons.length > 0, delay: 100 });
 
+  refreshCruiseModeUI();
   updateStats();
   updateTractInfo();
   updateEmptyHint();
@@ -13341,6 +14250,7 @@ async function createNewJob() {
       const data = getCurrentJobData();
       currentJob.plots = data.plots;
       currentJob.polygons = data.polygons;
+      currentJob.fullTally = normalizeFullTally(data.fullTally);
       currentJob.updatedAt = Date.now();
     }
   }
@@ -13350,6 +14260,7 @@ async function createNewJob() {
     name: name,
     plots: [],
     polygons: [],
+    fullTally: createEmptyFullTally(),
     deletedPlotIds: [],
     cruiseType: 'baf_20',
     baf: 20,
@@ -13470,17 +14381,24 @@ function refreshJobsList() {
 
   let html = '';
   sorted.forEach(job => {
+    job = normalizeJobCruiseSettings(job);
     const isActive = job.id === activeJobId;
     const plotCount = job.plots ? job.plots.length : 0;
     const done = job.plots ? job.plots.filter(p => p.completed).length : 0;
     const polyCount = job.polygons ? job.polygons.length : 0;
     const date = job.updatedAt ? new Date(job.updatedAt).toLocaleDateString() : '';
+    const fullMode = isJobFullTally(job);
+    const fullTally = getJobFullTally(job);
+    const treeCount = getFullTallyTreeCount(fullTally);
+    const progressText = fullMode
+      ? (getFullTallyStatusLabel(fullTally) + ' stand tally &middot; ' + formatTreeCountLabel(treeCount))
+      : (done + '/' + plotCount + ' plots');
 
     html += '<div class="job-item ' + (isActive ? 'active-job' : '') + '" onclick="switchToJob(\'' + job.id + '\')">' +
       '<div class="job-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg></div>' +
       '<div class="job-info">' +
         '<div class="job-name">' + escapeHtml(job.name) + '</div>' +
-        '<div class="job-meta">' + done + '/' + plotCount + ' plots &middot; ' + polyCount + ' boundaries &middot; ' + date + '</div>' +
+        '<div class="job-meta">' + progressText + ' &middot; ' + polyCount + ' boundaries &middot; ' + date + '</div>' +
         (isActive ? '<div class="job-active-badge">Active</div>' : '') +
       '</div>' +
       '<div class="job-actions">' +
@@ -13515,6 +14433,7 @@ async function ensureActiveJob() {
     name: name.trim(),
     plots: [],
     polygons: [],
+    fullTally: createEmptyFullTally(),
     deletedPlotIds: [],
     cruiseType: 'baf_20',
     baf: 20,
@@ -13542,16 +14461,46 @@ async function ensureActiveJob() {
 }
 
 // â”€â”€ UI Updates â”€â”€
+function refreshCruiseModeUI() {
+  const fullMode = isActiveJobFullTally();
+  const primaryLabel = document.getElementById('stat-primary-label');
+  const infoDoneLabel = document.getElementById('info-label-done');
+  const infoTotalLabel = document.getElementById('info-label-total');
+  const infoPctLabel = document.getElementById('info-label-pct');
+  const navPlotsLabel = document.getElementById('nav-btn-plots-label');
+  const navList = document.getElementById('nav-btn-list');
+  const manualPlotCard = document.getElementById('settings-card-manual-plot');
+  const gridCardLabel = document.getElementById('settings-card-grid-label');
+  const gridPanelTitle = document.getElementById('panel-grid-title');
+
+  if (primaryLabel) primaryLabel.textContent = fullMode ? 'Tally' : 'Plots';
+  if (infoDoneLabel) infoDoneLabel.textContent = fullMode ? 'Status' : 'Done';
+  if (infoTotalLabel) infoTotalLabel.textContent = fullMode ? 'Trees' : 'Total';
+  if (infoPctLabel) infoPctLabel.textContent = fullMode ? 'Mode' : 'Complete';
+  if (navPlotsLabel) navPlotsLabel.textContent = fullMode ? 'Tally' : 'Plots';
+  if (navList) navList.style.display = fullMode ? 'none' : '';
+  if (manualPlotCard) manualPlotCard.style.display = fullMode ? 'none' : '';
+  if (gridCardLabel) gridCardLabel.textContent = fullMode ? 'Stand Tally' : 'Cruise Grid';
+  if (gridPanelTitle) gridPanelTitle.textContent = fullMode ? 'Stand Tally' : 'Generate Cruise Plots';
+}
+
 function updateStats() {
+  refreshCruiseModeUI();
+  const fullMode = isActiveJobFullTally();
   const total = plotMarkers.length;
   const done = plotMarkers.filter(p => p.completed).length;
-  document.getElementById('stat-plots').textContent = done + '/' + total;
+  const fullTally = getActiveFullTally();
+  document.getElementById('stat-plots').textContent = fullMode
+    ? getFullTallyPrimaryValue(fullTally)
+    : (done + '/' + total);
   let totalAc = 0;
   allPolygons.forEach(p => { try { totalAc += calcAcres(p.layer); } catch(e) {} });
   document.getElementById('stat-acres').textContent = totalAc > 0 ? totalAc.toFixed(1) : '0';
 
   // Progress bar
-  const pct = total > 0 ? (done / total * 100) : 0;
+  const pct = fullMode
+    ? (normalizeFullTally(fullTally).completed ? 100 : 0)
+    : (total > 0 ? (done / total * 100) : 0);
   document.getElementById('progress-fill').style.width = pct + '%';
 
   updateSyncButton();
@@ -13560,17 +14509,27 @@ function updateStats() {
 
 function updateTractInfo() {
   const bar = document.getElementById('tract-info-bar');
+  const fullMode = isActiveJobFullTally();
   const total = plotMarkers.length;
   const done = plotMarkers.filter(p => p.completed).length;
+  const fullTally = getActiveFullTally();
+  const fullTreeCount = getFullTallyTreeCount(fullTally);
+  const hasStandData = hasFullTallyData(fullTally);
 
-  if (allPolygons.length > 0 || total > 0) {
+  if (allPolygons.length > 0 || total > 0 || (fullMode && hasStandData)) {
     bar.classList.add('show');
     let totalAcres = 0;
     allPolygons.forEach(p => { try { totalAcres += calcAcres(p.layer); } catch(e) {} });
     document.getElementById('info-acres').textContent = totalAcres > 0 ? totalAcres.toFixed(1) : '--';
-    document.getElementById('info-plots-done').textContent = done;
-    document.getElementById('info-plots-total').textContent = total;
-    document.getElementById('info-pct').textContent = total > 0 ? Math.round(done / total * 100) + '%' : '0%';
+    if (fullMode) {
+      document.getElementById('info-plots-done').textContent = getFullTallyStatusLabel(fullTally);
+      document.getElementById('info-plots-total').textContent = fullTreeCount;
+      document.getElementById('info-pct').textContent = '100% Tally';
+    } else {
+      document.getElementById('info-plots-done').textContent = done;
+      document.getElementById('info-plots-total').textContent = total;
+      document.getElementById('info-pct').textContent = total > 0 ? Math.round(done / total * 100) + '%' : '0%';
+    }
   } else {
     bar.classList.remove('show');
   }
@@ -13578,7 +14537,8 @@ function updateTractInfo() {
 
 function updateEmptyHint() {
   const hint = document.getElementById('empty-hint');
-  if (allPolygons.length > 0 || plotMarkers.length > 0) {
+  const hasStandData = isActiveJobFullTally() && hasFullTallyData(getActiveFullTally());
+  if (allPolygons.length > 0 || plotMarkers.length > 0 || hasStandData) {
     hint.style.display = 'none';
   } else {
     hint.style.display = 'block';
@@ -13815,10 +14775,10 @@ buildThemeSwatches();
         </div>
       </div>
 
-      <button class="btn btn-primary" onclick="tallySavePlot()">Save &amp; Close Plot</button>
-      <button class="btn btn-secondary" style="margin-top:6px" onclick="tallySaveAndNav()">Save &amp; Navigate Next</button>
-      <button class="btn btn-secondary" style="margin-top:6px;border-color:var(--text-muted);color:var(--text-muted)" onclick="tallyNoTally()">No Tally (0 Trees)</button>
-      <button class="btn btn-danger" style="margin-top:6px;opacity:0.65" onclick="tallyClearTrees()">Clear All Trees</button>
+      <button class="btn btn-primary" id="tally-save-btn" onclick="tallySavePlot()">Save &amp; Close Plot</button>
+      <button class="btn btn-secondary" id="tally-save-nav-btn" style="margin-top:6px" onclick="tallySaveAndNav()">Save &amp; Navigate Next</button>
+      <button class="btn btn-secondary" id="tally-no-tally-btn" style="margin-top:6px;border-color:var(--text-muted);color:var(--text-muted)" onclick="tallyNoTally()">No Tally (0 Trees)</button>
+      <button class="btn btn-danger" id="tally-clear-btn" style="margin-top:6px;opacity:0.65" onclick="tallyClearTrees()">Clear All Trees</button>
     </div>
   </div>
 </div>
