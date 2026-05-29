@@ -3846,6 +3846,10 @@
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><polyline points="6,9 6,2 18,2 18,9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
       Print / PDF
     </button>
+    <button class="btn btn-secondary" style="flex:1;margin:0;font-size:0.7rem;padding:10px;border-color:var(--accent);color:var(--accent)" onclick="exportCruiseMap()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><polygon points="1,6 1,22 8,18 16,22 23,18 23,2 16,6 8,2 1,6"/><line x1="8" y1="2" x2="8" y2="18"/><line x1="16" y1="6" x2="16" y2="22"/></svg>
+      Export Map
+    </button>
   </div>
   <div id="report-content" style="max-height:60vh;overflow-y:auto;">
     <div class="report-empty"><div class="report-empty-icon">&#x1F4CA;</div>Complete some plots to generate a report.</div>
@@ -10789,7 +10793,7 @@ async function buildPrintableCruiseMapPage(context) {
   </div>`;
 }
 
-async function printVolumeReport() {
+function printVolumeReport() {
   generateCruiseReport();
   const rJobId = _reportJobId || activeJobId;
   const job = normalizeJobCruiseSettings(allJobs.find(j => j.id === rJobId));
@@ -10809,43 +10813,82 @@ async function printVolumeReport() {
     '<style>' + getNoticeReportCssText() + '</style></head><body>' +
     '<h1>' + title + '</h1>' +
     '<div class="sub">Generated ' + escapeHtml(today) + '</div>' +
-    '<div class="notice-sheet"><div class="notice-sheet-title">Preparing Report</div><div class="notice-report-note">Building the printable cruise map page...</div></div>' +
+    content +
     '</body></html>'
   );
   win.document.close();
+  setTimeout(() => {
+    try {
+      win.focus();
+      win.print();
+    } catch (e) {}
+  }, 250);
+}
+
+async function exportCruiseMap() {
+  const rJobId = _reportJobId || activeJobId;
+  const job = normalizeJobCruiseSettings(allJobs.find(j => j.id === rJobId));
+  if (!job) { toast('No job selected'); return; }
 
   const rData = getReportJobData();
   const fullMode = isCruiseMethodFull(job.cruiseType);
-  const totalAcres = getSelectedReportTotalAcres(rData.polygons || []);
-  let mapPageHtml = '';
   const reportMapPlots = fullMode ? [] : (rData.plots || []);
 
-  if ((rData.polygons && rData.polygons.length) || reportMapPlots.length) {
-    try {
-      mapPageHtml = await buildPrintableCruiseMapPage({
-        polygons: rData.polygons || [],
-        plots: reportMapPlots,
-        jobName: job.name || 'Cruise Report',
-        totalAcres: totalAcres,
-        totalPlots: reportMapPlots.length,
-        isFullTally: fullMode,
-        treesTallied: getFullTallyTreeCount(rData.fullTally),
-        basemapKey: basemapOrder[currentBasemap] || 'hybrid'
-      });
-    } catch (e) {
-      console.error('Report map generation failed:', e);
-      toast('Cruise map page could not be generated. Printing report only.');
-    }
+  if (!(rData.polygons && rData.polygons.length) && !reportMapPlots.length) {
+    toast('Add a boundary or complete plots to export a cruise map');
+    return;
   }
 
-  if (win.closed) return;
+  const win = window.open('', '_blank');
+  if (!win) { toast('Allow popups to export the cruise map'); return; }
+
+  const title = escapeHtml((job.name || 'Cruise Report') + ' Cruise Map');
+  const today = new Date().toLocaleDateString();
   win.document.open();
   win.document.write(
     '<!doctype html><html><head><meta charset="utf-8"><title>' + title + '</title>' +
     '<style>' + getNoticeReportCssText() + '</style></head><body>' +
     '<h1>' + title + '</h1>' +
     '<div class="sub">Generated ' + escapeHtml(today) + '</div>' +
-    content + mapPageHtml +
+    '<div class="notice-sheet"><div class="notice-sheet-title">Preparing Cruise Map</div><div class="notice-report-note">Building the printable cruise map page...</div></div>' +
+    '</body></html>'
+  );
+  win.document.close();
+
+  const totalAcres = getSelectedReportTotalAcres(rData.polygons || []);
+  let mapPageHtml = '';
+  try {
+    mapPageHtml = await buildPrintableCruiseMapPage({
+      polygons: rData.polygons || [],
+      plots: reportMapPlots,
+      jobName: job.name || 'Cruise Report',
+      totalAcres: totalAcres,
+      totalPlots: reportMapPlots.length,
+      isFullTally: fullMode,
+      treesTallied: getFullTallyTreeCount(rData.fullTally),
+      basemapKey: basemapOrder[currentBasemap] || 'hybrid'
+    });
+  } catch (e) {
+    console.error('Cruise map generation failed:', e);
+    if (!win.closed) win.close();
+    toast('Cruise map could not be generated.');
+    return;
+  }
+
+  if (win.closed) return;
+  if (!mapPageHtml) {
+    win.close();
+    toast('No cruise map to export');
+    return;
+  }
+
+  win.document.open();
+  win.document.write(
+    '<!doctype html><html><head><meta charset="utf-8"><title>' + title + '</title>' +
+    '<style>' + getNoticeReportCssText() + '</style></head><body>' +
+    '<h1>' + title + '</h1>' +
+    '<div class="sub">Generated ' + escapeHtml(today) + '</div>' +
+    mapPageHtml +
     '</body></html>'
   );
   win.document.close();
