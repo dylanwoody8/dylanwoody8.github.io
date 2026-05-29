@@ -478,6 +478,177 @@
   }
   .field-input:focus { outline: none; border-color: var(--accent); }
 
+  /* â•â•â• Bearing slider â•â•â• */
+  .bearing-label-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .bearing-num-wrap {
+    display: inline-flex;
+    align-items: center;
+    gap: 1px;
+  }
+  .bearing-num {
+    width: 52px;
+    background: var(--bg-deep);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    color: var(--accent);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.85rem;
+    font-weight: 700;
+    text-align: right;
+    padding: 4px 6px;
+    transition: border-color 0.15s;
+    -moz-appearance: textfield;
+  }
+  .bearing-num::-webkit-outer-spin-button,
+  .bearing-num::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+  .bearing-num:focus { outline: none; border-color: var(--accent); }
+  .bearing-num-unit {
+    color: var(--accent);
+    font-weight: 700;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.85rem;
+  }
+  .bearing-slider {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 100%;
+    height: 8px;
+    margin: 8px 0 6px;
+    border-radius: 6px;
+    background: var(--bg-deep);
+    border: 1px solid var(--border);
+    outline: none;
+    cursor: pointer;
+  }
+  /* â•â•â• Bearing dial (visual grid orientation) â•â•â• */
+  .bearing-dial-wrap {
+    display: flex;
+    justify-content: center;
+    margin: 10px 0 4px;
+  }
+  .bearing-dial {
+    width: 200px;
+    height: 200px;
+    max-width: 100%;
+    touch-action: none;
+    cursor: grab;
+    user-select: none;
+    -webkit-user-select: none;
+  }
+  .bearing-dial:active { cursor: grabbing; }
+  .bd-face { fill: var(--bg-deep); }
+  .bd-ring { fill: none; stroke: var(--border-bright); stroke-width: 2; }
+  .bd-grid-line { stroke: var(--border-bright); stroke-width: 1; opacity: 0.45; }
+  .bd-grid-axis { stroke: var(--accent-dim); stroke-width: 1.6; opacity: 0.9; }
+  .bd-plot { fill: var(--accent); stroke: var(--bg-deep); stroke-width: 0.5; }
+  .bd-card {
+    fill: var(--text-secondary);
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-size: 13px;
+    font-weight: 800;
+    text-anchor: middle;
+    dominant-baseline: central;
+    pointer-events: none;
+  }
+  .bd-n { fill: var(--accent); }
+  .bd-pointer { stroke: var(--accent); stroke-width: 3; stroke-linecap: round; }
+  .bd-handle { fill: var(--accent-glow); stroke: var(--bg-deep); stroke-width: 2; }
+  .bd-center { fill: var(--accent); }
+
+  /* â•â•â• Cruise Map Export overlay â•â•â• */
+  .cme-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.72);
+    z-index: 4000;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: calc(12px + var(--safe-top)) 12px calc(12px + var(--safe-bottom));
+  }
+  .cme-overlay.open { display: flex; }
+  .cme-modal {
+    background: var(--bg-card);
+    border: 1px solid var(--border-bright);
+    border-radius: 12px;
+    width: 100%;
+    max-width: 820px;
+    max-height: 100%;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+  .cme-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 14px;
+    border-bottom: 1px solid var(--border);
+    flex-shrink: 0;
+  }
+  .cme-title {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-weight: 800;
+    font-size: 1rem;
+    color: var(--accent);
+  }
+  .cme-close {
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    font-size: 1.1rem;
+    cursor: pointer;
+    padding: 4px 8px;
+    line-height: 1;
+  }
+  .cme-close:hover { color: var(--accent); }
+  .cme-body {
+    flex: 1;
+    overflow: auto;
+    background: #f4f6f2;
+    min-height: 240px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .cme-frame {
+    width: 100%;
+    height: 100%;
+    min-height: 62vh;
+    border: none;
+    background: #fff;
+  }
+  .cme-loading {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    color: var(--text-muted);
+    font-size: 0.8rem;
+    padding: 48px 24px;
+  }
+  .cme-spinner {
+    width: 36px;
+    height: 36px;
+    border: 3px solid var(--border);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: cme-spin 0.8s linear infinite;
+  }
+  @keyframes cme-spin { to { transform: rotate(360deg); } }
+  .cme-actions {
+    display: flex;
+    gap: 8px;
+    padding: 12px 14px;
+    border-top: 1px solid var(--border);
+    flex-shrink: 0;
+  }
+  .cme-actions .btn { flex: 1; }
+
   .field-row { display: flex; gap: 10px; }
   .field-row .field-group { flex: 1; }
 
@@ -3591,17 +3762,41 @@
     <div class="field-row">
       <div class="field-group">
         <div class="field-label">Columns (X)</div>
-        <input class="field-input" id="grid-spacing-x" type="number" value="5" min="0.5" step="0.5"/>
+        <input class="field-input" id="grid-spacing-x" type="number" value="5" min="0.5" step="0.5" oninput="renderBearingGrid()"/>
       </div>
       <div class="field-group">
         <div class="field-label">Rows (Y)</div>
-        <input class="field-input" id="grid-spacing-y" type="number" value="5" min="0.5" step="0.5"/>
+        <input class="field-input" id="grid-spacing-y" type="number" value="5" min="0.5" step="0.5" oninput="renderBearingGrid()"/>
       </div>
     </div>
   </div>
   <div class="field-group" id="grid-bearing-group">
-    <div class="field-label">Grid Bearing (degrees)</div>
-    <input class="field-input" id="grid-bearing" type="number" value="0" min="0" max="359" step="1"/>
+    <div class="field-label bearing-label-row">
+      <span>Grid Bearing</span>
+      <span class="bearing-num-wrap">
+        <input class="bearing-num" id="grid-bearing-num" type="number" inputmode="numeric" value="0" min="0" max="359" step="1" oninput="syncBearingFromInput()" onchange="commitBearingInput()" onblur="commitBearingInput()"/>
+        <span class="bearing-num-unit">&deg;</span>
+      </span>
+    </div>
+    <input type="hidden" id="grid-bearing" value="0"/>
+    <div class="bearing-dial-wrap">
+      <svg class="bearing-dial" id="bearing-dial" viewBox="0 0 200 200" aria-label="Grid bearing dial">
+        <defs><clipPath id="bearing-clip"><circle cx="100" cy="100" r="80"/></clipPath></defs>
+        <circle cx="100" cy="100" r="80" class="bd-face"/>
+        <g clip-path="url(#bearing-clip)"><g id="bearing-grid-rot"></g></g>
+        <circle cx="100" cy="100" r="80" class="bd-ring"/>
+        <text x="100" y="32" class="bd-card bd-n">N</text>
+        <text x="168" y="100" class="bd-card">E</text>
+        <text x="100" y="168" class="bd-card">S</text>
+        <text x="32" y="100" class="bd-card">W</text>
+        <g id="bearing-pointer">
+          <line x1="100" y1="100" x2="100" y2="30" class="bd-pointer"/>
+          <circle cx="100" cy="30" r="7" class="bd-handle"/>
+        </g>
+        <circle cx="100" cy="100" r="4.5" class="bd-center"/>
+      </svg>
+    </div>
+    <div class="field-help" style="text-align:center;margin-top:0">Drag the dial to rotate the plot grid. Dots and lines show how the plots will lay out.</div>
   </div>
   <div class="field-group" id="grid-buffer-group">
     <div class="field-label">Boundary Buffer (chains)</div>
@@ -9545,6 +9740,142 @@ function getJobGridSettings(job) {
   };
 }
 
+function getBearingValue() {
+  const el = document.getElementById('grid-bearing');
+  let v = Math.round(Number(el && el.value));
+  if (!Number.isFinite(v)) v = 0;
+  return ((v % 360) + 360) % 360;
+}
+
+// Set the canonical bearing and refresh all bearing UI (hidden input, number box, dial).
+function setBearing(deg, opts) {
+  opts = opts || {};
+  let v = Math.round(Number(deg));
+  if (!Number.isFinite(v)) v = 0;
+  v = ((v % 360) + 360) % 360;
+  const hidden = document.getElementById('grid-bearing');
+  if (hidden) hidden.value = v;
+  const numEl = document.getElementById('grid-bearing-num');
+  if (numEl && !opts.skipNum) numEl.value = v;
+  updateBearingDial(v);
+}
+
+function updateBearingDial(v) {
+  if (v == null) v = getBearingValue();
+  const rot = 'rotate(' + v + ' 100 100)';
+  const grid = document.getElementById('bearing-grid-rot');
+  const pointer = document.getElementById('bearing-pointer');
+  if (grid) grid.setAttribute('transform', rot);
+  if (pointer) pointer.setAttribute('transform', rot);
+}
+
+// Draw the grid lines + plot dots inside the dial, scaled to reflect the actual
+// column/row spacing so the preview matches how plots will fall on the ground.
+function renderBearingGrid() {
+  const host = document.getElementById('bearing-grid-rot');
+  if (!host) return;
+  let sx = parseFloat((document.getElementById('grid-spacing-x') || {}).value);
+  let sy = parseFloat((document.getElementById('grid-spacing-y') || {}).value);
+  if (!Number.isFinite(sx) || sx <= 0) sx = 5;
+  if (!Number.isFinite(sy) || sy <= 0) sy = 5;
+  const cx = 100, cy = 100, R = 80;
+  const base = 30;
+  const maxS = Math.max(sx, sy);
+  let pxX = Math.max(15, base * (sx / maxS));
+  let pxY = Math.max(15, base * (sy / maxS));
+  const reach = R + Math.max(pxX, pxY);
+  let svg = '';
+  // Column lines (run vertically, perpendicular to columns spacing pxX)
+  for (let x = 0; x <= reach; x += pxX) {
+    const offs = x === 0 ? [0] : [x, -x];
+    offs.forEach(ox => {
+      const cls = ox === 0 ? 'bd-grid-axis' : 'bd-grid-line';
+      svg += '<line x1="' + (cx + ox) + '" y1="' + (cy - reach) + '" x2="' + (cx + ox) + '" y2="' + (cy + reach) + '" class="' + cls + '"/>';
+    });
+  }
+  // Row lines (run horizontally, spacing pxY)
+  for (let y = 0; y <= reach; y += pxY) {
+    const offs = y === 0 ? [0] : [y, -y];
+    offs.forEach(oy => {
+      svg += '<line x1="' + (cx - reach) + '" y1="' + (cy + oy) + '" x2="' + (cx + reach) + '" y2="' + (cy + oy) + '" class="bd-grid-line"/>';
+    });
+  }
+  // Plot markers at grid intersections that fall inside the dial
+  for (let x = 0; x <= reach; x += pxX) {
+    const xs = x === 0 ? [0] : [x, -x];
+    for (let y = 0; y <= reach; y += pxY) {
+      const ys = y === 0 ? [0] : [y, -y];
+      xs.forEach(ox => ys.forEach(oy => {
+        if (Math.sqrt(ox * ox + oy * oy) <= R - 7) {
+          svg += '<circle cx="' + (cx + ox) + '" cy="' + (cy + oy) + '" r="2.6" class="bd-plot"/>';
+        }
+      }));
+    }
+  }
+  host.innerHTML = svg;
+  updateBearingDial();
+}
+
+// Called when settings load for a job; refresh the whole bearing UI.
+function updateBearingReadout() {
+  renderBearingGrid();
+  setBearing(getBearingValue());
+}
+
+function syncBearingFromInput() {
+  const numEl = document.getElementById('grid-bearing-num');
+  if (!numEl) return;
+  const raw = numEl.value.trim();
+  if (raw === '') return; // allow clearing while typing
+  setBearing(raw, { skipNum: true });
+}
+
+function commitBearingInput() {
+  const numEl = document.getElementById('grid-bearing-num');
+  if (!numEl) return;
+  setBearing(numEl.value);
+}
+
+function bearingDialAngleFromEvent(e, svg) {
+  const rect = svg.getBoundingClientRect();
+  if (!rect.width || !rect.height) return null;
+  const ccx = rect.left + rect.width / 2;
+  const ccy = rect.top + rect.height / 2;
+  const dx = e.clientX - ccx;
+  const dy = e.clientY - ccy;
+  if (Math.abs(dx) < 0.0001 && Math.abs(dy) < 0.0001) return null;
+  let deg = Math.atan2(dx, -dy) * 180 / Math.PI; // 0 = up (North), clockwise positive
+  return ((Math.round(deg) % 360) + 360) % 360;
+}
+
+function initBearingDial() {
+  const svg = document.getElementById('bearing-dial');
+  if (!svg || svg._bearingWired) return;
+  svg._bearingWired = true;
+  let dragging = false;
+  const apply = (e) => {
+    const deg = bearingDialAngleFromEvent(e, svg);
+    if (deg != null) setBearing(deg);
+  };
+  svg.addEventListener('pointerdown', (e) => {
+    dragging = true;
+    try { svg.setPointerCapture(e.pointerId); } catch (err) {}
+    apply(e);
+    e.preventDefault();
+  });
+  svg.addEventListener('pointermove', (e) => {
+    if (!dragging) return;
+    apply(e);
+    e.preventDefault();
+  });
+  const stop = () => { dragging = false; };
+  svg.addEventListener('pointerup', stop);
+  svg.addEventListener('pointercancel', stop);
+  svg.addEventListener('pointerleave', stop);
+  renderBearingGrid();
+  setBearing(getBearingValue());
+}
+
 function applyJobGridSettings(job) {
   const settings = getJobGridSettings(job);
   const spacingXEl = document.getElementById('grid-spacing-x');
@@ -9555,6 +9886,7 @@ function applyJobGridSettings(job) {
   if (spacingYEl) spacingYEl.value = settings.spacingY;
   if (bearingEl) bearingEl.value = settings.bearing;
   if (bufferEl) bufferEl.value = settings.buffer;
+  updateBearingReadout();
 }
 
 const NOTICE_LOG_STEPS = [0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5, 5.5, 6];
@@ -10445,8 +10777,8 @@ function buildReportMapBounds(polygons, plots) {
 
   const sw = bounds.getSouthWest();
   const ne = bounds.getNorthEast();
-  const latPad = Math.max((ne.lat - sw.lat) * 0.08, 0.0012);
-  const lngPad = Math.max((ne.lng - sw.lng) * 0.08, 0.0012);
+  const latPad = Math.max((ne.lat - sw.lat) * 0.03, 0.0005);
+  const lngPad = Math.max((ne.lng - sw.lng) * 0.03, 0.0005);
 
   return L.latLngBounds(
     [sw.lat - latPad, sw.lng - lngPad],
@@ -10486,9 +10818,8 @@ async function waitForReportMapTiles(mapEl, timeoutMs) {
 }
 
 function getReportMapPlotStyle(plot) {
-  if (plot && plot.noTally) return { fill: '#547899', stroke: '#ffffff' };
-  if (plot && plot.completed) return { fill: '#5d9e49', stroke: '#ffffff' };
-  return { fill: '#d28b1f', stroke: '#ffffff' };
+  // Exported map shows every plot in the same color, regardless of status.
+  return { fill: '#5d9e49', stroke: '#ffffff' };
 }
 
 function drawReportMapVectors(ctx, renderMap, polygons, plots) {
@@ -10642,7 +10973,7 @@ async function renderReportMapImage(options) {
 
     const basemapLayer = createReportMapBasemapLayer(basemapKey);
     basemapLayer.addTo(renderMap);
-    renderMap.fitBounds(bounds, { padding: [36, 36], animate: false, maxZoom: 18 });
+    renderMap.fitBounds(bounds, { padding: [14, 14], animate: false, maxZoom: 19 });
     renderMap.invalidateSize(false);
     await waitForReportMapFrame();
     await waitForReportMapTiles(host, 4200);
@@ -10732,10 +11063,10 @@ async function renderReportMapImage(options) {
 async function buildPrintableCruiseMapPage(context) {
   const polygons = Array.isArray(context && context.polygons) ? context.polygons : [];
   const plots = Array.isArray(context && context.plots) ? context.plots : [];
-  if (!polygons.length && !plots.length) return '';
+  if (!polygons.length && !plots.length) return null;
 
   const renderablePlots = plots.filter(plot => Number.isFinite(Number(plot && plot.lat)) && Number.isFinite(Number(plot && plot.lng)));
-  if (!polygons.length && !renderablePlots.length) return '';
+  if (!polygons.length && !renderablePlots.length) return null;
 
   const render = await renderReportMapImage({
     polygons: polygons,
@@ -10745,7 +11076,7 @@ async function buildPrintableCruiseMapPage(context) {
     height: 760
   });
 
-  if (!render || !render.imageDataUrl) return '';
+  if (!render || !render.imageDataUrl) return null;
 
   const tractName = (context && context.jobName) ? context.jobName : 'Cruise Report';
   const totalAcres = Number(context && context.totalAcres);
@@ -10759,7 +11090,7 @@ async function buildPrintableCruiseMapPage(context) {
     : plotLabel;
   const scaleInfo = render.scaleInfo || { label: '--', widthPercent: 18 };
 
-  return `<div class="notice-sheet notice-map-page">
+  const html = `<div class="notice-sheet notice-map-page">
     <div class="notice-sheet-title">Cruise Map</div>
     <div class="notice-map-figure">
       <div class="notice-map-image-wrap">
@@ -10791,6 +11122,8 @@ async function buildPrintableCruiseMapPage(context) {
       </div>
     </div>
   </div>`;
+
+  return { html: html, imageDataUrl: render.imageDataUrl };
 }
 
 function printVolumeReport() {
@@ -10825,6 +11158,45 @@ function printVolumeReport() {
   }, 250);
 }
 
+let _cruiseMapImageUrl = null;
+let _cruiseMapImageName = 'cruise-map.png';
+let _cruiseMapTitle = 'Cruise Map';
+
+function closeCruiseMapOverlay() {
+  const overlay = document.getElementById('cruise-map-overlay');
+  if (overlay) overlay.classList.remove('open');
+  const frame = document.getElementById('cme-frame');
+  if (frame) { try { frame.srcdoc = ''; } catch (e) {} frame.style.display = 'none'; }
+  _cruiseMapImageUrl = null;
+}
+
+function printCruiseMapOverlay() {
+  const frame = document.getElementById('cme-frame');
+  if (!frame || !frame.contentWindow) { toast('Map is still loading'); return; }
+  try {
+    frame.contentWindow.focus();
+    frame.contentWindow.print();
+  } catch (e) {
+    console.error('Print failed:', e);
+    toast('Could not open the print dialog');
+  }
+}
+
+function saveCruiseMapImage() {
+  if (!_cruiseMapImageUrl) { toast('Map is still loading'); return; }
+  try {
+    const a = document.createElement('a');
+    a.href = _cruiseMapImageUrl;
+    a.download = _cruiseMapImageName;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+  } catch (e) {
+    console.error('Save image failed:', e);
+    toast('Could not save the image');
+  }
+}
+
 async function exportCruiseMap() {
   const rJobId = _reportJobId || activeJobId;
   const job = normalizeJobCruiseSettings(allJobs.find(j => j.id === rJobId));
@@ -10839,29 +11211,30 @@ async function exportCruiseMap() {
     return;
   }
 
-  const win = window.open('', '_blank');
-  if (!win) { toast('Allow popups to export the cruise map'); return; }
+  const overlay = document.getElementById('cruise-map-overlay');
+  const frame = document.getElementById('cme-frame');
+  const loading = document.getElementById('cme-loading');
+  const actions = document.getElementById('cme-actions');
+  if (!overlay || !frame) { toast('Cruise map view unavailable'); return; }
 
-  const title = escapeHtml((job.name || 'Cruise Report') + ' Cruise Map');
-  const today = new Date().toLocaleDateString();
-  win.document.open();
-  win.document.write(
-    '<!doctype html><html><head><meta charset="utf-8"><title>' + title + '</title>' +
-    '<style>' + getNoticeReportCssText() + '</style></head><body>' +
-    '<h1>' + title + '</h1>' +
-    '<div class="sub">Generated ' + escapeHtml(today) + '</div>' +
-    '<div class="notice-sheet"><div class="notice-sheet-title">Preparing Cruise Map</div><div class="notice-report-note">Building the printable cruise map page...</div></div>' +
-    '</body></html>'
-  );
-  win.document.close();
+  // Open the overlay immediately in a loading state so the user sees feedback.
+  _cruiseMapImageUrl = null;
+  frame.style.display = 'none';
+  if (loading) loading.style.display = 'flex';
+  if (actions) actions.style.display = 'none';
+  overlay.classList.add('open');
+
+  const jobName = job.name || 'Cruise Report';
+  _cruiseMapTitle = jobName + ' Cruise Map';
+  _cruiseMapImageName = (jobName.replace(/[^a-z0-9_-]+/gi, '_').replace(/^_+|_+$/g, '') || 'cruise') + '_map.png';
 
   const totalAcres = getSelectedReportTotalAcres(rData.polygons || []);
-  let mapPageHtml = '';
+  let result = null;
   try {
-    mapPageHtml = await buildPrintableCruiseMapPage({
+    result = await buildPrintableCruiseMapPage({
       polygons: rData.polygons || [],
       plots: reportMapPlots,
-      jobName: job.name || 'Cruise Report',
+      jobName: jobName,
       totalAcres: totalAcres,
       totalPlots: reportMapPlots.length,
       isFullTally: fullMode,
@@ -10870,34 +11243,39 @@ async function exportCruiseMap() {
     });
   } catch (e) {
     console.error('Cruise map generation failed:', e);
-    if (!win.closed) win.close();
+    closeCruiseMapOverlay();
     toast('Cruise map could not be generated.');
     return;
   }
 
-  if (win.closed) return;
-  if (!mapPageHtml) {
-    win.close();
+  if (!overlay.classList.contains('open')) return; // user closed it while rendering
+  if (!result || !result.html) {
+    closeCruiseMapOverlay();
     toast('No cruise map to export');
     return;
   }
 
-  win.document.open();
-  win.document.write(
-    '<!doctype html><html><head><meta charset="utf-8"><title>' + title + '</title>' +
+  _cruiseMapImageUrl = result.imageDataUrl || null;
+
+  const title = escapeHtml(_cruiseMapTitle);
+  const today = escapeHtml(new Date().toLocaleDateString());
+  const doc = '<!doctype html><html><head><meta charset="utf-8">' +
+    '<meta name="viewport" content="width=device-width, initial-scale=1.0">' +
+    '<title>' + title + '</title>' +
     '<style>' + getNoticeReportCssText() + '</style></head><body>' +
     '<h1>' + title + '</h1>' +
-    '<div class="sub">Generated ' + escapeHtml(today) + '</div>' +
-    mapPageHtml +
-    '</body></html>'
-  );
-  win.document.close();
-  setTimeout(() => {
-    try {
-      win.focus();
-      win.print();
-    } catch (e) {}
-  }, 250);
+    '<div class="sub">Generated ' + today + '</div>' +
+    result.html +
+    '</body></html>';
+
+  // Rendering inside an on-screen iframe paints immediately (unlike a popup),
+  // so the map shows right away without needing to refocus the window.
+  frame.onload = () => {
+    if (loading) loading.style.display = 'none';
+    frame.style.display = 'block';
+    if (actions) actions.style.display = 'flex';
+  };
+  frame.srcdoc = doc;
 }
 
 function getSpeciesLabel(code) {
@@ -14700,6 +15078,7 @@ buildThemeSwatches();
   updateJobLabel();
   updateSyncButton();
   refreshSyncStatusUI();
+  initBearingDial();
   if (restored && getEffectiveSyncPending() && window._activeCloudCruiseId) {
     recordSyncEvent('session-restored-with-pending-sync', {
       reason: 'session-restore',
@@ -14835,6 +15214,28 @@ buildThemeSwatches();
   <div id="parcel-panel-body"><span class="parcel-loading">Click a parcel to identify...</span></div>
   <div class="parcel-panel-actions" id="parcel-panel-actions">
     <button class="btn btn-primary" id="parcel-add-boundary-btn" type="button" onclick="addIdentifiedParcelAsBoundary()" disabled>Add Parcel as Boundary</button>
+  </div>
+</div>
+
+<!-- Cruise Map Export overlay -->
+<div class="cme-overlay" id="cruise-map-overlay" onclick="if(event.target===this)closeCruiseMapOverlay()">
+  <div class="cme-modal">
+    <div class="cme-header">
+      <div class="cme-title">&#x1F5FA; Cruise Map</div>
+      <button class="cme-close" type="button" onclick="closeCruiseMapOverlay()" aria-label="Close cruise map">&#x2715;</button>
+    </div>
+    <div class="cme-body">
+      <div class="cme-loading" id="cme-loading">
+        <div class="cme-spinner"></div>
+        <div>Building cruise map...</div>
+      </div>
+      <iframe class="cme-frame" id="cme-frame" title="Cruise Map" style="display:none"></iframe>
+    </div>
+    <div class="cme-actions" id="cme-actions" style="display:none">
+      <button class="btn btn-secondary" type="button" style="margin:0" onclick="closeCruiseMapOverlay()">Close</button>
+      <button class="btn btn-secondary" type="button" style="margin:0;border-color:var(--blue);color:var(--blue)" onclick="saveCruiseMapImage()">Save Image</button>
+      <button class="btn btn-primary" type="button" style="margin:0" onclick="printCruiseMapOverlay()">Print / PDF</button>
+    </div>
   </div>
 </div>
 
