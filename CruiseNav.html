@@ -4415,6 +4415,8 @@ try {
     }
     if (fb_user && window._activeCloudCruiseId && getEffectiveSyncPending()) {
       queuePendingCloudSyncRetry('auth-restored', 1200);
+    } else if (fb_user && window._activeCloudCruiseId) {
+      queueLinkedCruiseRefresh('auth-refresh', 900);
     } else if (!fb_user && window._activeCloudCruiseId && getEffectiveSyncPending()) {
       setSyncPending(true, { reason: 'signed-out' });
       showSyncWarningOnce('signed-out');
@@ -7032,6 +7034,10 @@ let _lastSuccessfulCloudSyncPlotIds = [];
 let _lastSyncErrorMessage = '';
 let _lastSyncPendingReason = '';
 let _syncEventLog = [];
+let _cloudRefreshInFlight = false;
+let _cloudRefreshTimer = null;
+let _lastCloudRefreshAt = 0;
+let _lastCloudRefreshCruiseId = '';
 let _lastSyncWarningKey = '';
 let _lastSyncWarningAt = 0;
 const MAX_SYNC_EVENT_LOG = 80;
@@ -7069,6 +7075,21 @@ function getPlotLocationHash() {
       }))
       .sort((a, b) => a.id.localeCompare(b.id))
   );
+}
+
+function hasLocalUnsyncedTreeEdits() {
+  return getPlotHash() !== _lastSyncedPlotHash;
+}
+
+function hasLocalUnsyncedLayoutEdits() {
+  const locationChanged = getPlotLocationHash() !== _lastSyncedPlotLocationHash;
+  if (locationChanged) return true;
+  if (!_syncPending) return false;
+  const reason = String(_lastSyncPendingReason || '');
+  const treeHashChanged = getPlotHash() !== _lastSyncedPlotHash;
+  if (reason === 'plot-save' || reason === 'plot-no-tally' || reason === 'stand-tally-save') return false;
+  if (treeHashChanged && (reason === 'offline' || reason === 'signed-out' || reason === 'error')) return false;
+  return true;
 }
 
 function hasUnsyncedCloudChanges() {
@@ -7216,6 +7237,9 @@ function refreshSyncStatusUI() {
     metaText = (completedPlotIds.length || plotMarkers.length)
       ? (completedPlotIds.length + ' ' + tallyLabelPlural + ' in flight.')
       : 'Sync is running in the background.';
+  } else if (_cloudRefreshInFlight || _cloudRefreshTimer) {
+    titleText = 'Checking cloud';
+    metaText = 'Refreshing this linked cruise for newer field updates.';
   } else if (effectivePending) {
     if (!fb_user) {
       titleText = 'Saved locally only';
@@ -7347,6 +7371,62 @@ function markActiveCruiseOwnedByCurrentUser() {
   }
 }
 
+function queueLinkedCruiseRefresh(reason = 'job-load', delayMs = 900) {
+  const cruiseId = window._activeCloudCruiseId;
+  const now = Date.now();
+  if (!fb_user || !navigator.onLine || !cruiseId || _syncInFlight || getEffectiveSyncPending()) return;
+  if (_lastCloudRefreshCruiseId === cruiseId && (now - _lastCloudRefreshAt) < 4000) return;
+  if (_cloudRefreshTimer) clearTimeout(_cloudRefreshTimer);
+  recordSyncEvent('cloud-refresh-queued', { reason: reason });
+  _cloudRefreshTimer = setTimeout(() => {
+    _cloudRefreshTimer = null;
+    refreshLinkedCruiseFromCloud(reason).catch(err => {
+      console.warn('Background cloud refresh failed:', err);
+    });
+  }, Math.max(0, Number(delayMs) || 0));
+}
+
+async function refreshLinkedCruiseFromCloud(reason = 'job-load') {
+  const cruiseId = window._activeCloudCruiseId;
+  if (!fb_user || !navigator.onLine || !cruiseId || _syncInFlight || getEffectiveSyncPending()) return false;
+  _cloudRefreshInFlight = true;
+  refreshSyncStatusUI();
+  recordSyncEvent('cloud-refresh-start', { reason: reason });
+  try {
+    const localHasUnsyncedLayout = hasLocalUnsyncedLayoutEdits();
+    await pullOtherUsersPlotData(cruiseId, {
+      silent: true,
+      skipPlotLocations: localHasUnsyncedLayout,
+      skipBoundaries: localHasUnsyncedLayout
+    });
+    _lastSyncedPlotHash = getPlotHash();
+    _lastSyncedPlotLocationHash = getPlotLocationHash();
+    _lastSuccessfulCloudSyncAt = Date.now();
+    _lastSuccessfulCloudSyncPlotIds = getCompletedPlotIdsForSync();
+    _lastSyncErrorMessage = '';
+    _lastCloudRefreshAt = Date.now();
+    _lastCloudRefreshCruiseId = cruiseId;
+    setSyncPending(false);
+    recordSyncEvent('cloud-refresh-success', {
+      reason: reason,
+      completedCount: _lastSuccessfulCloudSyncPlotIds.length,
+      plotIds: _lastSuccessfulCloudSyncPlotIds
+    });
+    await saveSession({ skipCloudSync: true });
+    return true;
+  } catch (e) {
+    _lastSyncErrorMessage = formatCloudSyncError('Refresh', e);
+    recordSyncEvent('cloud-refresh-failed', {
+      reason: reason,
+      error: _lastSyncErrorMessage
+    });
+    return false;
+  } finally {
+    _cloudRefreshInFlight = false;
+    refreshSyncStatusUI();
+  }
+}
+
 async function syncExistingCruiseState(cruiseId, options = {}) {
   const silent = !!options.silent;
   await ensureActiveCloudCruiseOwner(cruiseId);
@@ -7358,14 +7438,25 @@ async function syncExistingCruiseState(cruiseId, options = {}) {
     silentToast: false,
     message: 'This cloud cruise was reset in the cloud. Local plot tallies were cleared before sync.'
   });
+  const localHasUnsyncedLayout = hasLocalUnsyncedLayoutEdits();
   if (window._activeCloudCruiseOwner === fb_user.uid) {
     recordSyncEvent('sync-path-selected', { reason: options.reason || 'sync-existing', mode: 'owner' });
+    await pullOtherUsersPlotData(cruiseId, {
+      silent: true,
+      skipPlotLocations: localHasUnsyncedLayout,
+      skipBoundaries: localHasUnsyncedLayout
+    });
     await updateCruiseInCloud(cruiseId);
     await pullOtherUsersPlotData(cruiseId, { silent: true, skipPlotLocations: true, skipBoundaries: true });
     return 'owner';
   }
   if (!window._activeCloudCruiseOwner) {
     try {
+      await pullOtherUsersPlotData(cruiseId, {
+        silent: true,
+        skipPlotLocations: localHasUnsyncedLayout,
+        skipBoundaries: localHasUnsyncedLayout
+      });
       await updateCruiseInCloud(cruiseId);
       markActiveCruiseOwnedByCurrentUser();
       recordSyncEvent('sync-path-selected', { reason: options.reason || 'sync-existing', mode: 'owner-claimed' });
@@ -7590,7 +7681,8 @@ async function pullOtherUsersPlotData(cruiseId, options = {}) {
     let updatedPlotsCount = 0;
     let removedPlotsCount = 0;
     const ownerIsLocalUser = (d.ownerId && d.ownerId === fb_user.uid) || window._activeCloudCruiseOwner === fb_user.uid;
-    const localHasUnsyncedLayout = _syncPending || (getPlotLocationHash() !== _lastSyncedPlotLocationHash);
+    const localHasUnsyncedLayout = hasLocalUnsyncedLayoutEdits();
+    const localHasUnsyncedTreeData = hasLocalUnsyncedTreeEdits();
     const acceptCloudPlotLocations = !skipPlotLocations && !(ownerIsLocalUser && localHasUnsyncedLayout);
     const cloudDeletedPlotIdSet = new Set(normalizeDeletedPlotIds(parseJsonArray(d.deletedPlotIdsJson)));
     const pendingLocalDeletedPlotIds = ownerIsLocalUser && localHasUnsyncedLayout ? getActiveJobDeletedPlotIds() : [];
@@ -7681,7 +7773,7 @@ async function pullOtherUsersPlotData(cruiseId, options = {}) {
 
       if (activeJob) {
         activeJob.deletedPlotIds = [];
-        const localHasUnsyncedEdits = _syncPending || (getPlotHash() !== _lastSyncedPlotHash);
+        const localHasUnsyncedEdits = hasLocalUnsyncedTreeEdits();
         const shouldApplyCloudStand = newestStand.fullTally.completed && (!newestStand.fromSelf || !localHasUnsyncedEdits);
         if (shouldApplyCloudStand) {
           activeJob.fullTally = normalizeFullTally(newestStand.fullTally);
@@ -7754,9 +7846,9 @@ async function pullOtherUsersPlotData(cruiseId, options = {}) {
       if (!local) return;
 
       if (!local.completed) {
-        // Local plot is pending. Only apply cloud data from OTHER users.
-        // If data is from self, local state is the source of truth (user may have just toggled it).
-        if (data.fromSelf) return;
+        // A stale desktop can legitimately be missing this same user's newer field tally.
+        // Only keep the local pending state when unsynced local edits still exist.
+        if (data.fromSelf && localHasUnsyncedTreeData) return;
         local.trees = cloneJson(data.trees || []);
         local.completed = true;
         local.noTally = data.noTally || false;
@@ -7773,7 +7865,7 @@ async function pullOtherUsersPlotData(cruiseId, options = {}) {
         // For self-data: local is authoritative when the user has unsaved local edits
         // (sync pending or plot hash changed). The push will update the cloud.
         // Only pull self-data when local has NOT changed (e.g. loading on a different device).
-        const localHasUnsyncedEdits = _syncPending || (getPlotHash() !== _lastSyncedPlotHash);
+        const localHasUnsyncedEdits = localHasUnsyncedTreeData;
 
         if (data.fromSelf && localHasUnsyncedEdits) {
           // Skip: local edits exist, they will be pushed to cloud next
@@ -14637,6 +14729,9 @@ function loadJob(jobId, skipSave) {
   updateEmptyHint();
   refreshPolyChecklist();
   updateJobLabel();
+  if (job.cloudCruiseId) {
+    queueLinkedCruiseRefresh(skipSave ? 'job-restore' : 'job-load', 900);
+  }
 
   if (!skipSave) saveSession();
 }

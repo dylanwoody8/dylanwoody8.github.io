@@ -1054,15 +1054,14 @@
 
   .mob-drawer {
     position: fixed;
-    bottom: calc(var(--mobile-bottom-offset) + env(safe-area-inset-bottom, 0px)); left: 0; right: 0;
-    background: var(--bark2);
+    bottom: var(--mobile-toolbar-height, 68px); left: 0; right: 0;
+    background: var(--bark);
     border-top: 2px solid var(--lime);
     z-index: 1999;
-    padding: 18px 16px;
-    padding-bottom: calc(18px + env(safe-area-inset-bottom, 0));
-    max-height: calc(var(--app-height, 100vh) - 60px);
+    padding: 18px 16px 18px;
+    max-height: calc(var(--app-height, 100vh) - 120px);
     overflow-y: auto;
-    transform: translateY(100%);
+    transform: translateY(calc(100% + var(--mobile-toolbar-height, 68px)));
     transition: transform 0.22s ease;
   }
   .mob-drawer.open { transform: translateY(0); }
@@ -1086,7 +1085,7 @@
     align-items: center;
     gap: 10px;
     padding: 14px;
-    background: var(--forest2);
+    background: var(--forest);
     border: 1px solid var(--leaf);
     color: var(--cream);
     font-family: 'Space Mono', monospace;
@@ -1388,6 +1387,14 @@
       <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7,10 12,15 17,10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
       Export .SHP
     </button>
+    <button class="mob-drawer-btn" onclick="closeMobileMenu(); saveOfflinePack()">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M5 4h11l3 3v13H5z"/><path d="M8 4v6h8V4"/><path d="M9 16h6"/></svg>
+      Save Offline
+    </button>
+    <button class="mob-drawer-btn" onclick="closeMobileMenu(); promptLoadOfflinePack()">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M5 4h11l3 3v13H5z"/><path d="M12 11v6"/><path d="M9 14l3 3 3-3"/></svg>
+      Load Offline
+    </button>
     <button class="mob-drawer-btn full" onclick="closeMobileMenu(); exportGeoPDF()" style="border-color:#1976d2; color:#64b5f6;">
       <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M3.6 9h16.8M3.6 15h16.8"/><ellipse cx="12" cy="12" rx="4" ry="9"/></svg>
       Export GeoPDF
@@ -1465,6 +1472,10 @@
       <div class="splash-item">
         <span class="splash-key">Export .SHP</span>
         <div class="splash-desc">Export drawn features, GPS-captured points/lines/polygons, cruise points, and/or imported layers as a zipped shapefile bundle. GPS exports keep session attributes like feature name, capture source, logging method, and latest accuracy.</div>
+      </div>
+      <div class="splash-item">
+        <span class="splash-key">Offline Pack</span>
+        <div class="splash-desc">Save the tract, cruise points, imported layers, and GPS work into an offline pack, then load that pack back into the app later when you do not have service.</div>
       </div>
     </div>
 
@@ -1571,10 +1582,18 @@
   <div class="cruise-actions" style="margin-top:2px;">
     <button class="btn-generate geopdf-btn" onclick="closeExportModal(); exportGeoPDF()">🌎 Export GeoPDF</button>
   </div>
+  <hr class="export-sep">
+  <div class="field-label">Offline tract package:</div>
+  <div class="cruise-actions" style="margin-top:2px;">
+    <button class="btn-generate" onclick="closeExportModal(); saveOfflinePack()">Save Offline</button>
+    <button class="btn-clear-grid" onclick="closeExportModal(); promptLoadOfflinePack()">Load Offline</button>
+  </div>
 </div>
 
 <input type="file" id="shp-upload-input" accept=".shp,.dbf,.shx,.prj,.zip" multiple style="display:none"
   onchange="handleShpFiles(this.files); this.value='';">
+<input type="file" id="offline-pack-input" accept=".json,application/json" style="display:none"
+  onchange="handleOfflinePackFiles(this.files); this.value='';">
 
 <div class="drop-overlay" id="drop-overlay">
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7,10 12,5 17,10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
@@ -1772,6 +1791,7 @@ function registerCreatedLayer(layer) {
     const acres = calcAcres(layer);
     layer.bindPopup(`<b>${acres.toFixed(2)} acres</b>`).openPopup();
   }
+  queueOfflineStateSave();
   notify('Feature added');
 }
 
@@ -1794,6 +1814,7 @@ map.on(L.Draw.Event.EDITED, () => {
   syncGpsSessionsWithDrawnLayers();
   updateCount(); refreshPolySelect(); updateAcres();
   refreshGpsPanel();
+  queueOfflineStateSave();
 });
 map.on(L.Draw.Event.DELETED, () => {
   // Clean up styles for deleted features
@@ -1805,6 +1826,7 @@ map.on(L.Draw.Event.DELETED, () => {
   syncGpsSessionsWithDrawnLayers();
   updateCount(); refreshPolySelect(); updateAcres(); refreshLayerPanel();
   refreshGpsPanel();
+  queueOfflineStateSave();
 });
 
 function updateCount() {
@@ -2110,6 +2132,7 @@ function clearAll() {
     refreshGpsPanel();
     updateGpsStatus();
     updateGpsTrackingState();
+    queueOfflineStateSave();
     notify('All features cleared');
   }
 }
@@ -2324,6 +2347,264 @@ function getDrawnExportProps(layer, fid) {
   if (meta.sessionId) props.SESSION = meta.sessionId;
 
   return props;
+}
+
+const OFFLINE_STATE_KEY = 'forestdraw-offline-state-v1';
+let offlineSaveTimer = null;
+let suppressOfflineStateSave = false;
+
+function promptLoadOfflinePack() {
+  document.getElementById('offline-pack-input').click();
+}
+
+function handleOfflinePackFiles(files) {
+  const file = files && files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    try {
+      const state = JSON.parse(e.target.result);
+      applyOfflineState(state);
+    } catch (err) {
+      console.error('Offline pack load failed:', err);
+      notify('Invalid offline pack');
+    }
+  };
+  reader.readAsText(file);
+}
+
+function saveOfflinePack() {
+  const state = serializeOfflineState();
+  const blob = new Blob([JSON.stringify(state, null, 2)], { type: 'application/json' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `forestdraw_offline_${new Date().toISOString().slice(0, 10)}.json`;
+  a.click();
+  queueOfflineStateSave();
+  notify('Offline pack saved');
+}
+
+function serializeOfflineState() {
+  return {
+    version: 1,
+    savedAt: new Date().toISOString(),
+    mapView: {
+      center: [map.getCenter().lat, map.getCenter().lng],
+      zoom: map.getZoom(),
+      basemap: getActiveBasemapName(),
+      parcelsVisible: map.hasLayer(ncParcels)
+    },
+    drawnFeatures: drawnItems.getLayers().map(serializeDrawnLayer),
+    cruisePoints: cruisePoints.map(pt => ({ lat: pt.lat, lng: pt.lng, id: pt.id })),
+    importedLayers: importedShapefiles.map(shp => ({
+      name: shp.name,
+      features: shp.features,
+      style: shp.style
+    })),
+    gpsSessions: gpsSessions.map(session => ({
+      id: session.id,
+      name: session.name,
+      type: session.type,
+      logMode: session.logMode,
+      logInterval: session.logInterval,
+      status: session.status,
+      points: session.points.map(pt => ({ lat: pt.lat, lng: pt.lng, accuracy: pt.accuracy, timestamp: pt.timestamp })),
+      lastAccuracy: session.lastAccuracy,
+      lastLoggedAt: session.lastLoggedAt,
+      createdAt: session.createdAt
+    }))
+  };
+}
+
+function serializeDrawnLayer(layer) {
+  const meta = { ...(layer._wfMeta || {}) };
+  const style = { ...getDrawnStyle(layer) };
+  if (layer instanceof L.Marker) {
+    const ll = layer.getLatLng();
+    return {
+      type: 'point',
+      latlng: [ll.lat, ll.lng],
+      meta,
+      style
+    };
+  }
+  return {
+    type: layer instanceof L.Polygon ? 'polygon' : 'polyline',
+    points: getPrimaryLatLngs(layer).map(ll => [ll.lat, ll.lng]),
+    meta,
+    style
+  };
+}
+
+function getActiveBasemapName() {
+  if (map.hasLayer(hybrid)) return 'hybrid';
+  if (map.hasLayer(satellite)) return 'satellite';
+  if (map.hasLayer(topo)) return 'topo';
+  return 'osm';
+}
+
+function applyOfflineState(state, options = {}) {
+  if (!state || !state.version) {
+    notify('Invalid offline pack');
+    return;
+  }
+
+  suppressOfflineStateSave = true;
+  try {
+    resetWorkingState();
+
+    (state.drawnFeatures || []).forEach(snapshot => restoreDrawnLayer(snapshot));
+    (state.importedLayers || []).forEach(snapshot => {
+      registerImportedFeatureLayer(snapshot.name, snapshot.features || [], snapshot.style || null, {
+        fitBounds: false,
+        notifyLoad: false
+      });
+    });
+    renderCruisePoints(state.cruisePoints || [], 'Offline cruise points restored.');
+    restoreGpsSessions(state.gpsSessions || []);
+
+    if (state.mapView) restoreMapView(state.mapView);
+
+    updateCount();
+    refreshPolySelect();
+    updateAcres();
+    refreshLayerPanel();
+    refreshGpsPanel();
+    updateGpsStatus();
+    updateActiveToolIndicator();
+  } finally {
+    suppressOfflineStateSave = false;
+  }
+
+  queueOfflineStateSave();
+  if (options.notify !== false) notify('Offline pack loaded');
+}
+
+function resetWorkingState() {
+  cancelCrosshairDraw({ silent: true });
+  if (currentHandler) { currentHandler.disable(); currentHandler = null; }
+
+  drawnItems.clearLayers();
+  drawnFeatureStyles.clear();
+  drawnFeatureCounter = 0;
+
+  if (cruiseLayer) {
+    map.removeLayer(cruiseLayer);
+    cruiseLayer = null;
+  }
+  cruisePoints = [];
+  document.getElementById('cruise-info').textContent = 'No grid generated yet.';
+
+  importedShapefiles.forEach(shp => {
+    map.removeLayer(shp.leafletLayer);
+    if (layerControl.removeLayer) layerControl.removeLayer(shp.leafletLayer);
+  });
+  importedShapefiles = [];
+  uploadedPolygons = [];
+  selectedLayerIdx = -1;
+
+  gpsSessions = [];
+  activeGpsSessionId = null;
+}
+
+function restoreDrawnLayer(snapshot) {
+  let layer = null;
+  if (snapshot.type === 'point' && Array.isArray(snapshot.latlng)) {
+    layer = L.marker(snapshot.latlng);
+  } else if (snapshot.type === 'polyline' && Array.isArray(snapshot.points) && snapshot.points.length) {
+    layer = L.polyline(snapshot.points);
+  } else if (snapshot.type === 'polygon' && Array.isArray(snapshot.points) && snapshot.points.length) {
+    layer = L.polygon(snapshot.points);
+  }
+  if (!layer) return;
+
+  drawnItems.addLayer(layer);
+  applyDrawnLayerDefaults(layer, snapshot.meta || {});
+  const st = getDrawnStyle(layer);
+  if (snapshot.style) Object.assign(st, snapshot.style);
+  if (layer.setStyle) {
+    layer.setStyle({
+      color: st.color,
+      fillColor: st.fillColor,
+      fillOpacity: st.fillOpacity,
+      weight: st.weight,
+      opacity: 1,
+      fill: st.fillOpacity > 0
+    });
+  }
+  if (layer instanceof L.Polygon && isPolygonLayerReady(layer)) {
+    const acres = calcAcres(layer);
+    layer.bindPopup(`<b>${acres.toFixed(2)} acres</b>`);
+  }
+}
+
+function restoreGpsSessions(savedSessions) {
+  gpsSessions = (savedSessions || []).map(snapshot => {
+    const linkedLayer = snapshot.id
+      ? drawnItems.getLayers().find(layer => (layer._wfMeta || {}).sessionId === snapshot.id) || null
+      : null;
+    const session = {
+      id: snapshot.id || `gps-${Date.now().toString(36)}`,
+      name: snapshot.name || 'GPS Session',
+      type: snapshot.type || 'polygon',
+      logMode: snapshot.logMode || 'vertex',
+      logInterval: snapshot.logInterval ?? null,
+      status: snapshot.status === 'active' ? 'paused' : (snapshot.status || 'paused'),
+      points: (snapshot.points || []).map(pt => ({
+        lat: pt.lat,
+        lng: pt.lng,
+        accuracy: pt.accuracy,
+        timestamp: pt.timestamp
+      })),
+      layer: linkedLayer,
+      createdAt: snapshot.createdAt || Date.now(),
+      lastAccuracy: snapshot.lastAccuracy ?? null,
+      lastLoggedAt: snapshot.lastLoggedAt ?? null
+    };
+    if (session.layer) syncSessionLayerMeta(session);
+    return session;
+  });
+  activeGpsSessionId = null;
+}
+
+function restoreMapView(mapView) {
+  const baseLayers = { osm, satellite, hybrid, topo };
+  Object.values(baseLayers).forEach(layer => {
+    if (map.hasLayer(layer)) map.removeLayer(layer);
+  });
+  const baseLayer = baseLayers[mapView.basemap] || hybrid;
+  baseLayer.addTo(map);
+
+  if (mapView.parcelsVisible) map.addLayer(ncParcels);
+  else if (map.hasLayer(ncParcels)) map.removeLayer(ncParcels);
+
+  if (Array.isArray(mapView.center) && Number.isFinite(mapView.zoom)) {
+    map.setView(mapView.center, mapView.zoom);
+  }
+}
+
+function queueOfflineStateSave() {
+  if (suppressOfflineStateSave) return;
+  clearTimeout(offlineSaveTimer);
+  offlineSaveTimer = setTimeout(() => {
+    try {
+      localStorage.setItem(OFFLINE_STATE_KEY, JSON.stringify(serializeOfflineState()));
+    } catch (err) {
+      console.warn('Offline autosave failed:', err);
+    }
+  }, 250);
+}
+
+function restoreOfflineAutosave() {
+  if (drawnItems.getLayers().length || importedShapefiles.length || cruisePoints.length || gpsSessions.length) return;
+  try {
+    const raw = localStorage.getItem(OFFLINE_STATE_KEY);
+    if (!raw) return;
+    applyOfflineState(JSON.parse(raw), { notify: false });
+    notify('Restored last offline tract');
+  } catch (err) {
+    console.warn('Offline autosave restore failed:', err);
+  }
 }
 
 // ── Shapefile binary writers ───────────────────────────────────────────────
@@ -2871,6 +3152,7 @@ function createGpsSession() {
   refreshGpsPanel();
   updateGpsTrackingState();
   updateGpsStatus();
+  queueOfflineStateSave();
   notify(type === 'point' ? `GPS point "${session.name}" is waiting for a fix` : `GPS ${getLayerTypeLabel(type).toLowerCase()} "${session.name}" started`);
 
   if (lastGpsFix) processGpsFix(lastGpsFix, { forceForActive: true });
@@ -2901,6 +3183,7 @@ function pauseGpsSession(id, silent = false) {
   refreshLayerPanel();
   updateGpsTrackingState();
   updateGpsStatus();
+  queueOfflineStateSave();
   if (!silent) notify(`${session.name} paused`);
 }
 
@@ -2921,6 +3204,7 @@ function resumeGpsSession(id) {
   refreshLayerPanel();
   updateGpsTrackingState();
   updateGpsStatus();
+  queueOfflineStateSave();
   notify(`${session.name} resumed`);
   if (lastGpsFix) processGpsFix(lastGpsFix, { forceForActive: true });
 }
@@ -2955,6 +3239,7 @@ function finishGpsSession(id) {
   refreshLayerPanel();
   updateGpsTrackingState();
   updateGpsStatus();
+  queueOfflineStateSave();
   notify(`${session.name} finished`);
 }
 
@@ -2975,6 +3260,7 @@ function deleteGpsSession(id) {
   refreshGpsPanel();
   updateGpsTrackingState();
   updateGpsStatus();
+  queueOfflineStateSave();
   notify(`${session.name} removed`);
 }
 
@@ -3175,6 +3461,7 @@ function logGpsFixToSession(session, fix, opts = {}) {
     if (activeGpsSessionId === session.id) activeGpsSessionId = null;
     updateActiveToolIndicator();
     updateGpsTrackingState();
+    queueOfflineStateSave();
     notify(`${session.name} captured`);
     return true;
   }
@@ -3182,6 +3469,7 @@ function logGpsFixToSession(session, fix, opts = {}) {
   session.points.push(point);
   if (session.layer) session.layer.setLatLngs(session.points.map(entry => [entry.lat, entry.lng]));
   syncSessionLayerMeta(session);
+  queueOfflineStateSave();
   return true;
 }
 
@@ -3365,37 +3653,49 @@ function generateCruiseGrid() {
 
   const inside = pts.filter(pt => rings.some(ring => pointInPolygon(pt, ring)));
   if (!inside.length) { notify('No points generated — check spacing/polygon'); return; }
+  renderCruisePoints(
+    inside.map((pt, i) => ({ lng: pt[0], lat: pt[1], id: i + 1 })),
+    `<span>${inside.length}</span> cruise points · <span>${selectedIndices.length}</span> polygon${selectedIndices.length > 1 ? 's' : ''}<br>Spacing: <span>${spacingX}×${spacingY} ch</span> · Bearing: <span>${bearingDeg}°</span>`
+  );
+  queueOfflineStateSave();
+  notify(`${inside.length} cruise points generated`);
+}
 
-  if (cruiseLayer) map.removeLayer(cruiseLayer);
-  cruiseLayer = L.layerGroup();
+function clearCruiseGrid() {
+  renderCruisePoints([], 'No grid generated yet.');
+  queueOfflineStateSave();
+  notify('Cruise grid cleared');
+}
+
+function renderCruisePoints(points, infoHtml = null) {
+  if (cruiseLayer) {
+    map.removeLayer(cruiseLayer);
+    cruiseLayer = null;
+  }
   cruisePoints = [];
 
-  inside.forEach((pt, i) => {
-    const marker = L.circleMarker([pt[1], pt[0]], {
+  if (!points.length) {
+    document.getElementById('cruise-info').textContent = infoHtml || 'No grid generated yet.';
+    return;
+  }
+
+  cruiseLayer = L.layerGroup();
+  points.forEach((pt, i) => {
+    const plotId = pt.id || (i + 1);
+    const marker = L.circleMarker([pt.lat, pt.lng], {
       radius: 5,
       color: '#ff6b35',
       fillColor: '#ff6b35',
       fillOpacity: 0.9,
       weight: 1.5
     });
-    marker.bindTooltip(`Plot ${i + 1}`, { permanent: false, direction: 'top' });
+    marker.bindTooltip(`Plot ${plotId}`, { permanent: false, direction: 'top' });
     cruiseLayer.addLayer(marker);
-    cruisePoints.push({ lng: pt[0], lat: pt[1], id: i + 1 });
+    cruisePoints.push({ lng: pt.lng, lat: pt.lat, id: plotId });
   });
 
   cruiseLayer.addTo(map);
-
-  document.getElementById('cruise-info').innerHTML =
-    `<span>${inside.length}</span> cruise points · <span>${selectedIndices.length}</span> polygon${selectedIndices.length > 1 ? 's' : ''}<br>Spacing: <span>${spacingX}×${spacingY} ch</span> · Bearing: <span>${bearingDeg}°</span>`;
-
-  notify(`${inside.length} cruise points generated`);
-}
-
-function clearCruiseGrid() {
-  if (cruiseLayer) { map.removeLayer(cruiseLayer); cruiseLayer = null; }
-  cruisePoints = [];
-  document.getElementById('cruise-info').textContent = 'No grid generated yet.';
-  notify('Cruise grid cleared');
+  document.getElementById('cruise-info').innerHTML = infoHtml || `<span>${cruisePoints.length}</span> cruise points loaded`;
 }
 
 // Ray-casting point-in-polygon
@@ -3509,12 +3809,20 @@ function loadShpLayer(shpBuf, dbfBuf, name, prjWkt) {
     } catch(e) { console.warn('[SHP] reprojection failed:', e); notify('Warning: could not reproject coordinates'); }
   }
 
-  // Assign auto-color
+  registerImportedFeatureLayer(name, features);
+}
+
+function registerImportedFeatureLayer(name, features, styleOverride = null, options = {}) {
+  const {
+    fitBounds = true,
+    notifyLoad = true
+  } = options;
+
   const autoColor = LAYER_COLORS[layerColorIdx % LAYER_COLORS.length];
   layerColorIdx++;
-
-  const styleObj = { color: '#e53935', fillColor: '#e53935', weight: 4, fillOpacity: 0, pointRadius: 5 };
-
+  const styleObj = styleOverride
+    ? { ...styleOverride }
+    : { color: autoColor, fillColor: autoColor, weight: 4, fillOpacity: 0, pointRadius: 5 };
   const layer = L.geoJSON({ type: 'FeatureCollection', features }, {
     style: () => ({ color: styleObj.color, weight: styleObj.weight, fillOpacity: styleObj.fillOpacity, fillColor: styleObj.fillColor }),
     pointToLayer: (feat, ll) => L.circleMarker(ll, {
@@ -3528,7 +3836,9 @@ function loadShpLayer(shpBuf, dbfBuf, name, prjWkt) {
     }
   }).addTo(map);
 
-  try { map.fitBounds(layer.getBounds().pad(0.1)); } catch(e) {}
+  if (fitBounds) {
+    try { map.fitBounds(layer.getBounds().pad(0.1)); } catch(e) {}
+  }
   layerControl.addOverlay(layer, `⬆ ${name}`);
 
   // Register in imported shapefiles for export with style info
@@ -3555,7 +3865,10 @@ function loadShpLayer(shpBuf, dbfBuf, name, prjWkt) {
   });
 
   if (polyCount) refreshPolySelect();
-  notify(`Loaded ${name} — ${features.length} features${polyCount ? ` (${polyCount} polygon${polyCount > 1 ? 's' : ''} available for cruise grid)` : ''}`);
+  queueOfflineStateSave();
+  if (notifyLoad) {
+    notify(`Loaded ${name} — ${features.length} features${polyCount ? ` (${polyCount} polygon${polyCount > 1 ? 's' : ''} available for cruise grid)` : ''}`);
+  }
 }
 
 // ── Minimal .shp reader (Point / Polyline / Polygon) ──────────────────────
@@ -4008,6 +4321,7 @@ function removeImportedLayer(idx) {
   else if (selectedLayerIdx > idx) selectedLayerIdx--;
   refreshLayerPanel();
   refreshPolySelect();
+  queueOfflineStateSave();
   notify(`Removed ${shp.name}`);
 }
 
@@ -4421,6 +4735,7 @@ updateMobileViewportMetrics();
 updateGpsMethodUI();
 refreshGpsPanel();
 updateGpsStatus();
+restoreOfflineAutosave();
 
 // ── Splash / Help Screen ──────────────────────────────────────────────────
 function dismissSplash() {
