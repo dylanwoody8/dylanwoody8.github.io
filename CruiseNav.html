@@ -5235,6 +5235,51 @@ function pulpwoodTons(dbh, logs) {
   return row[bestIdx] || 0;
 }
 
+// ── Topwood (pine) ──────────────────────────────────────────────────────────
+// Pulpwood-grade upper stem of a pine sawtimber/CNS tree, between the sawlog
+// merchantable top (default 8") and the pulp top (default 4"). Board-foot
+// scaling stops at the sawlog top, so this is real green tonnage the sawtimber
+// tables never count. Derived from the sawlog COUNT (no total height needed):
+// the sawlog top sets where topwood begins, and an average pine upper-stem
+// taper sets where it ends. Priced on the same RGT16 (TWODOG) green-tons table
+// used for pulpwood, prorated to the estimated topwood length, so topwood and
+// pulpwood stay on one coherent green-tons basis. Pine only.
+const TOPWOOD_CONFIG = {
+  sawtimberTopDiameter: 8,        // in. small end of the last sawlog
+  pulpTopDiameter: 4,             // in. merchantable pulp top
+  upperStemTaperInPerFt: 0.40,    // in. of diameter lost per ft of upper stem (8"->4" ~ 10 ft)
+  boltLengthFt: 16,               // RGT16 bolt length
+  rgt16Basis: 8                   // RGT16 DBH row used to price the topwood bolt
+};
+
+function topwoodLengthFt() {
+  const c = TOPWOOD_CONFIG;
+  const taper = Number.isFinite(Number(c.upperStemTaperInPerFt)) ? Number(c.upperStemTaperInPerFt) : 0.40;
+  if (taper <= 0) return 0;
+  const dropIn = (Number(c.sawtimberTopDiameter) || 8) - (Number(c.pulpTopDiameter) || 4);
+  if (dropIn <= 0) return 0;
+  return dropIn / taper;
+}
+
+function topwoodBoltFraction() {
+  const boltLen = Number(TOPWOOD_CONFIG.boltLengthFt) || 16;
+  if (boltLen <= 0) return 0;
+  return topwoodLengthFt() / boltLen;
+}
+
+// Raw green tons of topwood for ONE pine sawtimber/CNS tree (before TPA expansion).
+function topwoodTonsPerTree(tree) {
+  if (!tree) return 0;
+  const product = tree.product || 'sawtimber';
+  if (product === 'pulpwood') return 0;       // already all pulp
+  if (!isPineSpecies(tree.spp)) return 0;      // pine only
+  const logs = parseFloat(tree.logs);
+  if (!Number.isFinite(logs) || logs <= 0) return 0; // needs a sawlog stem
+  const fullBoltTons = pulpwoodTons(Number(TOPWOOD_CONFIG.rgt16Basis) || 8, 1);
+  if (!Number.isFinite(fullBoltTons) || fullBoltTons <= 0) return 0;
+  return fullBoltTons * topwoodBoltFraction();
+}
+
 function calcTPA(baf, dbh) { return baf / (0.005454 * dbh * dbh); }
 
 // Get available log steps for the current rule
@@ -5318,12 +5363,15 @@ function getTreeCruiseMetrics(tree, cruiseConfig, rule, formClass, totalAcres) {
   const rawVol = rp === 'pulpwood'
     ? pulpwoodTons(tree.dbh, tree.logs || 1)
     : sawtimberVol(tree.dbh, tree.logs, rule, formClass);
+  const rawTopwood = topwoodTonsPerTree(tree); // green tons of upper-stem pulp on pine saw/CNS trees
   return {
     product: rp,
     tpa: tpa,
     ba: ba,
     rawVol: rawVol,
-    volume: rawVol * tpa
+    volume: rawVol * tpa,
+    rawTopwood: rawTopwood,
+    topwood: rawTopwood * tpa
   };
 }
 
@@ -5349,30 +5397,37 @@ function buildCruiseStats(plots, cruiseConfig, rule, formClass, totalAcres) {
           baT: 0,
           tpaT: 0,
           volT: 0,
+          topwoodT: 0,
           count: 0,
           dbhSum: 0,
-          rawVolSum: 0
+          rawVolSum: 0,
+          rawTopwoodSum: 0
         };
       }
       speciesStats[key].baT += metrics.ba;
       speciesStats[key].tpaT += metrics.tpa;
       speciesStats[key].volT += metrics.volume;
+      speciesStats[key].topwoodT += metrics.topwood;
       speciesStats[key].count++;
       speciesStats[key].dbhSum += Number(tree.dbh) || 0;
       speciesStats[key].rawVolSum += metrics.rawVol;
+      speciesStats[key].rawTopwoodSum += metrics.rawTopwood;
     });
   });
 
   let totSawBA = 0, totSawTPA = 0, totSawVol = 0;
   let totCnsBA = 0, totCnsTPA = 0, totCnsVol = 0;
   let totPulpBA = 0, totPulpTPA = 0, totPulpVol = 0;
+  let totTopwoodVol = 0; // green tons/acre of topwood (pine saw + CNS upper stem)
 
   Object.values(speciesStats).forEach(stat => {
     stat.baAc = stat.baT / divisor;
     stat.tpaAc = stat.tpaT / divisor;
     stat.volAc = stat.volT / divisor;
+    stat.topwoodAc = stat.topwoodT / divisor;
     stat.avgDbh = stat.count > 0 ? stat.dbhSum / stat.count : 0;
     stat.avgVolPerTree = stat.count > 0 ? stat.rawVolSum / stat.count : 0;
+    totTopwoodVol += stat.topwoodAc;
     if (stat.product === 'pulpwood') {
       totPulpBA += stat.baAc; totPulpTPA += stat.tpaAc; totPulpVol += stat.volAc;
     } else if (stat.product === 'cns') {
@@ -5395,7 +5450,8 @@ function buildCruiseStats(plots, cruiseConfig, rule, formClass, totalAcres) {
     totCnsVol: totCnsVol,
     totPulpBA: totPulpBA,
     totPulpTPA: totPulpTPA,
-    totPulpVol: totPulpVol
+    totPulpVol: totPulpVol,
+    totTopwoodVol: totTopwoodVol
   };
 }
 
@@ -10014,6 +10070,8 @@ const NOTICE_BUCKET_SUM_FIELDS = [
   'sawTonsTotal',
   'totalTonsAc',
   'totalTonsTotal',
+  'topwoodTonsAc',
+  'topwoodTonsTotal',
   'cuFtAc',
   'cuFtTotal',
   'dbhSum',
@@ -10097,6 +10155,8 @@ function createNoticeBucket(spp, product, label) {
     sawTonsTotal: 0,
     totalTonsAc: 0,
     totalTonsTotal: 0,
+    topwoodTonsAc: 0,
+    topwoodTonsTotal: 0,
     cuFtAc: 0,
     cuFtTotal: 0,
     dbhSum: 0,
@@ -10229,6 +10289,8 @@ function buildNoticeReportModel(plots, cruiseConfig, rule, formClass, totalAcres
       const sawTonsTotal = product === 'pulpwood' || !factors ? 0 : (bfTotal / 1000) * factors.tonsPerMbf;
       const cuFtAc = product === 'pulpwood' || !factors ? 0 : (bfAc / 1000) * factors.cuFtPerMbf;
       const cuFtTotal = product === 'pulpwood' || !factors ? 0 : (bfTotal / 1000) * factors.cuFtPerMbf;
+      const topwoodTonsAc = metrics.topwood / divisor;
+      const topwoodTonsTotal = totalAcres > 0 ? topwoodTonsAc * totalAcres : (metrics.rawTopwood || 0);
 
       const entry = {
         talliedTrees: 1,
@@ -10244,6 +10306,8 @@ function buildNoticeReportModel(plots, cruiseConfig, rule, formClass, totalAcres
         sawTonsTotal: sawTonsTotal,
         totalTonsAc: pulpTonsAc + sawTonsAc,
         totalTonsTotal: pulpTonsTotal + sawTonsTotal,
+        topwoodTonsAc: topwoodTonsAc,
+        topwoodTonsTotal: topwoodTonsTotal,
         cuFtAc: cuFtAc,
         cuFtTotal: cuFtTotal,
         dbhSum: Number(tree.dbh) || 0,
@@ -10287,6 +10351,8 @@ function renderNoticeVolumeGroup(title, rows, totalLabel, formClass, options) {
   if (!rows || !rows.length) return '';
   const opts = options || {};
   const showBfLog = !!opts.showBfLog;
+  const rowTons = row => (row.tonsField ? (Number(row.bucket[row.tonsField]) || 0) : (Number(row.bucket.totalTonsTotal) || 0));
+  const totalTons = rows.reduce((sum, row) => sum + rowTons(row), 0);
   const totalBucket = makeCombinedNoticeBucket(totalLabel || title, rows.map(row => row.bucket));
   return `<div class="notice-volume-group">
     <div class="notice-mini-title">${escapeHtml(title)}</div>
@@ -10307,17 +10373,17 @@ function renderNoticeVolumeGroup(title, rows, totalLabel, formClass, options) {
           ${rows.map(row => `<tr>
             <td>${escapeHtml(row.label)}</td>
             <td>${escapeHtml(row.formClass || (row.bucket.product === 'pulpwood' ? '-' : String(formClass || 78)))}</td>
-            <td>${formatNoticeFixed(row.bucket.mbfTotal, 3, true)}</td>
-            <td>${formatNoticeFixed(row.bucket.totalTonsTotal, 1, true)}</td>
-            <td>${formatNoticeFlex(row.bucket.treesTotal, 1, false)}</td>
-            <td>${row.bucket.bfTotal > 0 ? formatNoticeFlex(row.bucket.avgBfTree, 0, true) : '-'}</td>
-            ${showBfLog ? '<td>' + (row.bucket.logCountTotal > 0 && row.bucket.bfTotal > 0 ? formatNoticeFixed(row.bucket.avgBfLog, 1, true) : '-') + '</td>' : ''}
+            <td>${row.tonsField ? '-' : formatNoticeFixed(row.bucket.mbfTotal, 3, true)}</td>
+            <td>${formatNoticeFixed(rowTons(row), 1, true)}</td>
+            <td>${row.tonsField ? '-' : formatNoticeFlex(row.bucket.treesTotal, 1, false)}</td>
+            <td>${!row.tonsField && row.bucket.bfTotal > 0 ? formatNoticeFlex(row.bucket.avgBfTree, 0, true) : '-'}</td>
+            ${showBfLog ? '<td>' + (!row.tonsField && row.bucket.logCountTotal > 0 && row.bucket.bfTotal > 0 ? formatNoticeFixed(row.bucket.avgBfLog, 1, true) : '-') + '</td>' : ''}
           </tr>`).join('')}
           <tr class="notice-total-row">
             <td>${escapeHtml(totalLabel || title)}</td>
             <td>-</td>
             <td>${formatNoticeFixed(totalBucket.mbfTotal, 3, true)}</td>
-            <td>${formatNoticeFixed(totalBucket.totalTonsTotal, 1, true)}</td>
+            <td>${formatNoticeFixed(totalTons, 1, true)}</td>
             <td>${formatNoticeFlex(totalBucket.treesTotal, 1, false)}</td>
             <td>${totalBucket.bfTotal > 0 ? formatNoticeFlex(totalBucket.avgBfTree, 0, true) : '-'}</td>
             ${showBfLog ? '<td>' + (totalBucket.logCountTotal > 0 && totalBucket.bfTotal > 0 ? formatNoticeFixed(totalBucket.avgBfLog, 1, true) : '-') + '</td>' : ''}
@@ -10359,6 +10425,15 @@ function renderNoticeFrontSummary(context) {
   if (hardwoodPulpRows.length) lowGradeRows.push({ label: 'Hardwood Pulpwood', bucket: makeCombinedNoticeBucket('Hardwood Pulpwood', hardwoodPulpRows), formClass: '-' });
   if (softwoodPulpRows.length) lowGradeRows.push({ label: 'Other Softwood Pulpwood', bucket: makeCombinedNoticeBucket('Other Softwood Pulpwood', softwoodPulpRows), formClass: '-' });
 
+  // Pine topwood: upper-stem pulp tonnage carried on pine sawtimber + CNS trees.
+  const pineTopwoodSourceRows = pineSawRows.concat(pineCnsRows)
+    .filter(bucket => bucket && bucket.topwoodTonsTotal > 0);
+  let pineTopwoodBucket = null;
+  if (pineTopwoodSourceRows.length) {
+    pineTopwoodBucket = makeCombinedNoticeBucket('Pine Topwood', pineTopwoodSourceRows);
+    lowGradeRows.push({ label: 'Pine Topwood', bucket: pineTopwoodBucket, formClass: '-', tonsField: 'topwoodTonsTotal' });
+  }
+
   const summaryParts = [];
   if (pineSummaryRows.length) summaryParts.push(renderNoticeVolumeGroup('Pine Volume Summary', pineSummaryRows, 'Total Pine Sawtimber Volume', context.formClass, { showBfLog: true }));
   if (hardwoodSawRows.length) summaryParts.push(renderNoticeVolumeGroup('Hardwood Sawtimber Summary', hardwoodSawRows, 'Total Hardwood Sawtimber Volume', context.formClass, { showBfLog: true }));
@@ -10370,14 +10445,15 @@ function renderNoticeFrontSummary(context) {
     'Pine chip-n-saw is grouped from pine sawtimber tallies at 10" DBH and under.',
     'Pine sawtimber is grouped from pine sawtimber tallies above 10" DBH.',
     'Hardwood and softwood sawtimber follow the selected ' + context.ruleName + ' rule at form class ' + context.formClass + '.',
-    'Pulpwood uses the RGT16 green-ton table from tallied DBH and 16-ft merchantable log counts.'
+    'Pulpwood uses the RGT16 green-ton table from tallied DBH and 16-ft merchantable log counts.',
+    'Pine topwood is the upper-stem pulp on pine sawtimber and chip-n-saw trees, from the ' + TOPWOOD_CONFIG.sawtimberTopDiameter + '" sawlog top to the ' + TOPWOOD_CONFIG.pulpTopDiameter + '" pulp top, estimated from sawlog count and priced on the same RGT16 green-ton basis.'
   ];
   const noteBits = [];
   if (context.model.estimatedFieldsUsed) {
     if (context.usesCustomTonsFactors) noteBits.push('Sawtimber and chip-n-saw tons use temporary custom report conversion factors; cubic-foot values still use the built-in defaults.');
     else noteBits.push('Sawtimber tons and cubic-foot values are estimated from default species-class conversion factors so the report can mirror notice-style tables.');
   }
-  noteBits.push('CruiseNav does not currently tally separate topwood or hardwood palletwood products, so those low-grade stems remain grouped under pulpwood.');
+  noteBits.push('Pine topwood is reported separately as upper-stem pulpwood-grade green tons; it is estimated from sawlog counts rather than measured heights and is not included in sawtimber board-foot volumes.');
   if (context.totalAcres <= 0) noteBits.push('Because tract acres are not set, tract total trees and volumes fall back to tallied tree counts and per-tree volumes.');
 
   return `<div class="notice-sheet">
@@ -10436,6 +10512,7 @@ function renderNoticeTractBlock(section) {
       <td>${formatNoticeFlex(row.bucket.treesTotal, 1, false)}</td>
       <td>${formatNoticeFixed(row.bucket.pulpTonsTotal, 1, false)}</td>
       <td>${formatNoticeFixed(row.bucket.sawTonsTotal, 1, false)}</td>
+      <td>${row.bucket.topwoodTonsTotal > 0 ? formatNoticeFixed(row.bucket.topwoodTonsTotal, 1, false) : '-'}</td>
       <td>${row.bucket.bfTotal > 0 ? formatNoticeFixed(row.bucket.mbfTotal, 1, false) : '-'}</td>
     </tr>`).join('');
   const perAcreRows = rows.map(row => `<tr${row.type === 'total' ? ' class="notice-total-row"' : ''}>
@@ -10443,6 +10520,7 @@ function renderNoticeTractBlock(section) {
       <td>${formatNoticeFixed(row.bucket.treesAc, 1, false)}</td>
       <td>${formatNoticeFixed(row.bucket.pulpTonsAc, 1, false)}</td>
       <td>${formatNoticeFixed(row.bucket.sawTonsAc, 1, false)}</td>
+      <td>${row.bucket.topwoodTonsAc > 0 ? formatNoticeFixed(row.bucket.topwoodTonsAc, 1, false) : '-'}</td>
       <td>${row.bucket.bfAc > 0 ? formatNoticeFixed(row.bucket.bfAc, 1, false) : '-'}</td>
     </tr>`).join('');
   const avgTreeRows = rows.map(row => `<tr${row.type === 'total' ? ' class="notice-total-row"' : ''}>
@@ -10458,7 +10536,7 @@ function renderNoticeTractBlock(section) {
         <div class="notice-panel-title">Tract Total</div>
         <table class="notice-panel-table">
           <thead>
-            <tr><th>Product</th><th>Trees</th><th>PW Tons</th><th>Saw Tons</th><th>MBF</th></tr>
+            <tr><th>Product</th><th>Trees</th><th>PW Tons</th><th>Saw Tons</th><th>Topwd Tons</th><th>MBF</th></tr>
           </thead>
           <tbody>${tractTotalRows}</tbody>
         </table>
@@ -10467,7 +10545,7 @@ function renderNoticeTractBlock(section) {
         <div class="notice-panel-title">Per Acre</div>
         <table class="notice-panel-table">
           <thead>
-            <tr><th>BA</th><th>Trees</th><th>PW Tons</th><th>Saw Tons</th><th>BF</th></tr>
+            <tr><th>BA</th><th>Trees</th><th>PW Tons</th><th>Saw Tons</th><th>Topwd Tons</th><th>BF</th></tr>
           </thead>
           <tbody>${perAcreRows}</tbody>
         </table>
@@ -11418,11 +11496,13 @@ function getPlotExportSummary(plot, cruiseConfig, rule, formClass, totalAcres) {
   let sawCount = 0;
   let cnsCount = 0;
   let pulpCount = 0;
+  let topwoodTons = 0;
 
   trees.forEach(tree => {
     const metrics = getTreeCruiseMetrics(tree, cruiseConfig, rule, formClass, totalAcres);
     totalTPA += metrics.tpa;
     totalBA += metrics.ba;
+    topwoodTons += metrics.topwood;
     if (metrics.product === 'pulpwood') {
       pulpCount++;
       pulpTons += metrics.volume;
@@ -11444,7 +11524,8 @@ function getPlotExportSummary(plot, cruiseConfig, rule, formClass, totalAcres) {
     totalTPA: totalTPA,
     sawBF: sawBF,
     cnsBF: cnsBF,
-    pulpTons: pulpTons
+    pulpTons: pulpTons,
+    topwoodTons: topwoodTons
   };
 }
 
@@ -11506,6 +11587,7 @@ function exportCruiseCSV() {
   const totSawBA = cruiseStats.totSawBA, totSawTPA = cruiseStats.totSawTPA, totSawVol = cruiseStats.totSawVol;
   const totCnsBA = cruiseStats.totCnsBA, totCnsTPA = cruiseStats.totCnsTPA, totCnsVol = cruiseStats.totCnsVol;
   const totPulpBA = cruiseStats.totPulpBA, totPulpTPA = cruiseStats.totPulpTPA, totPulpVol = cruiseStats.totPulpVol;
+  const totTopwoodVol = cruiseStats.totTopwoodVol || 0;
 
   const rows = [];
 
@@ -11544,7 +11626,7 @@ function exportCruiseCSV() {
   rows.push([]);
 
   rows.push(['STAND SUMMARY']);
-  rows.push(['Category', 'BA_per_Acre_sqft', 'Trees_per_Acre', 'Saw_BF_per_Acre', 'Total_Saw_BF', 'Total_Saw_MBF', 'Pulp_Tons_per_Acre', 'Total_Pulp_Tons']);
+  rows.push(['Category', 'BA_per_Acre_sqft', 'Trees_per_Acre', 'Saw_BF_per_Acre', 'Total_Saw_BF', 'Total_Saw_MBF', 'Pulp_Tons_per_Acre', 'Total_Pulp_Tons', 'Topwood_Tons_per_Acre', 'Total_Topwood_Tons']);
   rows.push([
     'Sawtimber',
     totSawBA ? totSawBA.toFixed(1) : '',
@@ -11552,6 +11634,8 @@ function exportCruiseCSV() {
     totSawVol ? Math.round(totSawVol) : '',
     totalAcres > 0 && totSawVol ? Math.round(totSawVol * totalAcres) : '',
     totalAcres > 0 && totSawVol ? (totSawVol * totalAcres / 1000).toFixed(1) : '',
+    '',
+    '',
     '',
     ''
   ]);
@@ -11563,6 +11647,8 @@ function exportCruiseCSV() {
     totalAcres > 0 && totCnsVol ? Math.round(totCnsVol * totalAcres) : '',
     totalAcres > 0 && totCnsVol ? (totCnsVol * totalAcres / 1000).toFixed(1) : '',
     '',
+    '',
+    '',
     ''
   ]);
   rows.push([
@@ -11573,7 +11659,21 @@ function exportCruiseCSV() {
     '',
     '',
     totPulpVol ? totPulpVol.toFixed(2) : '',
-    totalAcres > 0 && totPulpVol ? (totPulpVol * totalAcres).toFixed(1) : ''
+    totalAcres > 0 && totPulpVol ? (totPulpVol * totalAcres).toFixed(1) : '',
+    '',
+    ''
+  ]);
+  rows.push([
+    'Pine Topwood',
+    '',
+    '',
+    '',
+    '',
+    '',
+    '',
+    '',
+    totTopwoodVol ? totTopwoodVol.toFixed(2) : '',
+    totalAcres > 0 && totTopwoodVol ? (totTopwoodVol * totalAcres).toFixed(1) : ''
   ]);
   const combBA = totSawBA + totCnsBA + totPulpBA;
   const combTPA = totSawTPA + totCnsTPA + totPulpTPA;
@@ -11586,20 +11686,23 @@ function exportCruiseCSV() {
     totalAcres > 0 && combSawVol ? Math.round(combSawVol * totalAcres) : '',
     totalAcres > 0 && combSawVol ? (combSawVol * totalAcres / 1000).toFixed(1) : '',
     totPulpVol ? totPulpVol.toFixed(2) : '',
-    totalAcres > 0 && totPulpVol ? (totPulpVol * totalAcres).toFixed(1) : ''
+    totalAcres > 0 && totPulpVol ? (totPulpVol * totalAcres).toFixed(1) : '',
+    totTopwoodVol ? totTopwoodVol.toFixed(2) : '',
+    totalAcres > 0 && totTopwoodVol ? (totTopwoodVol * totalAcres).toFixed(1) : ''
   ]);
   rows.push([]);
 
   rows.push(['SPECIES SUMMARY']);
-  rows.push(['Species_Code', 'Species_Name', 'Product', 'Trees_Tallied', 'BA_per_Acre_sqft', 'Trees_per_Acre', 'BF_per_Acre', 'Total_BF', 'Total_MBF', 'Tons_per_Acre', 'Total_Tons']);
+  rows.push(['Species_Code', 'Species_Name', 'Product', 'Trees_Tallied', 'BA_per_Acre_sqft', 'Trees_per_Acre', 'BF_per_Acre', 'Total_BF', 'Total_MBF', 'Tons_per_Acre', 'Total_Tons', 'Topwood_Tons_per_Acre', 'Total_Topwood_Tons']);
   if (Object.keys(speciesStats).length === 0) {
-    rows.push(['', '', '', '0', '', '', '', '', '', '', '']);
+    rows.push(['', '', '', '0', '', '', '', '', '', '', '', '', '']);
   } else {
     Object.values(speciesStats).sort((a, b) => {
       const bySpecies = String(a.spp || '').localeCompare(String(b.spp || ''));
       if (bySpecies !== 0) return bySpecies;
       return String(a.product || '').localeCompare(String(b.product || ''));
     }).forEach(stat => {
+      const tw = Number(stat.topwoodAc) || 0;
       rows.push([
         stat.spp,
         getSpeciesLabel(stat.spp),
@@ -11611,7 +11714,9 @@ function exportCruiseCSV() {
         stat.product === 'pulpwood' || totalAcres <= 0 ? '' : Math.round(stat.volAc * totalAcres),
         stat.product === 'pulpwood' || totalAcres <= 0 ? '' : (stat.volAc * totalAcres / 1000).toFixed(1),
         stat.product === 'pulpwood' ? stat.volAc.toFixed(2) : '',
-        stat.product === 'pulpwood' && totalAcres > 0 ? (stat.volAc * totalAcres).toFixed(1) : ''
+        stat.product === 'pulpwood' && totalAcres > 0 ? (stat.volAc * totalAcres).toFixed(1) : '',
+        tw > 0 ? tw.toFixed(2) : '',
+        tw > 0 && totalAcres > 0 ? (tw * totalAcres).toFixed(1) : ''
       ]);
     });
   }
@@ -11638,9 +11743,9 @@ function exportCruiseCSV() {
 
   if (fullMode) {
     rows.push(['STAND TALLY']);
-    rows.push(['Tally_Context', 'Status', 'Cruiser', 'Tree_Count', 'Saw_Tree_Count', 'CNS_Tree_Count', 'Pulp_Tree_Count', 'Total_TPA', 'Saw_BF_per_Acre', 'CNS_BF_per_Acre', 'Pulp_Tons_per_Acre']);
+    rows.push(['Tally_Context', 'Status', 'Cruiser', 'Tree_Count', 'Saw_Tree_Count', 'CNS_Tree_Count', 'Pulp_Tree_Count', 'Total_TPA', 'Saw_BF_per_Acre', 'CNS_BF_per_Acre', 'Pulp_Tons_per_Acre', 'Topwood_Tons_per_Acre']);
     if (!allDonePlots.length) {
-      rows.push(['STAND', 'Pending', '', '', '', '', '', '', '', '', '']);
+      rows.push(['STAND', 'Pending', '', '', '', '', '', '', '', '', '', '']);
     } else {
       const stand = allDonePlots[0];
       const summary = getPlotExportSummary(stand, cruiseConfig, rule, formClass, totalAcres);
@@ -11655,14 +11760,15 @@ function exportCruiseCSV() {
         summary.totalTPA ? summary.totalTPA.toFixed(2) : '',
         summary.sawBF ? summary.sawBF.toFixed(1) : '',
         summary.cnsBF ? summary.cnsBF.toFixed(1) : '',
-        summary.pulpTons ? summary.pulpTons.toFixed(2) : ''
+        summary.pulpTons ? summary.pulpTons.toFixed(2) : '',
+        summary.topwoodTons ? summary.topwoodTons.toFixed(2) : ''
       ]);
     }
   } else {
     rows.push(['PLOTS']);
-    rows.push(['Plot_ID', 'Status', 'No_Tally', 'Cruiser', 'Tree_Count', 'Saw_Tree_Count', 'CNS_Tree_Count', 'Pulp_Tree_Count', 'Total_TPA', 'Saw_BF_per_Acre', 'CNS_BF_per_Acre', 'Pulp_Tons_per_Acre', 'Lat', 'Lng']);
+    rows.push(['Plot_ID', 'Status', 'No_Tally', 'Cruiser', 'Tree_Count', 'Saw_Tree_Count', 'CNS_Tree_Count', 'Pulp_Tree_Count', 'Total_TPA', 'Saw_BF_per_Acre', 'CNS_BF_per_Acre', 'Pulp_Tons_per_Acre', 'Topwood_Tons_per_Acre', 'Lat', 'Lng']);
     if (!rPlots.length) {
-      rows.push(['', '', '', '', '', '', '', '', '', '', '', '', '', '']);
+      rows.push(['', '', '', '', '', '', '', '', '', '', '', '', '', '', '']);
     } else {
       rPlots.forEach(plot => {
         const summary = getPlotExportSummary(plot, cruiseConfig, rule, formClass, totalAcres);
@@ -11680,6 +11786,7 @@ function exportCruiseCSV() {
           summary.sawBF ? summary.sawBF.toFixed(1) : '',
           summary.cnsBF ? summary.cnsBF.toFixed(1) : '',
           summary.pulpTons ? summary.pulpTons.toFixed(2) : '',
+          summary.topwoodTons ? summary.topwoodTons.toFixed(2) : '',
           Number.isFinite(plot.lat) ? Number(plot.lat).toFixed(6) : '',
           Number.isFinite(plot.lng) ? Number(plot.lng).toFixed(6) : ''
         ]);
