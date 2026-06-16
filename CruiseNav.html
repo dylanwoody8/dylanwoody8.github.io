@@ -1532,6 +1532,118 @@
     color: var(--accent);
     background: rgba(106,191,75,0.1);
   }
+  /* â”€â”€ Survival cruise entry â”€â”€ */
+  .surv-cat-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .surv-card {
+    background: var(--bg-card);
+    border: 2px solid var(--border);
+    border-radius: 12px;
+    padding: 10px 12px;
+  }
+  .surv-card.surv-live { border-left: 4px solid var(--accent); }
+  .surv-card.surv-dead { border-left: 4px solid var(--text-muted); opacity: 0.92; }
+  .surv-card-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 8px;
+  }
+  .surv-card-label {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-weight: 800;
+    font-size: 0.92rem;
+    color: var(--text-primary);
+  }
+  .surv-card-total {
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 700;
+    font-size: 1.15rem;
+    color: var(--accent);
+    min-width: 38px;
+    text-align: right;
+  }
+  .surv-card.surv-dead .surv-card-total { color: var(--text-muted); }
+  .surv-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 4px 0;
+  }
+  .surv-row + .surv-row { border-top: 1px dashed var(--border); }
+  .surv-row-lbl {
+    flex: 1;
+    font-size: 0.72rem;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-family: 'JetBrains Mono', monospace;
+  }
+  .surv-row-tm .surv-row-lbl { color: var(--orange); }
+  .surv-row-count {
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 700;
+    font-size: 1.1rem;
+    color: var(--text-primary);
+    min-width: 34px;
+    text-align: center;
+  }
+  .surv-btn {
+    flex: 0 0 auto;
+    width: 52px;
+    height: 44px;
+    border-radius: 10px;
+    border: 2px solid var(--border);
+    background: var(--bg-deep);
+    color: var(--text-secondary);
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-weight: 800;
+    font-size: 1.2rem;
+    cursor: pointer;
+    transition: transform 0.1s, border-color 0.1s, color 0.1s;
+    -webkit-user-select: none;
+    user-select: none;
+  }
+  .surv-btn:active { transform: scale(0.94); }
+  .surv-plus { border-color: var(--accent); color: var(--accent); background: rgba(106,191,75,0.12); }
+  .surv-row-tm .surv-plus { border-color: var(--orange); color: var(--orange); background: rgba(230,126,34,0.12); }
+  .surv-minus { font-size: 1.4rem; }
+  .surv-report-tiles {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+  }
+  .surv-report-tile {
+    border: 1px solid #222;
+    background: #fff;
+    padding: 8px 6px;
+    text-align: center;
+  }
+  .surv-report-tile-val {
+    font-family: Georgia, 'Times New Roman', serif;
+    font-weight: 700;
+    font-size: 1.15rem;
+    color: #111;
+  }
+  .surv-report-tile-lbl {
+    font-size: 0.66rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    color: #333;
+    margin-top: 2px;
+  }
+  .surv-report-tile-sub {
+    font-size: 0.6rem;
+    color: #666;
+    margin-top: 1px;
+  }
+  @media (max-width: 480px) {
+    .surv-report-tiles { grid-template-columns: repeat(2, 1fr); }
+  }
   .dbh-scroll-hint {
     margin-top: 6px;
     font-size: 0.62rem;
@@ -4804,11 +4916,15 @@ const CRUISE_METHODS = [
   { value: 'baf_20', label: 'BAF 20', kind: 'baf', baf: 20, shortLabel: 'BAF 20' },
   { value: 'baf_30', label: 'BAF 30', kind: 'baf', baf: 30, shortLabel: 'BAF 30' },
   { value: 'baf_40', label: 'BAF 40', kind: 'baf', baf: 40, shortLabel: 'BAF 40' },
-  { value: 'full_100', label: '100% Tally', kind: 'full', shortLabel: '100% Tally' }
+  { value: 'full_100', label: '100% Tally', kind: 'full', shortLabel: '100% Tally' },
+  { value: 'survival_100', label: 'Survival 1/100', kind: 'survival', expansionFactor: 100, shortLabel: 'Survival 1/100' },
+  { value: 'survival_50', label: 'Survival 1/50', kind: 'survival', expansionFactor: 50, shortLabel: 'Survival 1/50' },
+  { value: 'survival_20', label: 'Survival 1/20', kind: 'survival', expansionFactor: 20, shortLabel: 'Survival 1/20' },
+  { value: 'survival_10', label: 'Survival 1/10', kind: 'survival', expansionFactor: 10, shortLabel: 'Survival 1/10' }
 ];
 
 CRUISE_METHODS.forEach(method => {
-  if (method.kind === 'fixed') {
+  if (method.kind === 'fixed' || method.kind === 'survival') {
     method.plotFraction = 1 / method.expansionFactor;
     method.plotRadiusFeet = Math.sqrt((43560 * method.plotFraction) / Math.PI);
   }
@@ -4846,6 +4962,9 @@ function renderCruiseMethodOptions(selectedValue) {
 
 function getCruiseMethodHelpText(method) {
   if (!method) return '';
+  if (method.kind === 'survival') {
+    return method.shortLabel + ' survival plot (' + method.plotRadiusFeet.toFixed(1) + ' ft radius). Tally each seedling within the plot by type (planted pine, natural pine, natural hardwood, dead) and flag tip moth. Each tree expands by ' + method.expansionFactor + ' trees per acre.';
+  }
   if (method.kind === 'fixed') {
     return method.shortLabel + ' fixed plot. Count trees whose bole center falls within ' + method.plotRadiusFeet.toFixed(1) + ' ft of plot center. Each tree expands by ' + method.expansionFactor + ' trees per acre.';
   }
@@ -4857,6 +4976,9 @@ function getCruiseMethodHelpText(method) {
 
 function getCruiseMethodSummary(method) {
   if (!method) return '';
+  if (method.kind === 'survival') {
+    return method.label + ' survival plot (' + method.plotRadiusFeet.toFixed(1) + ' ft radius)';
+  }
   if (method.kind === 'fixed') {
     return method.label + ' fixed plot (' + method.plotRadiusFeet.toFixed(1) + ' ft radius)';
   }
@@ -4969,6 +5091,118 @@ function isCruiseMethodFull(methodOrValue) {
     ? getCruiseMethod(methodOrValue)
     : methodOrValue;
   return !!(method && method.kind === 'full');
+}
+
+// â”€â”€ Survival cruise support â”€â”€
+const SURVIVAL_CATEGORIES = [
+  { key: 'planted_pine', label: 'Planted Pine', pine: true, live: true },
+  { key: 'natural_pine', label: 'Natural Pine', pine: true, live: true },
+  { key: 'natural_hardwood', label: 'Natural Hardwood', pine: false, live: true },
+  { key: 'dead', label: 'Dead', pine: false, live: false }
+];
+const SURVIVAL_CATEGORY_MAP = {};
+SURVIVAL_CATEGORIES.forEach(c => { SURVIVAL_CATEGORY_MAP[c.key] = c; });
+
+function isCruiseMethodSurvival(methodOrValue) {
+  if (!methodOrValue) return false;
+  const method = typeof methodOrValue === 'string'
+    ? getCruiseMethod(methodOrValue)
+    : methodOrValue;
+  return !!(method && method.kind === 'survival');
+}
+
+function isJobSurvival(job) {
+  return !!(job && isCruiseMethodSurvival(job.cruiseType));
+}
+
+function isActiveJobSurvival() {
+  const job = getActiveJobRecord();
+  return !!(job && isCruiseMethodSurvival(job.cruiseType));
+}
+
+function createEmptySurvivalCounts() {
+  return {
+    planted_pine: 0, planted_pine_tm: 0,
+    natural_pine: 0, natural_pine_tm: 0,
+    natural_hardwood: 0,
+    dead: 0
+  };
+}
+
+// Build survival tally records (one per tree) from a counts object
+function expandSurvivalCounts(counts) {
+  const c = counts || {};
+  const trees = [];
+  const push = (cat, tipmoth, n) => {
+    for (let i = 0; i < (n || 0); i++) trees.push({ kind: 'survival', cat: cat, tipmoth: !!tipmoth });
+  };
+  push('planted_pine', false, c.planted_pine);
+  push('planted_pine', true, c.planted_pine_tm);
+  push('natural_pine', false, c.natural_pine);
+  push('natural_pine', true, c.natural_pine_tm);
+  push('natural_hardwood', false, c.natural_hardwood);
+  push('dead', false, c.dead);
+  return trees;
+}
+
+// Derive a counts object from an array of stored survival tree records
+function getSurvivalCountsFromTrees(trees) {
+  const counts = createEmptySurvivalCounts();
+  (Array.isArray(trees) ? trees : []).forEach(t => {
+    if (!t) return;
+    const cat = t.cat;
+    const tm = !!t.tipmoth;
+    if (cat === 'planted_pine') tm ? counts.planted_pine_tm++ : counts.planted_pine++;
+    else if (cat === 'natural_pine') tm ? counts.natural_pine_tm++ : counts.natural_pine++;
+    else if (cat === 'natural_hardwood') counts.natural_hardwood++;
+    else if (cat === 'dead') counts.dead++;
+    // records without a recognized survival category (e.g. timber tallies) are ignored
+  });
+  return counts;
+}
+
+function getSurvivalCategoryTotal(counts, key) {
+  const c = counts || {};
+  if (key === 'planted_pine') return (c.planted_pine || 0) + (c.planted_pine_tm || 0);
+  if (key === 'natural_pine') return (c.natural_pine || 0) + (c.natural_pine_tm || 0);
+  return c[key] || 0;
+}
+
+// Aggregate survival stats across completed plots (per-acre uses plot expansion factor)
+function buildSurvivalStats(plots, cruiseConfig) {
+  const ef = (cruiseConfig && cruiseConfig.expansionFactor) || 100;
+  const donePlots = (plots || []).filter(p => p && p.completed);
+  const plotCount = donePlots.length;
+  const totals = createEmptySurvivalCounts();
+  let totalTreeCount = 0;
+  donePlots.forEach(plot => {
+    const counts = getSurvivalCountsFromTrees(plot.trees);
+    Object.keys(totals).forEach(k => { totals[k] += counts[k]; });
+    totalTreeCount += (plot.trees || []).length;
+  });
+  const divisor = Math.max(plotCount, 1);
+  // Per-category trees per acre = (total counted / plots) * expansion factor
+  const tpa = {};
+  Object.keys(totals).forEach(k => { tpa[k] = (totals[k] / divisor) * ef; });
+  const liveTpa = getSurvivalCategoryTotal(tpa, 'planted_pine') +
+                  getSurvivalCategoryTotal(tpa, 'natural_pine') +
+                  (tpa.natural_hardwood || 0);
+  const plantedLiveTpa = getSurvivalCategoryTotal(tpa, 'planted_pine');
+  const deadTpa = tpa.dead || 0;
+  const tipmothTpa = (tpa.planted_pine_tm || 0) + (tpa.natural_pine_tm || 0);
+  const pineTpa = getSurvivalCategoryTotal(tpa, 'planted_pine') + getSurvivalCategoryTotal(tpa, 'natural_pine');
+  return {
+    expansionFactor: ef,
+    plotCount: plotCount,
+    totals: totals,
+    tpa: tpa,
+    totalTreeCount: totalTreeCount,
+    liveTpa: liveTpa,
+    plantedLiveTpa: plantedLiveTpa,
+    deadTpa: deadTpa,
+    tipmothTpa: tipmothTpa,
+    pineTpa: pineTpa
+  };
 }
 
 function isActiveJobFullTally() {
@@ -5316,6 +5550,7 @@ let tallySelLogs = 2;
 let tallySelHeight = 50;
 let tallySelSpecies = '';
 let tallyPlotGuideLayer = null;
+let survivalCounts = createEmptySurvivalCounts(); // survival cruise entry state
 
 // â”€â”€ Get cruise config for active job â”€â”€
 function getJobCruiseConfig() {
@@ -5352,11 +5587,14 @@ function getTreeExpansionFactor(tree, cruiseConfig, totalAcres) {
   const method = (cruiseConfig && cruiseConfig.method) || getCruiseMethod(cruiseConfig && cruiseConfig.cruiseType);
   if (!tree || !method) return 0;
   if (method.kind === 'baf') return calcTPA(method.baf || 20, tree.dbh);
-  if (method.kind === 'fixed') return method.expansionFactor || 0;
+  if (method.kind === 'fixed' || method.kind === 'survival') return method.expansionFactor || 0;
   return totalAcres > 0 ? (1 / totalAcres) : 1;
 }
 
 function getTreeCruiseMetrics(tree, cruiseConfig, rule, formClass, totalAcres) {
+  if (tree && tree.kind === 'survival') {
+    return { product: 'survival', tpa: 0, ba: 0, rawVol: 0, volume: 0, rawTopwood: 0, topwood: 0 };
+  }
   const rp = getReportProduct(tree);
   const tpa = getTreeExpansionFactor(tree, cruiseConfig, totalAcres);
   const ba = getTreeBasalAreaSqFt(tree.dbh) * tpa;
@@ -5387,6 +5625,7 @@ function buildCruiseStats(plots, cruiseConfig, rule, formClass, totalAcres) {
 
   allDonePlots.forEach(plot => {
     (plot.trees || []).forEach(tree => {
+      if (tree && tree.kind === 'survival') return;
       totalTreeCount++;
       const metrics = getTreeCruiseMetrics(tree, cruiseConfig, rule, formClass, totalAcres);
       const key = tree.spp + '|' + metrics.product;
@@ -5712,6 +5951,11 @@ function openTallyModal(plotOrId) {
     toast('Plot not found');
     return;
   }
+  if (isActiveJobSurvival()) {
+    openSurvivalTallyModal(plot);
+    return;
+  }
+  setTallySectionMode('timber');
   applyTallyDisplayPreset();
   tallyTarget = { mode: 'plot', plotId: plot.id };
   const trees = plot.trees || [];
@@ -5755,6 +5999,7 @@ function openStandTallyModal() {
   }
   applyTallyDisplayPreset();
   tallyTarget = { mode: 'stand', plotId: null };
+  setTallySectionMode('timber');
   const fullTally = getJobFullTally(job);
   tallyTrees = cloneJson(fullTally.trees || []);
   tallyLastTree = tallyTrees.length ? { ...tallyTrees[tallyTrees.length - 1] } : null;
@@ -6097,8 +6342,121 @@ function tallyNoTally() {
 function tallyClearTrees() {
   tallyTrees = [];
   tallyLastTree = null;
+  if (isActiveJobSurvival() && tallyTarget.mode === 'plot') {
+    survivalCounts = createEmptySurvivalCounts();
+    survUpdateCounts();
+    return;
+  }
   tallyRenderTable();
   tallyUpdateStats();
+}
+
+// â”€â”€ Survival cruise tally modal â”€â”€
+function setTallySectionMode(mode) {
+  const timber = document.getElementById('tally-timber-entry');
+  const survival = document.getElementById('tally-survival-entry');
+  const isSurv = mode === 'survival';
+  if (timber) timber.style.display = isSurv ? 'none' : '';
+  if (survival) survival.style.display = isSurv ? '' : 'none';
+}
+
+function openSurvivalTallyModal(plot) {
+  applyTallyDisplayPreset();
+  setTallySectionMode('survival');
+  tallyTarget = { mode: 'plot', plotId: plot.id };
+  tallyTrees = cloneJson(plot.trees || []);
+  survivalCounts = getSurvivalCountsFromTrees(tallyTrees);
+  tallyLastTree = null;
+  document.getElementById('tally-title').textContent = 'Plot ' + plot.id;
+  refreshTallyActionButtons();
+
+  const config = getJobCruiseConfig();
+  const note = document.getElementById('tally-survival-note');
+  if (note) {
+    note.textContent = config.method.shortLabel + ' plot' +
+      (config.plotRadiusFeet ? ', ' + config.plotRadiusFeet.toFixed(1) + ' ft radius' : '') +
+      '. Each tree = ' + (config.expansionFactor || 0) + '/ac. Tap +/\u2212 to count each seedling.';
+  }
+  survBuildCards();
+  survUpdateCounts();
+
+  map.closePopup();
+  document.getElementById('tally-overlay').classList.add('open');
+}
+
+function survRowHtml(catKey, tipmoth, label) {
+  const stateKey = tipmoth ? catKey + '_tm' : catKey;
+  const rowClass = 'surv-row' + (tipmoth ? ' surv-row-tm' : '');
+  const tmArg = tipmoth ? 'true' : 'false';
+  return '<div class="' + rowClass + '">' +
+    '<span class="surv-row-lbl">' + label + '</span>' +
+    '<button type="button" class="surv-btn surv-minus" onclick="survAdjust(\'' + catKey + '\',' + tmArg + ',-1)">&minus;</button>' +
+    '<span class="surv-row-count" id="surv-count-' + stateKey + '">0</span>' +
+    '<button type="button" class="surv-btn surv-plus" onclick="survAdjust(\'' + catKey + '\',' + tmArg + ',1)">+</button>' +
+  '</div>';
+}
+
+function survBuildCards() {
+  const grid = document.getElementById('surv-cat-grid');
+  if (!grid) return;
+  grid.innerHTML = SURVIVAL_CATEGORIES.map(cat => {
+    const cardClass = 'surv-card ' + (cat.live ? 'surv-live' : 'surv-dead');
+    let rows = '';
+    if (cat.pine) {
+      rows += survRowHtml(cat.key, false, 'Healthy');
+      rows += survRowHtml(cat.key, true, 'Tip Moth');
+    } else {
+      rows += survRowHtml(cat.key, false, 'Count');
+    }
+    return '<div class="' + cardClass + '">' +
+      '<div class="surv-card-head">' +
+        '<span class="surv-card-label">' + cat.label + '</span>' +
+        '<span class="surv-card-total" id="surv-total-' + cat.key + '">0</span>' +
+      '</div>' + rows +
+    '</div>';
+  }).join('');
+}
+
+function survAdjust(catKey, tipmoth, delta) {
+  const stateKey = tipmoth ? catKey + '_tm' : catKey;
+  if (!(stateKey in survivalCounts)) return;
+  survivalCounts[stateKey] = Math.max(0, (survivalCounts[stateKey] || 0) + delta);
+  tallyTrees = expandSurvivalCounts(survivalCounts);
+  survUpdateCounts();
+  vibrate([delta > 0 ? 25 : 15]);
+}
+
+function survUpdateCounts() {
+  Object.keys(survivalCounts).forEach(stateKey => {
+    const el = document.getElementById('surv-count-' + stateKey);
+    if (el) el.textContent = survivalCounts[stateKey];
+  });
+  SURVIVAL_CATEGORIES.forEach(cat => {
+    const totalEl = document.getElementById('surv-total-' + cat.key);
+    if (totalEl) totalEl.textContent = getSurvivalCategoryTotal(survivalCounts, cat.key);
+  });
+  survUpdateStats();
+}
+
+function survUpdateStats() {
+  const config = getJobCruiseConfig();
+  const ef = config.expansionFactor || 100;
+  const liveCount = getSurvivalCategoryTotal(survivalCounts, 'planted_pine') +
+                    getSurvivalCategoryTotal(survivalCounts, 'natural_pine') +
+                    (survivalCounts.natural_hardwood || 0);
+  const deadCount = survivalCounts.dead || 0;
+  const baEl = document.getElementById('tally-ba');
+  const tpaEl = document.getElementById('tally-tpa');
+  const volEl = document.getElementById('tally-vol');
+  const baLbl = document.getElementById('tally-ba-lbl');
+  const tpaLbl = document.getElementById('tally-tpa-lbl');
+  const volLbl = document.getElementById('tally-vol-lbl');
+  if (baEl) baEl.textContent = Math.round(liveCount * ef).toLocaleString();
+  if (tpaEl) tpaEl.textContent = liveCount;
+  if (volEl) volEl.textContent = Math.round(deadCount * ef).toLocaleString();
+  if (baLbl) baLbl.textContent = 'Live/Ac';
+  if (tpaLbl) tpaLbl.textContent = 'Plot Live';
+  if (volLbl) volLbl.textContent = 'Dead/Ac';
 }
 
 // â”€â”€ Generate share code â”€â”€
@@ -10831,6 +11189,104 @@ function renderNoticeVolumeTable(speciesRows, totalAcres, ruleName, formClass) {
   return html;
 }
 
+function updateReportPanelModeUI(cruiseConfig) {
+  const survival = !!(cruiseConfig && cruiseConfig.kind === 'survival');
+  const factorCard = document.getElementById('report-conversion-factors');
+  if (factorCard) factorCard.style.display = survival ? 'none' : '';
+  const ruleSel = document.getElementById('report-logrule');
+  const fcSel = document.getElementById('report-formclass');
+  if (ruleSel && ruleSel.parentElement) ruleSel.parentElement.style.display = survival ? 'none' : '';
+  if (fcSel && fcSel.parentElement) fcSel.parentElement.style.display = survival ? 'none' : '';
+}
+
+function survReportTile(label, value, sub) {
+  return '<div class="surv-report-tile">' +
+    '<div class="surv-report-tile-val">' + value + '</div>' +
+    '<div class="surv-report-tile-lbl">' + label + '</div>' +
+    '<div class="surv-report-tile-sub">' + sub + '</div>' +
+  '</div>';
+}
+
+function renderSurvivalReport(job, plots, cruiseConfig, polygons) {
+  const stats = buildSurvivalStats(plots, cruiseConfig);
+  const manualAcres = parseFloat(document.getElementById('report-acres').value);
+  const acres = manualAcres > 0 ? manualAcres : getTotalAcresFromPolygonItems(polygons);
+  const tpa = stats.tpa;
+
+  const liveTpa = stats.liveTpa;
+  const deadTpa = stats.deadTpa;
+  const stemsFound = liveTpa + deadTpa;
+  const survivalPct = stemsFound > 0 ? (liveTpa / stemsFound * 100) : 0;
+  const mortalityPct = stemsFound > 0 ? (deadTpa / stemsFound * 100) : 0;
+  const tipmothPinePct = stats.pineTpa > 0 ? (stats.tipmothTpa / stats.pineTpa * 100) : 0;
+
+  const fmtTpa = v => {
+    const num = Number(v) || 0;
+    if (num >= 100) return Math.round(num).toLocaleString();
+    if (num >= 10) return num.toFixed(0);
+    return num.toFixed(1);
+  };
+  const pct = v => (Number(v) || 0).toFixed(1) + '%';
+
+  const cruiserNames = new Set();
+  plots.forEach(p => { if (p && p.cruiser) cruiserNames.add(p.cruiser); });
+  const contributors = Array.isArray(window._cloudContributors) ? window._cloudContributors : [];
+  const cruiserList = cruiserNames.size ? [...cruiserNames] : contributors;
+
+  const catRows = SURVIVAL_CATEGORIES.map(cat => {
+    const catTpa = getSurvivalCategoryTotal(tpa, cat.key);
+    const rawCount = getSurvivalCategoryTotal(stats.totals, cat.key);
+    let tmCell = '\u2014';
+    if (cat.pine) {
+      const tmTpa = cat.key === 'planted_pine' ? (tpa.planted_pine_tm || 0) : (tpa.natural_pine_tm || 0);
+      tmCell = fmtTpa(tmTpa);
+    }
+    const estTotal = acres > 0 ? Math.round(catTpa * acres).toLocaleString() : '\u2014';
+    return '<tr>' +
+      '<td>' + cat.label + '</td>' +
+      '<td>' + rawCount + '</td>' +
+      '<td>' + fmtTpa(catTpa) + '</td>' +
+      '<td>' + tmCell + '</td>' +
+      '<td>' + estTotal + '</td>' +
+    '</tr>';
+  }).join('');
+
+  const liveRawTotal = stats.totals.planted_pine + stats.totals.planted_pine_tm +
+                       stats.totals.natural_pine + stats.totals.natural_pine_tm +
+                       stats.totals.natural_hardwood;
+  const liveEstTotal = acres > 0 ? Math.round(liveTpa * acres).toLocaleString() : '\u2014';
+
+  const metaRows =
+    '<tr><td>Method</td><td>' + escapeHtml(cruiseConfig.method.label) + '</td></tr>' +
+    '<tr><td>Plot Radius</td><td>' + (cruiseConfig.plotRadiusFeet ? cruiseConfig.plotRadiusFeet.toFixed(1) + ' ft' : '\u2014') + '</td></tr>' +
+    '<tr><td>Plots</td><td>' + stats.plotCount + '</td></tr>' +
+    '<tr><td>Acres</td><td>' + (acres > 0 ? acres.toFixed(1) : '\u2014') + '</td></tr>' +
+    '<tr><td>Trees Counted</td><td>' + stats.totalTreeCount + '</td></tr>' +
+    (cruiserList.length ? '<tr><td>Cruiser(s)</td><td>' + escapeHtml(cruiserList.join(', ')) + '</td></tr>' : '');
+
+  return '<div class="notice-report">' +
+    '<div class="notice-sheet">' +
+      '<div class="notice-sheet-title">' + escapeHtml(job.name || 'Survival Cruise') + '</div>' +
+      '<div class="notice-sheet-subtitle">Plantation Survival Report</div>' +
+      '<div class="notice-stat-box" style="margin-bottom:12px"><table>' + metaRows + '</table></div>' +
+      '<div class="notice-band-title">Survival Summary</div>' +
+      '<div class="surv-report-tiles">' +
+        survReportTile('Live Stocking', fmtTpa(liveTpa), 'trees/ac') +
+        survReportTile('Survival', pct(survivalPct), 'of stems found') +
+        survReportTile('Mortality', pct(mortalityPct), 'dead share') +
+        survReportTile('Tip Moth', pct(tipmothPinePct), 'of live pine') +
+      '</div>' +
+      '<div class="notice-table-scroll" style="margin-top:12px"><table class="notice-table" style="min-width:0">' +
+        '<thead><tr><th>Category</th><th>Counted</th><th>Trees/Ac</th><th>Tip Moth/Ac</th><th>Est. Total</th></tr></thead>' +
+        '<tbody>' + catRows + '</tbody>' +
+        '<tfoot><tr class="notice-total-row"><td>Live Total</td><td>' + liveRawTotal +
+          '</td><td>' + fmtTpa(liveTpa) + '</td><td>' + fmtTpa(stats.tipmothTpa) + '</td><td>' + liveEstTotal + '</td></tr></tfoot>' +
+      '</table></div>' +
+      '<div class="notice-report-note">Trees per acre uses the ' + escapeHtml(cruiseConfig.method.label) + ' expansion factor (' + cruiseConfig.expansionFactor + '/ac) averaged across ' + stats.plotCount + ' completed plot' + (stats.plotCount === 1 ? '' : 's') + '. Survival and mortality are based on live versus dead stems tallied and do not assume an original planting density. Estimated totals require tract acres.</div>' +
+    '</div>' +
+  '</div>';
+}
+
 function generateCruiseReport() {
   const el = document.getElementById('report-content');
   const rJobId = _reportJobId || activeJobId;
@@ -10847,6 +11303,7 @@ function generateCruiseReport() {
   const rFullTally = rData.fullTally;
 
   const cruiseConfig = getReportCruiseConfig(job);
+  updateReportPanelModeUI(cruiseConfig);
   const allDonePlots = getCruiseTalliesForMode(rPlots, rFullTally, cruiseConfig).filter(p => p.completed);
   const n = allDonePlots.length;
 
@@ -10856,6 +11313,11 @@ function generateCruiseReport() {
         ? 'Save the stand tally to generate a report.'
         : 'Complete some plots to generate a report.') +
       '</div>';
+    return;
+  }
+
+  if (cruiseConfig.kind === 'survival') {
+    el.innerHTML = renderSurvivalReport(job, allDonePlots, cruiseConfig, rPolygons);
     return;
   }
 
@@ -11529,6 +11991,75 @@ function getPlotExportSummary(plot, cruiseConfig, rule, formClass, totalAcres) {
   };
 }
 
+function exportSurvivalCSV(job, plots, polygons, cruiseConfig) {
+  const donePlots = (plots || []).filter(p => p && p.completed);
+  if (!donePlots.length) { toast('Complete some plots first'); return; }
+  const stats = buildSurvivalStats(donePlots, cruiseConfig);
+  const manualAcres = parseFloat(document.getElementById('report-acres').value);
+  const acres = manualAcres > 0 ? manualAcres : getTotalAcresFromPolygonItems(polygons);
+  const ef = cruiseConfig.expansionFactor || 100;
+  const gridSettings = getJobGridSettings(job);
+  const tpa = stats.tpa;
+  const stemsFound = stats.liveTpa + stats.deadTpa;
+
+  const rows = [];
+  rows.push(['SURVIVAL CRUISE SUMMARY']);
+  rows.push(['Field', 'Value']);
+  rows.push(['Job Name', job.name || '']);
+  rows.push(['Job ID', job.id || '']);
+  rows.push(['Created At', formatCsvDateTime(job.createdAt)]);
+  rows.push(['Updated At', formatCsvDateTime(job.updatedAt)]);
+  rows.push(['Cruise Method', getCruiseMethodSummary(cruiseConfig.method)]);
+  rows.push(['Expansion Factor (per ac)', ef]);
+  rows.push(['Plot Radius (ft)', cruiseConfig.plotRadiusFeet ? cruiseConfig.plotRadiusFeet.toFixed(1) : '']);
+  rows.push(['Grid Spacing X (chains)', gridSettings.spacingX]);
+  rows.push(['Grid Spacing Y (chains)', gridSettings.spacingY]);
+  rows.push(['Grid Bearing (degrees)', gridSettings.bearing]);
+  rows.push(['Completed Plots', stats.plotCount]);
+  rows.push(['Trees Counted', stats.totalTreeCount]);
+  rows.push(['Tract Acres', acres > 0 ? acres.toFixed(2) : '']);
+  rows.push([]);
+
+  rows.push(['CATEGORY SUMMARY']);
+  rows.push(['Category', 'Trees Counted', 'Trees/Acre', 'Tip Moth/Acre', 'Est. Total Trees']);
+  SURVIVAL_CATEGORIES.forEach(cat => {
+    const catTpa = getSurvivalCategoryTotal(tpa, cat.key);
+    const rawCount = getSurvivalCategoryTotal(stats.totals, cat.key);
+    const tmTpa = cat.pine ? (cat.key === 'planted_pine' ? (tpa.planted_pine_tm || 0) : (tpa.natural_pine_tm || 0)) : null;
+    const est = acres > 0 ? Math.round(catTpa * acres) : '';
+    rows.push([cat.label, rawCount, catTpa.toFixed(1), tmTpa != null ? tmTpa.toFixed(1) : '', est]);
+  });
+  rows.push([]);
+
+  rows.push(['METRICS']);
+  rows.push(['Live Stocking (trees/ac)', stats.liveTpa.toFixed(1)]);
+  rows.push(['Dead (trees/ac)', stats.deadTpa.toFixed(1)]);
+  rows.push(['Survival % (live of stems found)', stemsFound > 0 ? (stats.liveTpa / stemsFound * 100).toFixed(1) : '']);
+  rows.push(['Mortality % (dead of stems found)', stemsFound > 0 ? (stats.deadTpa / stemsFound * 100).toFixed(1) : '']);
+  rows.push(['Tip Moth % of live pine', stats.pineTpa > 0 ? (stats.tipmothTpa / stats.pineTpa * 100).toFixed(1) : '']);
+  rows.push([]);
+
+  rows.push(['PLOT DETAIL']);
+  rows.push(['Plot', 'Cruiser', 'Planted Pine', 'Planted Pine TM', 'Natural Pine', 'Natural Pine TM', 'Natural Hardwood', 'Dead', 'Total Trees', 'Latitude', 'Longitude']);
+  donePlots.forEach(plot => {
+    const c = getSurvivalCountsFromTrees(plot.trees);
+    rows.push([
+      plot.id,
+      plot.cruiser || '',
+      c.planted_pine, c.planted_pine_tm,
+      c.natural_pine, c.natural_pine_tm,
+      c.natural_hardwood, c.dead,
+      (plot.trees || []).length,
+      Number.isFinite(plot.lat) ? Number(plot.lat).toFixed(6) : '',
+      Number.isFinite(plot.lng) ? Number(plot.lng).toFixed(6) : ''
+    ]);
+  });
+
+  const safeName = (job.name || 'survival').replace(/[^a-zA-Z0-9_-]/g, '_');
+  downloadCsvRows(rows, safeName + '_survival_export.csv');
+  toast('Survival CSV exported!');
+}
+
 function exportCruiseCSV() {
   const rJobId = _reportJobId || activeJobId;
   const job = normalizeJobCruiseSettings(allJobs.find(j => j.id === rJobId));
@@ -11541,6 +12072,10 @@ function exportCruiseCSV() {
   if (!rPlots.length && !rPolygons.length && !hasFullTallyData(rFullTally)) { toast('No cruise data to export'); return; }
 
   const cruiseConfig = getReportCruiseConfig(job);
+  if (cruiseConfig.kind === 'survival') {
+    exportSurvivalCSV(job, rPlots, rPolygons, cruiseConfig);
+    return;
+  }
   const rule = document.getElementById('report-logrule').value || 'scribner';
   const ruleName = (LOG_RULES[rule] || LOG_RULES.scribner).name;
   const formClass = normalizeFormClass(document.getElementById('report-formclass').value || 78);
@@ -15315,6 +15850,7 @@ buildThemeSwatches();
         <div class="tally-stat"><span class="tally-stat-val" id="tally-vol">0</span><span class="tally-stat-lbl" id="tally-vol-lbl">BF/Ac</span></div>
       </div>
 
+      <div id="tally-timber-entry">
       <div class="tally-section-title">Add Tree</div>
 
       <div class="field-label">Species</div>
@@ -15393,6 +15929,13 @@ buildThemeSwatches();
             </div>
           </div>
         </div>
+      </div>
+      </div><!-- /tally-timber-entry -->
+
+      <div id="tally-survival-entry" style="display:none">
+        <div class="tally-section-title">Survival Count</div>
+        <div class="field-help" id="tally-survival-note" style="margin:-4px 2px 12px;"></div>
+        <div class="surv-cat-grid" id="surv-cat-grid"></div>
       </div>
 
       <button class="btn btn-primary" id="tally-save-btn" onclick="tallySavePlot()">Save &amp; Close Plot</button>
