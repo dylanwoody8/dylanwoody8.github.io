@@ -901,6 +901,61 @@
   }
 
   /* â•â•â• TOAST â•â•â• */
+  /* ── App alert banners (save failure / storage warning) ── */
+  .app-alert {
+    position: fixed;
+    top: calc(env(safe-area-inset-top, 0px) + 10px);
+    left: 50%;
+    transform: translateX(-50%);
+    width: min(94vw, 460px);
+    z-index: 6000;
+    display: none;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 12px 14px;
+    border-radius: 12px;
+    font-size: 0.74rem;
+    line-height: 1.45;
+    box-shadow: 0 6px 24px rgba(0,0,0,0.45);
+  }
+  .app-alert.show { display: flex; }
+  .app-alert-danger {
+    background: #3a0d0d;
+    border: 2px solid #e74c3c;
+    color: #ffd9d4;
+  }
+  .app-alert-warn {
+    background: #3a2a0d;
+    border: 2px solid var(--orange, #e67e22);
+    color: #ffe9cf;
+  }
+  .app-alert-body { flex: 1; }
+  .app-alert-title {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-weight: 800;
+    font-size: 0.78rem;
+    margin-bottom: 2px;
+  }
+  .app-alert-danger .app-alert-title { color: #ff8a7a; }
+  .app-alert-warn .app-alert-title { color: var(--orange, #e67e22); }
+  .app-alert-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .app-alert-btn {
+    border: 1px solid currentColor;
+    background: transparent;
+    color: inherit;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-weight: 800;
+    font-size: 0.68rem;
+    padding: 6px 12px;
+    border-radius: 8px;
+    cursor: pointer;
+    white-space: nowrap;
+  }
+  .app-alert-btn:active { transform: scale(0.96); }
   .toast {
     position: fixed;
     bottom: 90px;
@@ -1485,6 +1540,19 @@
   .product-btn:active { transform: scale(0.97); }
   .product-btn.sel-saw { border-color: var(--accent); color: var(--accent); background: rgba(106,191,75,0.1); }
   .product-btn.sel-pulp { border-color: var(--blue); color: var(--blue); background: rgba(52,152,219,0.1); }
+  .product-btn.sel-pallet { border-color: var(--orange, #e67e22); color: var(--orange, #e67e22); background: rgba(230,126,34,0.12); }
+  .tally-pallet-warn {
+    display: none;
+    margin: 6px 2px 4px;
+    padding: 7px 10px;
+    border-radius: 8px;
+    border: 1px solid var(--orange, #e67e22);
+    background: rgba(230,126,34,0.1);
+    color: var(--orange, #e67e22);
+    font-size: 0.7rem;
+    line-height: 1.4;
+  }
+  .tally-pallet-warn.show { display: block; }
   .dbh-scroll-wrap {
     background: var(--bg-card);
     border: 1px solid var(--border);
@@ -1613,7 +1681,7 @@
   .surv-minus { font-size: 1.4rem; }
   .surv-report-tiles {
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
+    grid-template-columns: repeat(3, 1fr);
     gap: 8px;
   }
   .surv-report-tile {
@@ -4096,6 +4164,10 @@
       <div class="field-label">Acres</div>
       <input class="field-input" id="report-acres" type="number" step="0.1" min="0" placeholder="Auto" style="padding:8px 10px;font-size:0.8rem" onchange="generateCruiseReport()">
     </div>
+    <div style="flex:1;display:none" id="report-planted-wrap">
+      <div class="field-label">Planted TPA</div>
+      <input class="field-input" id="report-planted-tpa" type="number" step="1" min="0" inputmode="numeric" placeholder="e.g. 545" style="padding:8px 10px;font-size:0.8rem" onchange="updateReportPlantedTpa(this.value)">
+    </div>
   </div>
   <div class="report-factor-card" id="report-conversion-factors">
     <div class="report-factor-heading">Tons Conversion Factors</div>
@@ -4319,6 +4391,26 @@
 
 <!-- Toast -->
 <div class="toast" id="toast"></div>
+
+<!-- Save failure / storage warning banners -->
+<div class="app-alert app-alert-danger" id="save-fail-banner" role="alert">
+  <div class="app-alert-body">
+    <div class="app-alert-title">Save Failed</div>
+    <div id="save-fail-msg">Your latest changes could not be saved to this device.</div>
+  </div>
+  <div class="app-alert-actions">
+    <button type="button" class="app-alert-btn" onclick="retryLocalSave()">Retry</button>
+  </div>
+</div>
+<div class="app-alert app-alert-warn" id="storage-warn-banner" role="alert">
+  <div class="app-alert-body">
+    <div class="app-alert-title">Storage Not Protected</div>
+    <div>This browser may clear saved cruise data under storage pressure. Export backups regularly (More &rarr; Backup), or install the app to your home screen for stronger protection.</div>
+  </div>
+  <div class="app-alert-actions">
+    <button type="button" class="app-alert-btn" onclick="dismissStorageWarning()">Got It</button>
+  </div>
+</div>
 
 <!-- Undo Toast -->
 <div class="toast-undo" id="toast-undo">
@@ -5175,10 +5267,12 @@ function buildSurvivalStats(plots, cruiseConfig) {
   const plotCount = donePlots.length;
   const totals = createEmptySurvivalCounts();
   let totalTreeCount = 0;
+  const plotPlantedCounts = [];
   donePlots.forEach(plot => {
     const counts = getSurvivalCountsFromTrees(plot.trees);
     Object.keys(totals).forEach(k => { totals[k] += counts[k]; });
     totalTreeCount += (plot.trees || []).length;
+    plotPlantedCounts.push(getSurvivalCategoryTotal(counts, 'planted_pine'));
   });
   const divisor = Math.max(plotCount, 1);
   // Per-category trees per acre = (total counted / plots) * expansion factor
@@ -5191,6 +5285,21 @@ function buildSurvivalStats(plots, cruiseConfig) {
   const deadTpa = tpa.dead || 0;
   const tipmothTpa = (tpa.planted_pine_tm || 0) + (tpa.natural_pine_tm || 0);
   const pineTpa = getSurvivalCategoryTotal(tpa, 'planted_pine') + getSurvivalCategoryTotal(tpa, 'natural_pine');
+  const naturalTpa = getSurvivalCategoryTotal(tpa, 'natural_pine') + (tpa.natural_hardwood || 0);
+  // Plot-to-plot variability of planted pine (per acre)
+  let plantedMinTpa = 0, plantedMaxTpa = 0, plantedCvPct = 0;
+  if (plotPlantedCounts.length) {
+    const perAcre = plotPlantedCounts.map(c => c * ef);
+    plantedMinTpa = Math.min.apply(null, perAcre);
+    plantedMaxTpa = Math.max.apply(null, perAcre);
+    if (perAcre.length > 1) {
+      const mean = perAcre.reduce((a, b) => a + b, 0) / perAcre.length;
+      if (mean > 0) {
+        const variance = perAcre.reduce((a, b) => a + Math.pow(b - mean, 2), 0) / (perAcre.length - 1);
+        plantedCvPct = Math.sqrt(variance) / mean * 100;
+      }
+    }
+  }
   return {
     expansionFactor: ef,
     plotCount: plotCount,
@@ -5201,7 +5310,11 @@ function buildSurvivalStats(plots, cruiseConfig) {
     plantedLiveTpa: plantedLiveTpa,
     deadTpa: deadTpa,
     tipmothTpa: tipmothTpa,
-    pineTpa: pineTpa
+    pineTpa: pineTpa,
+    naturalTpa: naturalTpa,
+    plantedMinTpa: plantedMinTpa,
+    plantedMaxTpa: plantedMaxTpa,
+    plantedCvPct: plantedCvPct
   };
 }
 
@@ -5265,7 +5378,10 @@ function normalizeJobCruiseSettings(job) {
   job.formClass = normalizeFormClass(job.formClass);
   if (!Array.isArray(job.species) || job.species.length === 0) job.species = getDefaultCruiseSpecies();
   job.deletedPlotIds = normalizeDeletedPlotIds(job.deletedPlotIds);
+  job.uncompletedPlots = normalizeUncompletedPlots(job.uncompletedPlots);
   job.fullTally = normalizeFullTally(job.fullTally);
+  const pTpa = Number(job.plantedTpa);
+  job.plantedTpa = (Number.isFinite(pTpa) && pTpa > 0) ? pTpa : null;
   job.cloudPlotStateVersion = getJobCloudPlotStateVersion(job);
   if (!job.cruiseType || !CRUISE_METHOD_MAP[job.cruiseType]) {
     job.cruiseType = deriveCruiseTypeFromLegacyBaf(job.baf);
@@ -5318,6 +5434,85 @@ function clearDeletedPlotId(id) {
     job.deletedPlotIds = next;
     job.updatedAt = Date.now();
   }
+}
+
+// ── Uncompleted-plot tombstones ──
+// Marking a plot pending is a first-class synced event (plotId -> timestamp).
+// Without this, a plot missing from the cloud completed list is ambiguous
+// ("marked pending" vs "this device hasn't heard about it"), and stale devices
+// resurrect completion. Newest timestamp wins: tombstone vs completion time.
+function normalizeUncompletedPlots(map) {
+  const out = {};
+  if (map && typeof map === 'object' && !Array.isArray(map)) {
+    Object.keys(map).forEach(k => {
+      const key = String(k == null ? '' : k).trim();
+      const ts = Number(map[k]);
+      if (key && Number.isFinite(ts) && ts > 0) out[key] = ts;
+    });
+  }
+  return out;
+}
+
+function getActiveJobUncompletedPlots() {
+  const job = normalizeJobCruiseSettings(allJobs.find(j => j.id === activeJobId));
+  if (!job) return {};
+  job.uncompletedPlots = normalizeUncompletedPlots(job.uncompletedPlots);
+  return Object.assign({}, job.uncompletedPlots);
+}
+
+function rememberUncompletedPlot(id, ts) {
+  const job = normalizeJobCruiseSettings(allJobs.find(j => j.id === activeJobId));
+  if (!job) return;
+  const key = String(id == null ? '' : id).trim();
+  if (!key) return;
+  job.uncompletedPlots = normalizeUncompletedPlots(job.uncompletedPlots);
+  job.uncompletedPlots[key] = Number(ts) > 0 ? Number(ts) : Date.now();
+  job.updatedAt = Date.now();
+}
+
+function clearUncompletedPlot(id) {
+  const job = normalizeJobCruiseSettings(allJobs.find(j => j.id === activeJobId));
+  if (!job) return;
+  const key = String(id == null ? '' : id).trim();
+  job.uncompletedPlots = normalizeUncompletedPlots(job.uncompletedPlots);
+  if (key in job.uncompletedPlots) {
+    delete job.uncompletedPlots[key];
+    job.updatedAt = Date.now();
+  }
+}
+
+// Merge pulled tombstones into the active job, keeping the newest per plot.
+function mergeUncompletedPlotsIntoActiveJob(map) {
+  const incoming = normalizeUncompletedPlots(map);
+  const job = normalizeJobCruiseSettings(allJobs.find(j => j.id === activeJobId));
+  if (!job) return incoming;
+  job.uncompletedPlots = normalizeUncompletedPlots(job.uncompletedPlots);
+  let changed = false;
+  Object.keys(incoming).forEach(key => {
+    if (!(key in job.uncompletedPlots) || incoming[key] > job.uncompletedPlots[key]) {
+      job.uncompletedPlots[key] = incoming[key];
+      changed = true;
+    }
+  });
+  if (changed) job.updatedAt = Date.now();
+  return Object.assign({}, job.uncompletedPlots);
+}
+
+// Central completion state setters so every code path keeps
+// completedAt timestamps and tombstones consistent.
+function setPlotCompleted(plot, completedAt) {
+  if (!plot) return;
+  plot.completed = true;
+  plot.completedAt = Number(completedAt) > 0 ? Number(completedAt) : Date.now();
+  clearUncompletedPlot(plot.id);
+}
+
+function setPlotPending(plot, uncompletedAt) {
+  if (!plot) return;
+  plot.completed = false;
+  plot.completedAt = 0;
+  plot.noTally = false;
+  rememberUncompletedPlot(plot.id, Number(uncompletedAt) > 0 ? Number(uncompletedAt) : Date.now());
 }
 
 // Available DBH classes for tally buttons
@@ -5598,7 +5793,7 @@ function getTreeCruiseMetrics(tree, cruiseConfig, rule, formClass, totalAcres) {
   const rp = getReportProduct(tree);
   const tpa = getTreeExpansionFactor(tree, cruiseConfig, totalAcres);
   const ba = getTreeBasalAreaSqFt(tree.dbh) * tpa;
-  const rawVol = rp === 'pulpwood'
+  const rawVol = (rp === 'pulpwood' || rp === 'palletwood')
     ? pulpwoodTons(tree.dbh, tree.logs || 1)
     : sawtimberVol(tree.dbh, tree.logs, rule, formClass);
   const rawTopwood = topwoodTonsPerTree(tree); // green tons of upper-stem pulp on pine saw/CNS trees
@@ -5657,6 +5852,7 @@ function buildCruiseStats(plots, cruiseConfig, rule, formClass, totalAcres) {
   let totSawBA = 0, totSawTPA = 0, totSawVol = 0;
   let totCnsBA = 0, totCnsTPA = 0, totCnsVol = 0;
   let totPulpBA = 0, totPulpTPA = 0, totPulpVol = 0;
+  let totPalletBA = 0, totPalletTPA = 0, totPalletVol = 0;
   let totTopwoodVol = 0; // green tons/acre of topwood (pine saw + CNS upper stem)
 
   Object.values(speciesStats).forEach(stat => {
@@ -5669,6 +5865,8 @@ function buildCruiseStats(plots, cruiseConfig, rule, formClass, totalAcres) {
     totTopwoodVol += stat.topwoodAc;
     if (stat.product === 'pulpwood') {
       totPulpBA += stat.baAc; totPulpTPA += stat.tpaAc; totPulpVol += stat.volAc;
+    } else if (stat.product === 'palletwood') {
+      totPalletBA += stat.baAc; totPalletTPA += stat.tpaAc; totPalletVol += stat.volAc;
     } else if (stat.product === 'cns') {
       totCnsBA += stat.baAc; totCnsTPA += stat.tpaAc; totCnsVol += stat.volAc;
     } else {
@@ -5690,6 +5888,9 @@ function buildCruiseStats(plots, cruiseConfig, rule, formClass, totalAcres) {
     totPulpBA: totPulpBA,
     totPulpTPA: totPulpTPA,
     totPulpVol: totPulpVol,
+    totPalletBA: totPalletBA,
+    totPalletTPA: totPalletTPA,
+    totPalletVol: totPalletVol,
     totTopwoodVol: totTopwoodVol
   };
 }
@@ -5878,7 +6079,7 @@ function updateTallyMethodUI(plot, cruiseConfig, totalAcres) {
   if (baLbl) baLbl.textContent = perAcre ? 'BA/Acre' : 'BA Total';
   if (tpaLbl) tpaLbl.textContent = perAcre ? 'TPA' : 'Trees';
   if (factorHdr) factorHdr.textContent = cruiseConfig.kind === 'fixed' ? 'Factor' : (perAcre ? 'TPA' : 'Count');
-  setTallyVolumeLabels(cruiseConfig, totalAcres, tallySelProduct === 'pulpwood');
+  setTallyVolumeLabels(cruiseConfig, totalAcres, (tallySelProduct === 'pulpwood' || tallySelProduct === 'palletwood'));
 
   if (note) {
     let helpText = getCruiseMethodHelpText(cruiseConfig.method);
@@ -5975,8 +6176,7 @@ function openTallyModal(plotOrId) {
   tallySelHeight = 50;
   tallySelSpecies = (speciesOptions[0] && speciesOptions[0].code) || 'LP';
   setTallyLDExpanded(false);
-  document.getElementById('tally-btn-saw').className = 'product-btn sel-saw';
-  document.getElementById('tally-btn-pulp').className = 'product-btn';
+  setTallyProductButtons('sawtimber');
   document.getElementById('tally-logs-section').style.display = 'block';
   document.getElementById('tally-height-section').style.display = 'none';
 
@@ -6017,8 +6217,7 @@ function openStandTallyModal() {
   tallySelHeight = 50;
   tallySelSpecies = (speciesOptions[0] && speciesOptions[0].code) || 'LP';
   setTallyLDExpanded(false);
-  document.getElementById('tally-btn-saw').className = 'product-btn sel-saw';
-  document.getElementById('tally-btn-pulp').className = 'product-btn';
+  setTallyProductButtons('sawtimber');
   document.getElementById('tally-logs-section').style.display = 'block';
   document.getElementById('tally-height-section').style.display = 'none';
 
@@ -6038,16 +6237,36 @@ function closeTallyModal() {
   tallyTarget = { mode: 'plot', plotId: null };
 }
 
-function tallyPickProduct(p) {
-  tallySelProduct = p;
+function setTallyProductButtons(p) {
   document.getElementById('tally-btn-saw').className = 'product-btn' + (p === 'sawtimber' ? ' sel-saw' : '');
   document.getElementById('tally-btn-pulp').className = 'product-btn' + (p === 'pulpwood' ? ' sel-pulp' : '');
+  const palletBtn = document.getElementById('tally-btn-pallet');
+  if (palletBtn) palletBtn.className = 'product-btn' + (p === 'palletwood' ? ' sel-pallet' : '');
+}
+
+// Palletwood is a tons-based product (like pulpwood) but normally hardwood-only.
+// Show a soft warning if it is paired with a pine species; never block.
+function refreshPalletWarning() {
+  const warn = document.getElementById('tally-pallet-warn');
+  if (!warn) return;
+  const showWarn = tallySelProduct === 'palletwood' && isPineSpecies(tallySelSpecies);
+  warn.classList.toggle('show', showWarn);
+}
+
+function tallyPickProduct(p) {
+  tallySelProduct = p;
+  setTallyProductButtons(p);
   document.getElementById('tally-logs-section').style.display = 'block';
   document.getElementById('tally-height-section').style.display = 'none';
-  document.getElementById('tally-logs-label').textContent = p === 'pulpwood' ? '16-ft Pulpwood Logs (RGT16)' : '16-ft Merchantable Logs';
-  tallySelDBH = p === 'pulpwood' ? 8 : 14;
+  const tonsProduct = (p === 'pulpwood' || p === 'palletwood');
+  document.getElementById('tally-logs-label').textContent =
+    p === 'pulpwood' ? '16-ft Pulpwood Logs (RGT16)'
+    : p === 'palletwood' ? '16-ft Palletwood Logs (RGT16)'
+    : '16-ft Merchantable Logs';
+  tallySelDBH = tonsProduct ? 8 : 14;
   tallyBuildDBH();
   tallyBuildLogs();
+  refreshPalletWarning();
   const ctx = getTallyCruiseContext();
   updateTallyMethodUI(ctx.plot, ctx.cruiseConfig, ctx.totalAcres);
   tallyUpdateStats();
@@ -6079,6 +6298,7 @@ function tallyBuildSpecies() {
 function tallyPickSpecies(code) {
   tallySelSpecies = code;
   tallyBuildSpecies();
+  refreshPalletWarning();
 }
 
 function tallyBuildDBH() {
@@ -6109,7 +6329,7 @@ function tallyPickDBH(d) {
 
 function tallyBuildLogs() {
   let steps;
-  if (tallySelProduct === 'pulpwood') {
+  if (tallySelProduct === 'pulpwood' || tallySelProduct === 'palletwood') {
     steps = RGT16_LOGS.slice(); // [1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5]
   } else {
     const rule = getJobLogRule();
@@ -6150,7 +6370,6 @@ function tallyPickHeight(h) {
 function tallyAddTree() {
   const speciesOptions = getTallySpeciesOptions();
   const spp = tallySelSpecies || ((speciesOptions[0] && speciesOptions[0].code) || 'LP');
-  const isPulp = tallySelProduct === 'pulpwood';
   const tree = {
     spp: spp,
     dbh: tallySelDBH,
@@ -6162,9 +6381,10 @@ function tallyAddTree() {
   tallyLastTree = { ...tree };
   tallyRenderTable();
   tallyUpdateStats();
-  const label = isPulp
-    ? spp + ' ' + tallySelDBH + '" ' + tallySelLogs + ' log Pulp'
-    : spp + ' ' + tallySelDBH + '" ' + tallySelLogs + ' log';
+  const prodSuffix = tallySelProduct === 'pulpwood' ? ' Pulp'
+    : tallySelProduct === 'palletwood' ? ' Pallet'
+    : '';
+  const label = spp + ' ' + tallySelDBH + '" ' + tallySelLogs + ' log' + prodSuffix;
   toast(label);
   vibrate([30]);
 }
@@ -6199,15 +6419,19 @@ function tallyRenderTable() {
   tbody.innerHTML = tallyTrees.map((t, i) => {
     const metrics = getTreeCruiseMetrics(t, cruiseConfig, rule, formClass, totalAcres);
     const isPulp = metrics.product === 'pulpwood';
+    const isPallet = metrics.product === 'palletwood';
+    const isTons = isPulp || isPallet;
     let volDisplay, volUnit;
-    if (isPulp) {
+    if (isTons) {
       volDisplay = metrics.volume.toFixed((cruiseConfig.kind === 'full' && totalAcres <= 0) ? 3 : 2);
       volUnit = 'GT';
     } else {
       volDisplay = formatTallyBfValue(metrics.volume);
       volUnit = 'BF';
     }
-    const prodLabel = isPulp ? '<span style="color:var(--blue)">PULP</span>' : '<span style="color:var(--accent)">SAW</span>';
+    const prodLabel = isPulp ? '<span style="color:var(--blue)">PULP</span>'
+      : isPallet ? '<span style="color:var(--orange,#e67e22)">PALLET</span>'
+      : '<span style="color:var(--accent)">SAW</span>';
     const logsCell = t.logs;
     return '<tr>' +
       '<td>' + t.spp + '</td>' +
@@ -6233,12 +6457,12 @@ function tallyUpdateStats() {
     const metrics = getTreeCruiseMetrics(t, cruiseConfig, rule, formClass, totalAcres);
     ba += metrics.ba;
     tpa += metrics.tpa;
-    if (metrics.product === 'pulpwood') { pulpTons += metrics.volume; hasPulp = true; }
+    if (metrics.product === 'pulpwood' || metrics.product === 'palletwood') { pulpTons += metrics.volume; hasPulp = true; }
     else { sawVol += metrics.volume; hasSaw = true; }
   });
   document.getElementById('tally-ba').textContent = formatTallyStatValue(ba);
   document.getElementById('tally-tpa').textContent = perAcre ? formatTallyStatValue(tpa) : Math.round(tpa);
-  if (tallySelProduct === 'pulpwood' || (!hasSaw && hasPulp)) {
+  if (tallySelProduct === 'pulpwood' || tallySelProduct === 'palletwood' || (!hasSaw && hasPulp)) {
     document.getElementById('tally-vol').textContent = pulpTons.toFixed((cruiseConfig.kind === 'full' && totalAcres <= 0) ? 3 : 2);
     setTallyVolumeLabels(cruiseConfig, totalAcres, true);
   } else {
@@ -6278,7 +6502,7 @@ function tallySavePlot() {
   const plot = findPlotById(tallyTarget.plotId);
   if (!plot) return;
   plot.trees = cloneJson(tallyTrees);
-  plot.completed = true;
+  setPlotCompleted(plot);
   plot.noTally = false;
   updatePlotMarkerStyle(plot);
   updateStats();
@@ -6320,7 +6544,7 @@ function tallyNoTally() {
   const plot = findPlotById(tallyTarget.plotId);
   if (!plot) return;
   plot.trees = [];
-  plot.completed = true;
+  setPlotCompleted(plot);
   plot.noTally = true;
   updatePlotMarkerStyle(plot);
   updateStats();
@@ -7329,6 +7553,7 @@ function getCompletedPlotsForSync() {
       lat: p.lat,
       lng: p.lng,
       completed: true,
+      completedAt: p.completedAt || 0,
       trees: cloneJson(p.trees || []),
       noTally: p.noTally || false
     }))
@@ -7384,6 +7609,7 @@ async function reconcileCloudPlotStateVersion(cruiseId, cruiseData, options = {}
     clearAllPlotCompletionData();
   }
   activeJob.cloudPlotStateVersion = remoteVersion;
+  activeJob.uncompletedPlots = {};
   activeJob.updatedAt = Date.now();
   await saveSession({ skipCloudSync: true });
   if (!options.silentToast) {
@@ -7409,6 +7635,7 @@ async function saveUserPlotData(cruiseId, options = {}) {
         userName: fb_user.displayName || fb_user.email,
         userEmail: getCurrentUserEmail(),
         plots: JSON.stringify(myPlots),
+        uncompletedPlotsJson: JSON.stringify(getActiveJobUncompletedPlots()),
         fullTallyJson: JSON.stringify(getCompletedFullTallyForSync()),
         plotStateVersion: plotStateVersion,
         updatedAt: firebase.firestore.FieldValue.serverTimestamp()
@@ -8187,6 +8414,7 @@ async function pullOtherUsersPlotData(cruiseId, options = {}) {
 
       if (activeJob) {
         activeJob.deletedPlotIds = [];
+        activeJob.uncompletedPlots = {};
         const localHasUnsyncedEdits = hasLocalUnsyncedTreeEdits();
         const shouldApplyCloudStand = newestStand.fullTally.completed && (!newestStand.fromSelf || !localHasUnsyncedEdits);
         if (shouldApplyCloudStand) {
@@ -8219,7 +8447,8 @@ async function pullOtherUsersPlotData(cruiseId, options = {}) {
     }
 
     // Build a map of all completed plots from all users in the cloud
-    const cloudPlots = {}; // plotId -> { trees, noTally, cruiser, updatedAt }
+    const cloudPlots = {}; // plotId -> { trees, noTally, cruiser, updatedAt, completedAt }
+    const cloudUncompleted = {}; // plotId -> newest uncompleted-tombstone timestamp
     const contributors = [];
 
     if (userSnap) {
@@ -8233,6 +8462,13 @@ async function pullOtherUsersPlotData(cruiseId, options = {}) {
         const userPlots = parseJsonArray(ud.plots);
         const docTime = ud.updatedAt ? ud.updatedAt.toMillis() : 0;
 
+        const userUncompleted = normalizeUncompletedPlots(parseJsonObject(ud.uncompletedPlotsJson));
+        Object.keys(userUncompleted).forEach(key => {
+          if (!(key in cloudUncompleted) || userUncompleted[key] > cloudUncompleted[key]) {
+            cloudUncompleted[key] = userUncompleted[key];
+          }
+        });
+
         userPlots.forEach(up => {
           if (!up.completed) return;
           const plotKey = String(up.id);
@@ -8243,12 +8479,16 @@ async function pullOtherUsersPlotData(cruiseId, options = {}) {
               noTally: up.noTally || false,
               cruiser: cruiserName,
               fromSelf: udoc.id === fb_user.uid,
-              updatedAt: docTime
+              updatedAt: docTime,
+              completedAt: Number(up.completedAt) > 0 ? Number(up.completedAt) : docTime
             };
           }
         });
       });
     }
+
+    // Merge cloud tombstones with local ones; newest per plot wins everywhere below.
+    const effectiveUncompleted = mergeUncompletedPlotsIntoActiveJob(cloudUncompleted);
 
     console.log('[PULL] Cloud completed plots: ' + Object.keys(cloudPlots).length + ', keys: ' + Object.keys(cloudPlots).join(','));
     console.log('[PULL] Local plotMarkers: ' + plotMarkers.length + ', ids: ' + plotMarkers.map(p=>p.id+':'+(p.completed?'done':'pending')).join(','));
@@ -8259,12 +8499,35 @@ async function pullOtherUsersPlotData(cruiseId, options = {}) {
       const local = plotMarkers.find(p => p.id === numId || p.id === plotId);
       if (!local) return;
 
+      // Uncompleted tombstone check: if a "marked pending" event is newer than
+      // this completion record, the pending state wins and completion must not
+      // be resurrected. If the completion is newer, the tombstone is stale.
+      const tombTs = effectiveUncompleted[plotId] || 0;
+      const compTs = data.completedAt || data.updatedAt || 0;
+      if (tombTs && tombTs >= compTs) {
+        if (local.completed && (local.completedAt || 0) <= tombTs) {
+          local.completed = false;
+          local.completedAt = 0;
+          local.noTally = false;
+          updatePlotMarkerStyle(local);
+          updatedPlotsCount++;
+          console.log('[PULL] Plot ' + plotId + ' un-completed by newer pending tombstone');
+        }
+        return;
+      }
+      if (tombTs) {
+        // Completion is newer than the tombstone: retire it.
+        clearUncompletedPlot(plotId);
+        delete effectiveUncompleted[plotId];
+      }
+
       if (!local.completed) {
         // A stale desktop can legitimately be missing this same user's newer field tally.
         // Only keep the local pending state when unsynced local edits still exist.
         if (data.fromSelf && localHasUnsyncedTreeData) return;
         local.trees = cloneJson(data.trees || []);
         local.completed = true;
+        local.completedAt = compTs || Date.now();
         local.noTally = data.noTally || false;
         local.cruiser = data.cruiser;
         updatePlotMarkerStyle(local);
@@ -8299,6 +8562,22 @@ async function pullOtherUsersPlotData(cruiseId, options = {}) {
           updatePlotMarkerStyle(local);
           updatedPlotsCount++;
         }
+      }
+    });
+
+    // Tombstones for plots absent from the cloud completed list: the completion
+    // record may already be gone (the marking device pushed first), but this
+    // device can still hold a stale local completion. Newest event wins.
+    Object.entries(effectiveUncompleted).forEach(([plotId, ts]) => {
+      if (cloudPlots[plotId]) return; // already handled above
+      const local = plotMarkers.find(p => String(p.id) === String(plotId));
+      if (local && local.completed && (local.completedAt || 0) <= ts) {
+        local.completed = false;
+        local.completedAt = 0;
+        local.noTally = false;
+        updatePlotMarkerStyle(local);
+        updatedPlotsCount++;
+        console.log('[PULL] Plot ' + plotId + ' un-completed by pending tombstone (no cloud record)');
       }
     });
 
@@ -8607,6 +8886,7 @@ async function loadCruiseFromCloud(cruiseId, options = {}) {
     const remoteFullMode = isCruiseMethodFull(d.cruiseType);
     const remotePlotStateVersion = hasNewFormat ? getCruisePlotStateVersion(d) : DEFAULT_PLOT_STATE_VERSION;
     let loadedFullTally = createEmptyFullTally();
+    let loadedUncompletedPlots = {};
 
     // Pre-fetch userData sub-collection BEFORE clearing anything
     let userSnap = null;
@@ -8683,7 +8963,8 @@ async function loadCruiseFromCloud(cruiseId, options = {}) {
         }
       } else {
         // Merge pre-fetched user tree data from sub-collection, preferring the newest edit per plot.
-        const mergedPlots = {}; // plotId -> { trees, cruiser, updatedAt }
+        const mergedPlots = {}; // plotId -> { trees, cruiser, updatedAt, completedAt }
+        const joinUncompleted = {}; // plotId -> newest pending tombstone timestamp
 
         if (userSnap) {
           userSnap.forEach(udoc => {
@@ -8693,6 +8974,12 @@ async function loadCruiseFromCloud(cruiseId, options = {}) {
             if (userPlotStateVersion !== remotePlotStateVersion) return;
             const userPlots = parseJsonArray(ud.plots);
             const docTime = ud.updatedAt ? ud.updatedAt.toMillis() : 0;
+            const userUncompleted = normalizeUncompletedPlots(parseJsonObject(ud.uncompletedPlotsJson));
+            Object.keys(userUncompleted).forEach(key => {
+              if (!(key in joinUncompleted) || userUncompleted[key] > joinUncompleted[key]) {
+                joinUncompleted[key] = userUncompleted[key];
+              }
+            });
             userPlots.forEach(up => {
               if (up.completed) {
                 const plotKey = String(up.id);
@@ -8702,7 +8989,8 @@ async function loadCruiseFromCloud(cruiseId, options = {}) {
                     trees: up.trees || [],
                     noTally: up.noTally || false,
                     cruiser: ud.userName || ud.userEmail || udoc.id,
-                    updatedAt: docTime
+                    updatedAt: docTime,
+                    completedAt: Number(up.completedAt) > 0 ? Number(up.completedAt) : docTime
                   };
                 }
               }
@@ -8712,12 +9000,17 @@ async function loadCruiseFromCloud(cruiseId, options = {}) {
           contributors.push(d.ownerName);
         }
 
+        loadedUncompletedPlots = Object.assign({}, joinUncompleted);
+
         // Apply merged tree data to plot markers
         Object.entries(mergedPlots).forEach(([plotId, data]) => {
+          const tombTs = joinUncompleted[plotId] || 0;
+          if (tombTs && tombTs >= (data.completedAt || data.updatedAt || 0)) return; // pending is newer
           const plot = plotMarkers.find(p => p.id === parseInt(plotId));
           if (plot) {
             plot.trees = cloneJson(data.trees || []);
             plot.completed = true;
+            plot.completedAt = data.completedAt || data.updatedAt || 0;
             plot.noTally = data.noTally || false;
             plot.cruiser = data.cruiser;
             updatePlotMarkerStyle(plot);
@@ -8742,7 +9035,7 @@ async function loadCruiseFromCloud(cruiseId, options = {}) {
           const plot = addPlot(pd.id, pd.lat, pd.lng);
           if (plot) {
             if (pd.trees && pd.trees.length) plot.trees = JSON.parse(JSON.stringify(pd.trees));
-            if (pd.completed) { plot.completed = true; updatePlotMarkerStyle(plot); }
+            if (pd.completed) { plot.completed = true; plot.completedAt = Number(pd.completedAt) || 0; updatePlotMarkerStyle(plot); }
           }
         });
       }
@@ -8764,6 +9057,7 @@ async function loadCruiseFromCloud(cruiseId, options = {}) {
         polygons: [],
         fullTally: createEmptyFullTally(),
         deletedPlotIds: [],
+        uncompletedPlots: {},
         cloudCruiseOwner: d.ownerId || null,
         cruiseType: d.cruiseType || deriveCruiseTypeFromLegacyBaf(d.baf),
         baf: d.baf || 20,
@@ -8788,8 +9082,10 @@ async function loadCruiseFromCloud(cruiseId, options = {}) {
     localJob.species = (d.species && d.species.length) ? d.species : localJob.species;
     localJob.cloudPlotStateVersion = remotePlotStateVersion;
     localJob.deletedPlotIds = remoteFullMode ? [] : normalizeDeletedPlotIds(parseJsonArray(d.deletedPlotIdsJson));
+    localJob.uncompletedPlots = remoteFullMode ? {} : normalizeUncompletedPlots(loadedUncompletedPlots);
     localJob.plots = remoteFullMode ? [] : plotMarkers.map(p => ({
       id: p.id, lat: p.lat, lng: p.lng, completed: p.completed,
+      completedAt: p.completedAt || 0,
       trees: p.trees || [], noTally: p.noTally || false, cruiser: p.cruiser || ''
     }));
     localJob.fullTally = normalizeFullTally(remoteFullMode ? loadedFullTally : localJob.fullTally);
@@ -10033,6 +10329,7 @@ async function updateJobCruiseType(val) {
       stopNavigation();
       job.plots = [];
       job.deletedPlotIds = [];
+      job.uncompletedPlots = {};
       job.updatedAt = Date.now();
     }
   } else if (currentMethod.kind === 'full' && hasFullTallyData(job.fullTally)) {
@@ -10472,7 +10769,7 @@ function getNoticeRuleShortName(rule) {
 }
 
 function getNoticeConversionFactors(code, product, conversionTable) {
-  if (product === 'pulpwood' || product === 'all') return null;
+  if (product === 'pulpwood' || product === 'palletwood' || product === 'all') return null;
   const groupKey = getNoticeGroupKey(code);
   const sourceTable = conversionTable || NOTICE_CONVERSION_FACTORS;
   const table = sourceTable[groupKey] || sourceTable.Mix || NOTICE_CONVERSION_FACTORS.Mix;
@@ -10599,6 +10896,7 @@ function makeCombinedNoticeBucket(label, buckets) {
 function getNoticeProductLabel(product) {
   if (product === 'cns') return 'Chip-N-Saw';
   if (product === 'pulpwood') return 'Pulpwood';
+  if (product === 'palletwood') return 'Palletwood';
   if (product === 'sawtimber') return 'Sawtimber';
   return 'All Products';
 }
@@ -10635,18 +10933,19 @@ function buildNoticeReportModel(plots, cruiseConfig, rule, formClass, totalAcres
       const treesTotal = totalAcres > 0 ? treesAc * totalAcres : 1;
       const baAc = metrics.ba / divisor;
       const logs = parseFloat(tree.logs) || 0;
+      const isTonsProduct = (product === 'pulpwood' || product === 'palletwood');
       const factors = getNoticeConversionFactors(spp, product, conversionTable);
-      if (product !== 'pulpwood' && factors) estimatedFieldsUsed = true;
+      if (!isTonsProduct && factors) estimatedFieldsUsed = true;
 
-      const bfAc = product === 'pulpwood' ? 0 : (metrics.volume / divisor);
-      const bfTotal = product === 'pulpwood' ? 0 : (totalAcres > 0 ? bfAc * totalAcres : metrics.rawVol);
+      const bfAc = isTonsProduct ? 0 : (metrics.volume / divisor);
+      const bfTotal = isTonsProduct ? 0 : (totalAcres > 0 ? bfAc * totalAcres : metrics.rawVol);
       const mbfTotal = bfTotal / 1000;
-      const pulpTonsAc = product === 'pulpwood' ? (metrics.volume / divisor) : 0;
-      const pulpTonsTotal = product === 'pulpwood' ? (totalAcres > 0 ? pulpTonsAc * totalAcres : metrics.rawVol) : 0;
-      const sawTonsAc = product === 'pulpwood' || !factors ? 0 : (bfAc / 1000) * factors.tonsPerMbf;
-      const sawTonsTotal = product === 'pulpwood' || !factors ? 0 : (bfTotal / 1000) * factors.tonsPerMbf;
-      const cuFtAc = product === 'pulpwood' || !factors ? 0 : (bfAc / 1000) * factors.cuFtPerMbf;
-      const cuFtTotal = product === 'pulpwood' || !factors ? 0 : (bfTotal / 1000) * factors.cuFtPerMbf;
+      const pulpTonsAc = isTonsProduct ? (metrics.volume / divisor) : 0;
+      const pulpTonsTotal = isTonsProduct ? (totalAcres > 0 ? pulpTonsAc * totalAcres : metrics.rawVol) : 0;
+      const sawTonsAc = isTonsProduct || !factors ? 0 : (bfAc / 1000) * factors.tonsPerMbf;
+      const sawTonsTotal = isTonsProduct || !factors ? 0 : (bfTotal / 1000) * factors.tonsPerMbf;
+      const cuFtAc = isTonsProduct || !factors ? 0 : (bfAc / 1000) * factors.cuFtPerMbf;
+      const cuFtTotal = isTonsProduct || !factors ? 0 : (bfTotal / 1000) * factors.cuFtPerMbf;
       const topwoodTonsAc = metrics.topwood / divisor;
       const topwoodTonsTotal = totalAcres > 0 ? topwoodTonsAc * totalAcres : (metrics.rawTopwood || 0);
 
@@ -10669,9 +10968,9 @@ function buildNoticeReportModel(plots, cruiseConfig, rule, formClass, totalAcres
         cuFtAc: cuFtAc,
         cuFtTotal: cuFtTotal,
         dbhSum: Number(tree.dbh) || 0,
-        rawVolSum: product === 'pulpwood' ? 0 : (metrics.rawVol || 0),
+        rawVolSum: isTonsProduct ? 0 : (metrics.rawVol || 0),
         merchFeetTotal: logs > 0 ? treesTotal * logs * 16 : 0,
-        logCountTotal: product === 'pulpwood' || logs <= 0 ? 0 : treesTotal * logs,
+        logCountTotal: isTonsProduct || logs <= 0 ? 0 : treesTotal * logs,
         dbh: Number(tree.dbh) || 0,
         logStep: logs
       };
@@ -10730,7 +11029,7 @@ function renderNoticeVolumeGroup(title, rows, totalLabel, formClass, options) {
         <tbody>
           ${rows.map(row => `<tr>
             <td>${escapeHtml(row.label)}</td>
-            <td>${escapeHtml(row.formClass || (row.bucket.product === 'pulpwood' ? '-' : String(formClass || 78)))}</td>
+            <td>${escapeHtml(row.formClass || ((row.bucket.product === 'pulpwood' || row.bucket.product === 'palletwood') ? '-' : String(formClass || 78)))}</td>
             <td>${row.tonsField ? '-' : formatNoticeFixed(row.bucket.mbfTotal, 3, true)}</td>
             <td>${formatNoticeFixed(rowTons(row), 1, true)}</td>
             <td>${row.tonsField ? '-' : formatNoticeFlex(row.bucket.treesTotal, 1, false)}</td>
@@ -10771,6 +11070,9 @@ function renderNoticeFrontSummary(context) {
   const hardwoodPulpRows = sections
     .filter(section => isFrontSummaryHardwoodPulpSection(section) && section.buckets.pulpwood && section.buckets.pulpwood.talliedTrees > 0)
     .map(section => section.buckets.pulpwood);
+  const palletRows = sections
+    .filter(section => section.buckets.palletwood && section.buckets.palletwood.talliedTrees > 0)
+    .map(section => section.buckets.palletwood);
   const softwoodSawRows = softwoodSections.filter(section => section.buckets.sawtimber && section.buckets.sawtimber.talliedTrees > 0).map(section => ({ label: section.label + ' Sawtimber', bucket: section.buckets.sawtimber }));
   const softwoodPulpRows = softwoodSections.filter(section => section.buckets.pulpwood && section.buckets.pulpwood.talliedTrees > 0).map(section => section.buckets.pulpwood);
 
@@ -10782,6 +11084,7 @@ function renderNoticeFrontSummary(context) {
   if (pinePulpRows.length) lowGradeRows.push({ label: 'Pine Pulpwood', bucket: makeCombinedNoticeBucket('Pine Pulpwood', pinePulpRows), formClass: '-' });
   if (hardwoodPulpRows.length) lowGradeRows.push({ label: 'Hardwood Pulpwood', bucket: makeCombinedNoticeBucket('Hardwood Pulpwood', hardwoodPulpRows), formClass: '-' });
   if (softwoodPulpRows.length) lowGradeRows.push({ label: 'Other Softwood Pulpwood', bucket: makeCombinedNoticeBucket('Other Softwood Pulpwood', softwoodPulpRows), formClass: '-' });
+  if (palletRows.length) lowGradeRows.push({ label: 'Palletwood', bucket: makeCombinedNoticeBucket('Palletwood', palletRows), formClass: '-' });
 
   // Pine topwood: upper-stem pulp tonnage carried on pine sawtimber + CNS trees.
   const pineTopwoodSourceRows = pineSawRows.concat(pineCnsRows)
@@ -10857,6 +11160,7 @@ function renderNoticeFrontSummary(context) {
 function renderNoticeTractBlock(section) {
   const baseRows = [];
   if (section.buckets.pulpwood && section.buckets.pulpwood.talliedTrees > 0) baseRows.push({ label: 'Pulpwood', bucket: section.buckets.pulpwood, type: 'product' });
+  if (section.buckets.palletwood && section.buckets.palletwood.talliedTrees > 0) baseRows.push({ label: 'Palletwood', bucket: section.buckets.palletwood, type: 'product' });
   if (section.buckets.cns && section.buckets.cns.talliedTrees > 0) baseRows.push({ label: 'Chip-N-Saw', bucket: section.buckets.cns, type: 'product' });
   if (section.buckets.sawtimber && section.buckets.sawtimber.talliedTrees > 0) baseRows.push({ label: 'Sawtimber', bucket: section.buckets.sawtimber, type: 'product' });
   const merchTotal = makeCombinedNoticeBucket('Group Merch Total', baseRows.map(row => row.bucket));
@@ -10942,7 +11246,7 @@ function renderNoticeLogPanel(section, bucket, ruleShort) {
     });
   });
 
-  const weightUnits = bucket.product === 'pulpwood' && bucket.bfTotal <= 0 ? 'RGT16' : ruleShort;
+  const weightUnits = (bucket.product === 'pulpwood' || bucket.product === 'palletwood') && bucket.bfTotal <= 0 ? 'RGT16' : ruleShort;
   const statsHtml = `
     <div class="notice-log-stats">
       <div class="notice-log-stat"><span class="notice-log-stat-label">Tons/MBF</span><span class="notice-log-stat-value">${bucket.mbfTotal > 0 ? formatNoticeFixed(bucket.tonsPerMbf, 2, false) : '-'}</span></div>
@@ -11003,7 +11307,7 @@ function renderNoticeLogPanel(section, bucket, ruleShort) {
 function renderNoticeLogDistribution(context) {
   const parts = [];
   (context.model.sections || []).forEach(section => {
-    ['cns', 'sawtimber', 'pulpwood', 'all'].forEach(key => {
+    ['cns', 'sawtimber', 'pulpwood', 'palletwood', 'all'].forEach(key => {
       const bucket = section.buckets[key];
       if (bucket && bucket.talliedTrees > 0) parts.push(renderNoticeLogPanel(section, bucket, context.ruleShort));
     });
@@ -11067,6 +11371,11 @@ function getNoticeReportCssText() {
     .notice-map-meta-label{display:block;font-size:8px;font-weight:700;text-transform:uppercase;letter-spacing:0.4px;color:#333;}
     .notice-map-meta-value{display:block;margin-top:4px;font-size:12px;font-weight:700;line-height:1.25;color:#111;}
     .notice-map-meta-card-wide .notice-map-meta-value{font-size:13px;}
+    .surv-report-tiles{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:4px;}
+    .surv-report-tile{border:1px solid #222;background:#fff;padding:8px 6px;text-align:center;break-inside:avoid;}
+    .surv-report-tile-val{font-family:Georgia,"Times New Roman",serif;font-weight:700;font-size:16px;color:#111;line-height:1.15;}
+    .surv-report-tile-lbl{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.4px;color:#333;margin-top:2px;}
+    .surv-report-tile-sub{font-size:8px;color:#666;margin-top:1px;}
     @media print{body{margin:0.35in;}}
   `;
 }
@@ -11104,7 +11413,7 @@ function buildNoticeSpeciesRows(speciesEntries, totalAcres) {
     row.baAc += entry.baAc || 0;
     row.tpaAc += entry.tpaAc || 0;
     row.dbhSum += entry.dbhSum || 0;
-    if (entry.product === 'pulpwood') {
+    if (entry.product === 'pulpwood' || entry.product === 'palletwood') {
       row.pulpGtAc += entry.volAc || 0;
       row.pulpCount += entry.count || 0;
       row.pulpRawVol += entry.rawVolSum || 0;
@@ -11155,7 +11464,7 @@ function renderNoticeVolumeTable(speciesRows, totalAcres, ruleName, formClass) {
           '<th>Avg BF/Tree (CNS)</th>' +
           '<th>CNS Total BF</th>' +
           '<th>CNS MBF</th>' +
-          '<th>Pulp GT/ac</th>' +
+          '<th>Pulp/Pallet GT/ac</th>' +
           '<th>Total GT</th>' +
         '</tr></thead><tbody>';
 
@@ -11197,6 +11506,8 @@ function updateReportPanelModeUI(cruiseConfig) {
   const fcSel = document.getElementById('report-formclass');
   if (ruleSel && ruleSel.parentElement) ruleSel.parentElement.style.display = survival ? 'none' : '';
   if (fcSel && fcSel.parentElement) fcSel.parentElement.style.display = survival ? 'none' : '';
+  const plantedWrap = document.getElementById('report-planted-wrap');
+  if (plantedWrap) plantedWrap.style.display = survival ? '' : 'none';
 }
 
 function survReportTile(label, value, sub) {
@@ -11215,9 +11526,30 @@ function renderSurvivalReport(job, plots, cruiseConfig, polygons) {
 
   const liveTpa = stats.liveTpa;
   const deadTpa = stats.deadTpa;
-  const stemsFound = liveTpa + deadTpa;
-  const survivalPct = stemsFound > 0 ? (liveTpa / stemsFound * 100) : 0;
-  const mortalityPct = stemsFound > 0 ? (deadTpa / stemsFound * 100) : 0;
+  const plantedLiveTpa = stats.plantedLiveTpa;
+
+  // Original planting density: report input first, then value saved on the job
+  const plantedInputEl = document.getElementById('report-planted-tpa');
+  const plantedInputVal = plantedInputEl ? parseFloat(plantedInputEl.value) : NaN;
+  const plantedTpaTarget = (Number.isFinite(plantedInputVal) && plantedInputVal > 0)
+    ? plantedInputVal
+    : ((job && job.plantedTpa > 0) ? job.plantedTpa : 0);
+
+  // Survival is planted pine only. Natural pine and hardwood are volunteers and
+  // are excluded from both the numerator and the original-planted basis.
+  let survivalPct, mortalityPct, survivalSub, mortalitySub;
+  if (plantedTpaTarget > 0) {
+    survivalPct = Math.min(plantedLiveTpa / plantedTpaTarget * 100, 100);
+    mortalityPct = Math.max(100 - survivalPct, 0);
+    survivalSub = 'of ' + Math.round(plantedTpaTarget) + '/ac planted';
+    mortalitySub = 'of trees planted';
+  } else {
+    const plantedStemsFound = plantedLiveTpa + deadTpa;
+    survivalPct = plantedStemsFound > 0 ? (plantedLiveTpa / plantedStemsFound * 100) : 0;
+    mortalityPct = plantedStemsFound > 0 ? (deadTpa / plantedStemsFound * 100) : 0;
+    survivalSub = 'of planted stems found';
+    mortalitySub = 'dead share of planted';
+  }
   const tipmothPinePct = stats.pineTpa > 0 ? (stats.tipmothTpa / stats.pineTpa * 100) : 0;
 
   const fmtTpa = v => {
@@ -11261,7 +11593,9 @@ function renderSurvivalReport(job, plots, cruiseConfig, polygons) {
     '<tr><td>Plot Radius</td><td>' + (cruiseConfig.plotRadiusFeet ? cruiseConfig.plotRadiusFeet.toFixed(1) + ' ft' : '\u2014') + '</td></tr>' +
     '<tr><td>Plots</td><td>' + stats.plotCount + '</td></tr>' +
     '<tr><td>Acres</td><td>' + (acres > 0 ? acres.toFixed(1) : '\u2014') + '</td></tr>' +
+    '<tr><td>Original Planted</td><td>' + (plantedTpaTarget > 0 ? Math.round(plantedTpaTarget) + ' trees/ac' : 'Not entered') + '</td></tr>' +
     '<tr><td>Trees Counted</td><td>' + stats.totalTreeCount + '</td></tr>' +
+    (stats.plotCount > 1 ? '<tr><td>Planted Pine Range</td><td>' + fmtTpa(stats.plantedMinTpa) + ' \u2013 ' + fmtTpa(stats.plantedMaxTpa) + ' /ac (CV ' + stats.plantedCvPct.toFixed(0) + '%)</td></tr>' : '') +
     (cruiserList.length ? '<tr><td>Cruiser(s)</td><td>' + escapeHtml(cruiserList.join(', ')) + '</td></tr>' : '');
 
   return '<div class="notice-report">' +
@@ -11271,9 +11605,11 @@ function renderSurvivalReport(job, plots, cruiseConfig, polygons) {
       '<div class="notice-stat-box" style="margin-bottom:12px"><table>' + metaRows + '</table></div>' +
       '<div class="notice-band-title">Survival Summary</div>' +
       '<div class="surv-report-tiles">' +
-        survReportTile('Live Stocking', fmtTpa(liveTpa), 'trees/ac') +
-        survReportTile('Survival', pct(survivalPct), 'of stems found') +
-        survReportTile('Mortality', pct(mortalityPct), 'dead share') +
+        survReportTile('Survival', pct(survivalPct), survivalSub) +
+        survReportTile('Planted Live', fmtTpa(plantedLiveTpa), 'trees/ac') +
+        survReportTile('Mortality', pct(mortalityPct), mortalitySub) +
+        survReportTile('Natural Regen', fmtTpa(stats.naturalTpa), 'trees/ac') +
+        survReportTile('Total Live', fmtTpa(liveTpa), 'trees/ac') +
         survReportTile('Tip Moth', pct(tipmothPinePct), 'of live pine') +
       '</div>' +
       '<div class="notice-table-scroll" style="margin-top:12px"><table class="notice-table" style="min-width:0">' +
@@ -11282,7 +11618,11 @@ function renderSurvivalReport(job, plots, cruiseConfig, polygons) {
         '<tfoot><tr class="notice-total-row"><td>Live Total</td><td>' + liveRawTotal +
           '</td><td>' + fmtTpa(liveTpa) + '</td><td>' + fmtTpa(stats.tipmothTpa) + '</td><td>' + liveEstTotal + '</td></tr></tfoot>' +
       '</table></div>' +
-      '<div class="notice-report-note">Trees per acre uses the ' + escapeHtml(cruiseConfig.method.label) + ' expansion factor (' + cruiseConfig.expansionFactor + '/ac) averaged across ' + stats.plotCount + ' completed plot' + (stats.plotCount === 1 ? '' : 's') + '. Survival and mortality are based on live versus dead stems tallied and do not assume an original planting density. Estimated totals require tract acres.</div>' +
+      '<div class="notice-report-note">Trees per acre uses the ' + escapeHtml(cruiseConfig.method.label) + ' expansion factor (' + cruiseConfig.expansionFactor + '/ac) averaged across ' + stats.plotCount + ' completed plot' + (stats.plotCount === 1 ? '' : 's') + '. ' +
+        (plantedTpaTarget > 0
+          ? 'Survival = live planted pine per acre divided by the original planting density of ' + Math.round(plantedTpaTarget) + ' trees/ac. Natural pine and hardwood are volunteer regeneration and are excluded from survival.'
+          : 'No original planting density entered, so survival is live planted pine versus planted stems found (live planted + dead). Enter Planted TPA above for survival against the original planting density. Natural pine and hardwood are excluded from survival.') +
+        ' Estimated totals require tract acres.</div>' +
     '</div>' +
   '</div>';
 }
@@ -11965,7 +12305,7 @@ function getPlotExportSummary(plot, cruiseConfig, rule, formClass, totalAcres) {
     totalTPA += metrics.tpa;
     totalBA += metrics.ba;
     topwoodTons += metrics.topwood;
-    if (metrics.product === 'pulpwood') {
+    if (metrics.product === 'pulpwood' || metrics.product === 'palletwood') {
       pulpCount++;
       pulpTons += metrics.volume;
     } else if (metrics.product === 'cns') {
@@ -12122,6 +12462,7 @@ function exportCruiseCSV() {
   const totSawBA = cruiseStats.totSawBA, totSawTPA = cruiseStats.totSawTPA, totSawVol = cruiseStats.totSawVol;
   const totCnsBA = cruiseStats.totCnsBA, totCnsTPA = cruiseStats.totCnsTPA, totCnsVol = cruiseStats.totCnsVol;
   const totPulpBA = cruiseStats.totPulpBA, totPulpTPA = cruiseStats.totPulpTPA, totPulpVol = cruiseStats.totPulpVol;
+  const totPalletBA = cruiseStats.totPalletBA || 0, totPalletTPA = cruiseStats.totPalletTPA || 0, totPalletVol = cruiseStats.totPalletVol || 0;
   const totTopwoodVol = cruiseStats.totTopwoodVol || 0;
 
   const rows = [];
@@ -12199,6 +12540,18 @@ function exportCruiseCSV() {
     ''
   ]);
   rows.push([
+    'Palletwood',
+    totPalletBA ? totPalletBA.toFixed(1) : '',
+    totPalletTPA ? totPalletTPA.toFixed(1) : '',
+    '',
+    '',
+    '',
+    totPalletVol ? totPalletVol.toFixed(2) : '',
+    totalAcres > 0 && totPalletVol ? (totPalletVol * totalAcres).toFixed(1) : '',
+    '',
+    ''
+  ]);
+  rows.push([
     'Pine Topwood',
     '',
     '',
@@ -12210,9 +12563,10 @@ function exportCruiseCSV() {
     totTopwoodVol ? totTopwoodVol.toFixed(2) : '',
     totalAcres > 0 && totTopwoodVol ? (totTopwoodVol * totalAcres).toFixed(1) : ''
   ]);
-  const combBA = totSawBA + totCnsBA + totPulpBA;
-  const combTPA = totSawTPA + totCnsTPA + totPulpTPA;
+  const combBA = totSawBA + totCnsBA + totPulpBA + totPalletBA;
+  const combTPA = totSawTPA + totCnsTPA + totPulpTPA + totPalletTPA;
   const combSawVol = totSawVol + totCnsVol;
+  const combTonsVol = totPulpVol + totPalletVol;
   rows.push([
     'Combined',
     combBA ? combBA.toFixed(1) : '',
@@ -12220,8 +12574,8 @@ function exportCruiseCSV() {
     combSawVol ? Math.round(combSawVol) : '',
     totalAcres > 0 && combSawVol ? Math.round(combSawVol * totalAcres) : '',
     totalAcres > 0 && combSawVol ? (combSawVol * totalAcres / 1000).toFixed(1) : '',
-    totPulpVol ? totPulpVol.toFixed(2) : '',
-    totalAcres > 0 && totPulpVol ? (totPulpVol * totalAcres).toFixed(1) : '',
+    combTonsVol ? combTonsVol.toFixed(2) : '',
+    totalAcres > 0 && combTonsVol ? (combTonsVol * totalAcres).toFixed(1) : '',
     totTopwoodVol ? totTopwoodVol.toFixed(2) : '',
     totalAcres > 0 && totTopwoodVol ? (totTopwoodVol * totalAcres).toFixed(1) : ''
   ]);
@@ -12245,11 +12599,11 @@ function exportCruiseCSV() {
         stat.count,
         stat.baAc.toFixed(1),
         stat.tpaAc.toFixed(1),
-        stat.product === 'pulpwood' ? '' : Math.round(stat.volAc),
-        stat.product === 'pulpwood' || totalAcres <= 0 ? '' : Math.round(stat.volAc * totalAcres),
-        stat.product === 'pulpwood' || totalAcres <= 0 ? '' : (stat.volAc * totalAcres / 1000).toFixed(1),
-        stat.product === 'pulpwood' ? stat.volAc.toFixed(2) : '',
-        stat.product === 'pulpwood' && totalAcres > 0 ? (stat.volAc * totalAcres).toFixed(1) : '',
+        (stat.product === 'pulpwood' || stat.product === 'palletwood') ? '' : Math.round(stat.volAc),
+        (stat.product === 'pulpwood' || stat.product === 'palletwood') || totalAcres <= 0 ? '' : Math.round(stat.volAc * totalAcres),
+        (stat.product === 'pulpwood' || stat.product === 'palletwood') || totalAcres <= 0 ? '' : (stat.volAc * totalAcres / 1000).toFixed(1),
+        (stat.product === 'pulpwood' || stat.product === 'palletwood') ? stat.volAc.toFixed(2) : '',
+        (stat.product === 'pulpwood' || stat.product === 'palletwood') && totalAcres > 0 ? (stat.volAc * totalAcres).toFixed(1) : '',
         tw > 0 ? tw.toFixed(2) : '',
         tw > 0 && totalAcres > 0 ? (tw * totalAcres).toFixed(1) : ''
       ]);
@@ -12368,9 +12722,9 @@ function exportCruiseCSV() {
       (plot.trees || []).forEach((tree, index) => {
         const metrics = getTreeCruiseMetrics(tree, cruiseConfig, rule, formClass, totalAcres);
         const factor = getTreeExpansionFactor(tree, cruiseConfig, totalAcres);
-        const isPulp = metrics.product === 'pulpwood';
-        const tons = isPulp ? metrics.volume : 0;
-        const bf = isPulp ? 0 : metrics.volume;
+        const isTons = metrics.product === 'pulpwood' || metrics.product === 'palletwood';
+        const tons = isTons ? metrics.volume : 0;
+        const bf = isTons ? 0 : metrics.volume;
         rows.push([
           fullMode ? 'STAND' : plot.id,
           status,
@@ -12434,6 +12788,8 @@ function initReportPanel() {
 
   const acresInput = document.getElementById('report-acres');
   acresInput.value = '';
+  const plantedInput = document.getElementById('report-planted-tpa');
+  if (plantedInput) plantedInput.value = (job && job.plantedTpa > 0) ? job.plantedTpa : '';
   populateReportConversionFactorInputs();
   if (_reportJobId === activeJobId) {
     let totalAc = 0;
@@ -12463,6 +12819,8 @@ function switchReportJob(jobId) {
 
   const acresInput = document.getElementById('report-acres');
   acresInput.value = '';
+  const plantedInput = document.getElementById('report-planted-tpa');
+  if (plantedInput) plantedInput.value = (job && job.plantedTpa > 0) ? job.plantedTpa : '';
   populateReportConversionFactorInputs();
   if (jobId === activeJobId) {
     let totalAc = 0;
@@ -12528,6 +12886,18 @@ function updateReportFormClass(val) {
       saveSession();
     }
   }
+}
+
+function updateReportPlantedTpa(val) {
+  const num = parseFloat(val);
+  const planted = (Number.isFinite(num) && num > 0) ? num : null;
+  const job = normalizeJobCruiseSettings(allJobs.find(j => j.id === _reportJobId));
+  if (job) {
+    job.plantedTpa = planted;
+    job.updatedAt = Date.now();
+    saveSession();
+  }
+  generateCruiseReport();
 }
 
 function openPanel(name) {
@@ -13273,7 +13643,7 @@ function markNoTally(id) {
   const plot = findPlotById(id);
   if (!plot) return;
   plot.trees = [];
-  plot.completed = true;
+  setPlotCompleted(plot);
   plot.noTally = true;
   updatePlotMarkerStyle(plot);
   map.closePopup();
@@ -13296,10 +13666,10 @@ function togglePlotStatus(id) {
   const plot = findPlotById(id);
   if (!plot) return;
   const wasCompleted = plot.completed;
-  plot.completed = !plot.completed;
-  // Clear noTally flag when marking back to pending
-  if (!plot.completed) {
-    plot.noTally = false;
+  if (wasCompleted) {
+    setPlotPending(plot); // records an uncompleted tombstone for sync
+  } else {
+    setPlotCompleted(plot);
   }
   updatePlotMarkerStyle(plot);
   map.closePopup();
@@ -13335,6 +13705,7 @@ function updatePlotMarkerStyle(plot) {
 function clearPlotCompletionData(plot) {
   if (!plot) return;
   plot.completed = false;
+  plot.completedAt = 0;
   plot.trees = [];
   plot.noTally = false;
   plot.cruiser = '';
@@ -13866,7 +14237,7 @@ async function markAllComplete() {
   });
   if (!ok) return;
   createSafetySnapshot('All plots marked complete');
-  plotMarkers.forEach(p => { p.completed = true; updatePlotMarkerStyle(p); });
+  plotMarkers.forEach(p => { setPlotCompleted(p); updatePlotMarkerStyle(p); });
   updateStats();
   refreshPlotList();
   checkSyncNeeded();
@@ -13960,7 +14331,7 @@ async function resetAllPlots() {
   });
   if (!ok) return;
   createSafetySnapshot('All plots reset to pending');
-  plotMarkers.forEach(p => { p.completed = false; updatePlotMarkerStyle(p); });
+  plotMarkers.forEach(p => { setPlotPending(p); updatePlotMarkerStyle(p); });
   updateStats();
   updateTractInfo();
   refreshPlotList();
@@ -14836,7 +15207,8 @@ async function undoLastToggle() {
   if (!lastToggle) return;
   const plot = findPlotById(lastToggle.id);
   if (plot) {
-    plot.completed = lastToggle.previousState;
+    if (lastToggle.previousState) setPlotCompleted(plot);
+    else setPlotPending(plot);
     updatePlotMarkerStyle(plot);
     updateStats();
     toast('Undone');
@@ -15178,6 +15550,7 @@ function exportCloudSyncDebug() {
 }
 
 async function saveSession(opts) {
+  let saveOk = true;
   try {
     const db = await openDB();
 
@@ -15211,14 +15584,46 @@ async function saveSession(opts) {
     if ((!opts || !opts.skipCloudSync) && (getEffectiveSyncPending() || (opts && opts.forceCloudSync))) {
       scheduleCloudSync();
     }
-  } catch(e) { console.warn('Save error:', e); }
-  saveOfflineBackupMirror();
+  } catch(e) {
+    console.warn('Save error:', e);
+    saveOk = false;
+  }
+  const mirrorOk = saveOfflineBackupMirror();
+  if (!saveOk) {
+    showSaveFailureBanner(mirrorOk);
+  } else {
+    hideSaveFailureBanner();
+  }
+  return saveOk;
+}
+
+// ── Save failure banner ──
+function showSaveFailureBanner(mirrorOk) {
+  const banner = document.getElementById('save-fail-banner');
+  const msg = document.getElementById('save-fail-msg');
+  if (msg) {
+    msg.textContent = mirrorOk
+      ? 'Saving to device storage failed. A fallback backup was written, but tap Retry and export a backup (More \u2192 Backup) before closing the app.'
+      : 'Your latest changes could not be saved to this device. Tap Retry. If this keeps failing, export a backup (More \u2192 Backup) immediately and do not close the app.';
+  }
+  if (banner) banner.classList.add('show');
+}
+
+function hideSaveFailureBanner() {
+  const banner = document.getElementById('save-fail-banner');
+  if (banner) banner.classList.remove('show');
+}
+
+async function retryLocalSave() {
+  const ok = await saveSession({ skipCloudSync: true });
+  toast(ok ? 'Save succeeded' : 'Save failed again');
 }
 
 function getCurrentJobData() {
   return {
     plots: plotMarkers.map(p => ({
       id: p.id, lat: p.lat, lng: p.lng, completed: p.completed,
+      completedAt: p.completedAt || 0,
       trees: p.trees || [],
       noTally: p.noTally || false,
       cruiser: p.cruiser || ''
@@ -15358,7 +15763,7 @@ function loadJob(jobId, skipSave) {
         if (pd.trees && pd.trees.length) plot.trees = JSON.parse(JSON.stringify(pd.trees));
         if (pd.noTally) plot.noTally = true;
         if (pd.cruiser) plot.cruiser = pd.cruiser;
-        if (pd.completed) { plot.completed = true; updatePlotMarkerStyle(plot); }
+        if (pd.completed) { plot.completed = true; plot.completedAt = Number(pd.completedAt) || 0; updatePlotMarkerStyle(plot); }
       }
     });
   }
@@ -15416,6 +15821,7 @@ async function createNewJob() {
     polygons: [],
     fullTally: createEmptyFullTally(),
     deletedPlotIds: [],
+    uncompletedPlots: {},
     cruiseType: 'baf_20',
     baf: 20,
     logRule: 'scribner',
@@ -15589,6 +15995,7 @@ async function ensureActiveJob() {
     polygons: [],
     fullTally: createEmptyFullTally(),
     deletedPlotIds: [],
+    uncompletedPlots: {},
     cruiseType: 'baf_20',
     baf: 20,
     logRule: 'scribner',
@@ -15799,6 +16206,42 @@ function buildThemeSwatches() {
 
 buildThemeSwatches();
 
+// ── Persistent storage protection ──
+const STORAGE_WARN_DISMISS_KEY = 'headfire-storage-warn-dismissed';
+const STORAGE_WARN_REPEAT_MS = 7 * 24 * 60 * 60 * 1000; // re-warn weekly
+
+async function requestPersistentStorage() {
+  if (!(navigator.storage && navigator.storage.persist)) return null;
+  try {
+    const already = await navigator.storage.persisted();
+    if (already) return true;
+    return await navigator.storage.persist();
+  } catch (e) {
+    console.warn('Persistent storage request failed:', e);
+    return null;
+  }
+}
+
+function shouldShowStorageWarning() {
+  try {
+    const raw = localStorage.getItem(STORAGE_WARN_DISMISS_KEY);
+    if (!raw) return true;
+    return (Date.now() - Number(raw)) > STORAGE_WARN_REPEAT_MS;
+  } catch (e) { return true; }
+}
+
+function dismissStorageWarning() {
+  const banner = document.getElementById('storage-warn-banner');
+  if (banner) banner.classList.remove('show');
+  try { localStorage.setItem(STORAGE_WARN_DISMISS_KEY, String(Date.now())); } catch (e) {}
+}
+
+async function initPersistentStorageCheck() {
+  // Still request persistent storage silently (this is what actually protects
+  // saved cruise data from eviction). The visible warning banner is disabled.
+  await requestPersistentStorage();
+}
+
 (async function init() {
   // Try restoring a previous session
   const restored = await restoreSession().catch(() => false);
@@ -15832,6 +16275,7 @@ buildThemeSwatches();
     if (shouldShowTestingNotice()) {
       setTimeout(() => openTestingNotice(), 140);
     }
+    setTimeout(() => initPersistentStorageCheck(), 900);
   }, 600);
 })();
 
@@ -15863,7 +16307,9 @@ buildThemeSwatches();
       <div class="product-toggle">
         <div class="product-btn sel-saw" id="tally-btn-saw" onclick="tallyPickProduct('sawtimber')">Sawtimber</div>
         <div class="product-btn" id="tally-btn-pulp" onclick="tallyPickProduct('pulpwood')">Pulpwood</div>
+        <div class="product-btn" id="tally-btn-pallet" onclick="tallyPickProduct('palletwood')">Palletwood</div>
       </div>
+      <div class="tally-pallet-warn" id="tally-pallet-warn">Palletwood is normally a hardwood sort. This species reads as pine, double-check before adding.</div>
 
       <div class="field-label">DBH Class</div>
       <div class="dbh-scroll-wrap">
