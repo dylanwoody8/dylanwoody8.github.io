@@ -6807,11 +6807,68 @@ function getPrimaryOuterRing(layer) {
   return parts.length && parts[0].length ? parts[0][0] : [];
 }
 
+let _nextPolygonUid = 1;
+
+// Stable identity for a boundary so cloud merges can tell "same boundary, new
+// shape" apart from "a genuinely new boundary".
+function ensurePolygonUid(poly) {
+  if (!poly) return '';
+  if (!poly.uid) {
+    poly.uid = 'poly_' + Date.now().toString(36) + '_' + (_nextPolygonUid++);
+  }
+  return String(poly.uid);
+}
+
 function getPolygonSerializableData(poly) {
   return {
+    uid: ensurePolygonUid(poly),
     name: getPolygonBaseName(poly && poly.name),
     coords: getLayerCoordinateData(poly && poly.layer)
   };
+}
+
+// Hash of the current boundary set. Used to detect unsynced boundary edits and
+// deletions, which previously were invisible to the sync layer.
+function getPolygonHash() {
+  return JSON.stringify(
+    allPolygons
+      .map(p => ({
+        uid: ensurePolygonUid(p),
+        sig: getPolygonSignature(p && p.name, getLayerCoordinateData(p && p.layer))
+      }))
+      .sort((a, b) => a.uid.localeCompare(b.uid))
+  );
+}
+
+// ── Deleted-boundary tombstones (mirrors the deletedPlotIds system) ──
+function normalizeDeletedPolygonIds(ids) {
+  return Array.from(new Set((Array.isArray(ids) ? ids : [])
+    .map(id => String(id == null ? '' : id).trim())
+    .filter(Boolean)))
+    .sort((a, b) => a.localeCompare(b));
+}
+
+function getJobDeletedPolygonIds(job) {
+  return normalizeDeletedPolygonIds(job && job.deletedPolygonIds);
+}
+
+function getActiveJobDeletedPolygonIds() {
+  const job = allJobs.find(j => j.id === activeJobId);
+  if (!job) return [];
+  job.deletedPolygonIds = normalizeDeletedPolygonIds(job.deletedPolygonIds);
+  return job.deletedPolygonIds.slice();
+}
+
+function rememberDeletedPolygonIds(ids) {
+  const job = allJobs.find(j => j.id === activeJobId);
+  if (!job) return;
+  const merged = new Set(getJobDeletedPolygonIds(job));
+  (Array.isArray(ids) ? ids : [ids]).forEach(id => {
+    const key = String(id == null ? '' : id).trim();
+    if (key) merged.add(key);
+  });
+  job.deletedPolygonIds = normalizeDeletedPolygonIds(Array.from(merged));
+  job.updatedAt = Date.now();
 }
 
 function convertCoordinateDataToGeoJson(coords) {
@@ -6938,7 +6995,7 @@ function finishBoundaryEdit(options = {}) {
   if (!hadActiveEdit) return;
   updateStats();
   refreshPolyChecklist();
-  if (!options.skipSave) saveSession();
+  if (!options.skipSave) saveSession({ forceCloudSync: !!window._activeCloudCruiseId });
   if (!options.silent) toast('Boundary edits saved');
 }
 
@@ -6975,7 +7032,7 @@ function startBoundaryDrawFromPopup() {
   startDrawBoundary();
 }
 
-function addPolygonToMap(name, coords) {
+function addPolygonToMap(name, coords, uid) {
   if (!Array.isArray(coords) || coords.length === 0) return null;
   const latlngs = deserializePolygonCoordsToLatLngs(coords);
   if (!Array.isArray(latlngs) || !latlngs.length) return null;
@@ -6983,9 +7040,30 @@ function addPolygonToMap(name, coords) {
   tractLayer.addLayer(layer);
   if (!tractBoundary) tractBoundary = layer;
   const poly = { layer: layer, name: name };
+  if (uid) poly.uid = String(uid);
+  ensurePolygonUid(poly);
   allPolygons.push(poly);
   bindBoundaryPopup(poly);
   return layer;
+}
+
+// Reshape an existing boundary in place instead of adding a duplicate.
+function applyPolygonCoordsInPlace(poly, coords) {
+  if (!poly || !poly.layer || !Array.isArray(coords) || !coords.length) return false;
+  const latlngs = deserializePolygonCoordsToLatLngs(coords);
+  if (!Array.isArray(latlngs) || !latlngs.length) return false;
+  try {
+    poly.layer.setLatLngs(latlngs);
+    if (poly.layer.editing && poly.layer.editing._enabled) {
+      poly.layer.editing.disable();
+      poly.layer.editing.enable();
+    }
+    bindBoundaryPopup(poly);
+    return true;
+  } catch (e) {
+    console.warn('Boundary reshape failed:', e);
+    return false;
+  }
 }
 
 let _identifiedParcelFeature = null;
@@ -7481,6 +7559,7 @@ async function saveCruiseToCloud() {
       formClass: normalizeFormClass(activeJob && activeJob.formClass),
       species: (activeJob && activeJob.species) || [],
       deletedPlotIdsJson: JSON.stringify(getActiveJobDeletedPlotIds()),
+      deletedPolygonIdsJson: JSON.stringify(getActiveJobDeletedPolygonIds()),
       createdAt: firebase.firestore.FieldValue.serverTimestamp(),
       updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
       plotStateVersion: DEFAULT_PLOT_STATE_VERSION,
@@ -7519,6 +7598,7 @@ async function saveCruiseToCloud() {
 
     _lastSyncedPlotHash = getPlotHash();
     _lastSyncedPlotLocationHash = getPlotLocationHash();
+    _lastSyncedPolygonHash = getPolygonHash();
     _lastSuccessfulCloudSyncAt = Date.now();
     _lastSuccessfulCloudSyncPlotIds = getCompletedPlotIdsForSync();
     _lastSyncErrorMessage = '';
@@ -7670,6 +7750,7 @@ let _syncPending = false;
 let _syncInFlight = false;
 let _lastSyncedPlotHash = '';
 let _lastSyncedPlotLocationHash = '';
+let _lastSyncedPolygonHash = '';
 let _lastSuccessfulCloudSyncAt = 0;
 let _lastSuccessfulCloudSyncPlotIds = [];
 let _lastSyncErrorMessage = '';
@@ -7725,6 +7806,9 @@ function hasLocalUnsyncedTreeEdits() {
 function hasLocalUnsyncedLayoutEdits() {
   const locationChanged = getPlotLocationHash() !== _lastSyncedPlotLocationHash;
   if (locationChanged) return true;
+  // Boundary edits/deletes are layout edits too. Without this the cloud copy
+  // wins on the next refresh and resurrects the old shape.
+  if (getPolygonHash() !== _lastSyncedPolygonHash) return true;
   if (!_syncPending) return false;
   const reason = String(_lastSyncPendingReason || '');
   const treeHashChanged = getPlotHash() !== _lastSyncedPlotHash;
@@ -7739,7 +7823,8 @@ function hasUnsyncedCloudChanges() {
   const locationHash = getPlotLocationHash();
   const treeChanges = plotHash !== _lastSyncedPlotHash && plotHash !== '';
   const layoutChanges = locationHash !== _lastSyncedPlotLocationHash;
-  return treeChanges || layoutChanges;
+  const boundaryChanges = getPolygonHash() !== _lastSyncedPolygonHash;
+  return treeChanges || layoutChanges || boundaryChanges;
 }
 
 function getEffectiveSyncPending() {
@@ -7805,6 +7890,7 @@ function buildSyncStateSnapshot() {
     lastPendingReason: _lastSyncPendingReason || '',
     lastSyncedPlotHash: _lastSyncedPlotHash || '',
     lastSyncedPlotLocationHash: _lastSyncedPlotLocationHash || '',
+    lastSyncedPolygonHash: _lastSyncedPolygonHash || '',
     lastSuccessfulCloudSyncAt: _lastSuccessfulCloudSyncAt || 0,
     lastSuccessfulCloudSyncPlotIds: (_lastSuccessfulCloudSyncPlotIds || []).slice(),
     lastSyncErrorMessage: _lastSyncErrorMessage || '',
@@ -7819,6 +7905,7 @@ function applySyncStateSnapshot(syncState) {
   _lastSyncPendingReason = state.lastPendingReason || '';
   _lastSyncedPlotHash = state.lastSyncedPlotHash || '';
   _lastSyncedPlotLocationHash = state.lastSyncedPlotLocationHash || '';
+  _lastSyncedPolygonHash = state.lastSyncedPolygonHash || '';
   _lastSuccessfulCloudSyncAt = Number(state.lastSuccessfulCloudSyncAt) || 0;
   _lastSuccessfulCloudSyncPlotIds = Array.isArray(state.lastSuccessfulCloudSyncPlotIds)
     ? state.lastSuccessfulCloudSyncPlotIds.map(id => String(id))
@@ -8042,6 +8129,7 @@ async function refreshLinkedCruiseFromCloud(reason = 'job-load') {
     });
     _lastSyncedPlotHash = getPlotHash();
     _lastSyncedPlotLocationHash = getPlotLocationHash();
+    _lastSyncedPolygonHash = getPolygonHash();
     _lastSuccessfulCloudSyncAt = Date.now();
     _lastSuccessfulCloudSyncPlotIds = getCompletedPlotIdsForSync();
     _lastSyncErrorMessage = '';
@@ -8210,6 +8298,7 @@ async function manualCloudSync() {
           updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
           plotStateVersion: DEFAULT_PLOT_STATE_VERSION,
           polygonsJson: JSON.stringify(allPolygons.map(getPolygonSerializableData)),
+          deletedPolygonIdsJson: JSON.stringify(getActiveJobDeletedPolygonIds()),
           plotsJson: JSON.stringify(fullMode ? [] : plotMarkers.map(p => ({ id: p.id, lat: p.lat, lng: p.lng }))),
           plotCount: fullMode ? 0 : plotMarkers.length,
           polyCount: allPolygons.length,
@@ -8254,6 +8343,7 @@ async function manualCloudSync() {
 
     _lastSyncedPlotHash = getPlotHash();
     _lastSyncedPlotLocationHash = getPlotLocationHash();
+    _lastSyncedPolygonHash = getPolygonHash();
     _lastSuccessfulCloudSyncAt = Date.now();
     _lastSuccessfulCloudSyncPlotIds = getCompletedPlotIdsForSync();
     _lastSyncErrorMessage = '';
@@ -8358,20 +8448,71 @@ async function pullOtherUsersPlotData(cruiseId, options = {}) {
       console.log('[PULL] Skipping cloud plot locations because local layout changes are pending');
     }
 
-    // Sync boundaries from the main doc
+    // Sync boundaries from the main doc.
+    // Match on stable uid first so an edited boundary is reshaped in place
+    // rather than re-added as a duplicate, and honour delete tombstones so a
+    // removed boundary does not come back on the next refresh.
     if (d.polygonsJson && !skipBoundaries) {
       const cloudPolys = parseJsonArray(d.polygonsJson);
+      const cloudDeletedPolyIds = new Set(normalizeDeletedPolygonIds(parseJsonArray(d.deletedPolygonIdsJson)));
+      // Always honour local tombstones. If a push failed, the tombstone only
+      // exists on this device, and dropping it here is what resurrected the
+      // boundary on refresh.
+      const pendingLocalDeletedPolyIds = getActiveJobDeletedPolygonIds();
+      const deletedPolyIdSet = new Set([...cloudDeletedPolyIds, ...pendingLocalDeletedPolyIds]);
+
+      // Drop any local boundary the cloud says was deleted elsewhere.
+      if (!localHasUnsyncedLayout && cloudDeletedPolyIds.size) {
+        for (let i = allPolygons.length - 1; i >= 0; i--) {
+          const lp = allPolygons[i];
+          if (!lp || !lp.uid) continue;
+          if (!cloudDeletedPolyIds.has(String(lp.uid))) continue;
+          try { if (lp.layer && lp.layer.editing) lp.layer.editing.disable(); } catch (e) {}
+          if (lp.layer) tractLayer.removeLayer(lp.layer);
+          allPolygons.splice(i, 1);
+        }
+        tractBoundary = allPolygons.length > 0 ? allPolygons[0].layer : null;
+      }
+
+      const localByUid = new Map();
+      allPolygons.forEach(p => {
+        const uid = p && p.uid ? String(p.uid) : '';
+        if (uid) localByUid.set(uid, p);
+      });
       const existingPolySigs = new Set(allPolygons.map(p => {
         return getPolygonSignature(p.name, getLayerCoordinateData(p.layer));
       }));
+
       cloudPolys.forEach(pd => {
-        const sig = getPolygonSignature(pd.name, pd.coords || []);
-        if (!existingPolySigs.has(sig) && Array.isArray(pd.coords) && pd.coords.length) {
-          addPolygonToMap(pd.name, pd.coords);
+        if (!Array.isArray(pd.coords) || !pd.coords.length) return;
+        const uid = pd.uid ? String(pd.uid) : '';
+
+        // Deleted locally or remotely: never resurrect it.
+        if (uid && deletedPolyIdSet.has(uid)) return;
+
+        if (uid && localByUid.has(uid)) {
+          // Same boundary. Local edits win while they are still unsynced;
+          // otherwise take the cloud shape, but reshape rather than duplicate.
+          if (!localHasUnsyncedLayout) {
+            const localPoly = localByUid.get(uid);
+            const localSig = getPolygonSignature(localPoly.name, getLayerCoordinateData(localPoly.layer));
+            const cloudSig = getPolygonSignature(pd.name, pd.coords);
+            if (localSig !== cloudSig) applyPolygonCoordsInPlace(localPoly, pd.coords);
+          }
+          return;
+        }
+
+        // Legacy cloud rows have no uid. Fall back to geometry signature, and
+        // skip anything whose signature was tombstoned.
+        const sig = getPolygonSignature(pd.name, pd.coords);
+        if (deletedPolyIdSet.has(sig)) return;
+        if (!existingPolySigs.has(sig)) {
+          addPolygonToMap(pd.name, pd.coords, uid);
           existingPolySigs.add(sig);
           newBoundariesCount++;
         }
       });
+      tractBoundary = allPolygons.length > 0 ? allPolygons[0].layer : tractBoundary;
     }
     const activeJob = normalizeJobCruiseSettings(allJobs.find(j => j.id === activeJobId));
     if (activeJob) {
@@ -8696,6 +8837,7 @@ async function updateCruiseInCloud(cruiseId) {
       formClass: normalizeFormClass(activeJob && activeJob.formClass),
       species: (activeJob && activeJob.species) || [],
       deletedPlotIdsJson: JSON.stringify(getActiveJobDeletedPlotIds()),
+      deletedPolygonIdsJson: JSON.stringify(getActiveJobDeletedPolygonIds()),
       distUnit: distUnit,
       basemap: currentBasemap
     });
@@ -9092,6 +9234,10 @@ async function loadCruiseFromCloud(cruiseId, options = {}) {
     localJob.polygons = allPolygons.map(p => {
       return getPolygonSerializableData(p);
     });
+    localJob.deletedPolygonIds = normalizeDeletedPolygonIds([
+      ...getJobDeletedPolygonIds(localJob),
+      ...normalizeDeletedPolygonIds(parseJsonArray(d.deletedPolygonIdsJson))
+    ]);
     localJob.updatedAt = Date.now();
     normalizeJobCruiseSettings(localJob);
     activeJobId = localJob.id;
@@ -9108,6 +9254,7 @@ async function loadCruiseFromCloud(cruiseId, options = {}) {
     // Set up sync button and record baseline
     _lastSyncedPlotHash = getPlotHash();
     _lastSyncedPlotLocationHash = getPlotLocationHash();
+    _lastSyncedPolygonHash = getPolygonHash();
     _lastSyncErrorMessage = '';
     updateSyncButton();
     setSyncPending(false);
@@ -13823,6 +13970,12 @@ async function deletePolygonAt(index) {
   } catch (e) {}
 
   if (poly.layer) tractLayer.removeLayer(poly.layer);
+  // Tombstone by uid AND by geometry signature, so legacy cloud rows written
+  // before uids existed also stay deleted.
+  rememberDeletedPolygonIds([
+    ensurePolygonUid(poly),
+    getPolygonSignature(poly.name, getLayerCoordinateData(poly.layer))
+  ]);
   allPolygons.splice(index, 1);
   tractBoundary = allPolygons.length > 0 ? allPolygons[0].layer : null;
   if (deletingEditedBoundary) rebindAllBoundaryPopups();
@@ -13831,7 +13984,7 @@ async function deletePolygonAt(index) {
   updateStats();
   updateTractInfo();
   updateEmptyHint();
-  saveSession();
+  saveSession({ forceCloudSync: !!window._activeCloudCruiseId });
   map.closePopup();
   toast('Boundary deleted: ' + label);
   showSafetyRecoverToast('Boundary deleted');
@@ -14312,6 +14465,7 @@ async function resetAllPlots() {
 
       _lastSyncedPlotHash = getPlotHash();
       _lastSyncedPlotLocationHash = getPlotLocationHash();
+      _lastSyncedPolygonHash = getPolygonHash();
       if (!userDataSyncFailed) setSyncPending(false);
       await saveSession({ skipCloudSync: !userDataSyncFailed });
       toast(userDataSyncFailed ? 'Shared cruise reset. Empty tallies will retry syncing.' : 'Shared cruise reset to pending');
@@ -15490,6 +15644,7 @@ async function performBackgroundCloudSync(reason = 'auto-sync') {
     const mode = await syncExistingCruiseState(window._activeCloudCruiseId, { silent: true, reason: reason });
     _lastSyncedPlotHash = getPlotHash();
     _lastSyncedPlotLocationHash = getPlotLocationHash();
+    _lastSyncedPolygonHash = getPolygonHash();
     _lastSuccessfulCloudSyncAt = Date.now();
     _lastSuccessfulCloudSyncPlotIds = getCompletedPlotIdsForSync();
     _lastSyncErrorMessage = '';
@@ -15749,8 +15904,10 @@ function loadJob(jobId, skipSave) {
 
   // Restore polygons
   if (job.polygons && job.polygons.length) {
+    const jobDeletedPolyIds = new Set(getJobDeletedPolygonIds(job));
     job.polygons.forEach(pd => {
-      addPolygonToMap(pd.name, pd.coords);
+      if (pd.uid && jobDeletedPolyIds.has(String(pd.uid))) return;
+      addPolygonToMap(pd.name, pd.coords, pd.uid);
     });
   }
 
